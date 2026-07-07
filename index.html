@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>단어 경마 - 가챠 & 상성 업데이트</title>
+    <title>이모지무스메 더비 - 영단어 배팅 경마 게임</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -34,15 +34,18 @@
         #track-world { position: absolute; top: 0; left: 0; width: 120000px; height: 8000px; transform-origin: 0 0; will-change: transform; transition: filter 0.5s; }
         .track-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 
-        .runner { position: absolute; width: 160px; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; will-change: transform, left, top; z-index: 20; margin-left: -80px; margin-top: -80px; }
-        .runner-icon { font-size: 8rem; filter: drop-shadow(-10px 10px 10px rgba(0,0,0,0.6)); transition: transform 0.1s; line-height: 1; }
+        /* 🌟 가시성 확대를 위해 주자(runner) 컨테이너와 내부 폰트 크기 대폭 상향 */
+        .runner { position: absolute; width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; will-change: transform, left, top; z-index: 20; margin-left: -110px; margin-top: -110px; }
+        .runner-icon { font-size: 11rem; filter: drop-shadow(-15px 15px 15px rgba(0,0,0,0.7)); transition: transform 0.1s, filter 0.2s; line-height: 1; }
         .runner-icon.active { animation: bounce 0.2s infinite alternate cubic-bezier(0.2, 0.8, 0.2, 1); }
-        @keyframes bounce { from { transform: translateY(0) scaleY(0.95); } to { transform: translateY(-20px) scaleY(1.05); } }
-        .runner-name-tag { display: flex; flex-direction: column; align-items: center; font-family: 'Black Han Sans', sans-serif; color: white; background: rgba(0, 0, 0, 0.85); padding: 4px 12px; border-radius: 12px; border: 3px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.5); white-space: nowrap; margin-bottom: -15px; text-shadow: 2px 2px 4px black; z-index: 21; position: relative; }
-        .runner-name-tag .name { font-size: 1.5rem; font-weight: 900; line-height: 1; }
-        .runner-name-tag .sponsor { font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; color: #fde047; margin-top: 2px; font-weight: 900; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
-        .dust { position: absolute; width: 30px; height: 30px; background: rgba(220, 220, 220, 0.7); border-radius: 50%; animation: dustFade 0.7s forwards; pointer-events: none; z-index: 15; }
-        @keyframes dustFade { 0% { transform: scale(0.5) translateY(0); opacity: 0.8; } 100% { transform: scale(4.0) translateY(-60px) translateX(-40px); opacity: 0; } }
+        @keyframes bounce { from { transform: translateY(0) scaleY(0.95); } to { transform: translateY(-25px) scaleY(1.05); } }
+        
+        .runner-name-tag { display: flex; flex-direction: column; align-items: center; font-family: 'Black Han Sans', sans-serif; color: white; background: rgba(0, 0, 0, 0.85); padding: 6px 16px; border-radius: 16px; border: 4px solid #cbd5e1; box-shadow: 0 6px 15px rgba(0,0,0,0.6); white-space: nowrap; margin-bottom: -20px; text-shadow: 2px 2px 4px black; z-index: 21; position: relative; }
+        .runner-name-tag .name { font-size: 2.2rem; font-weight: 900; line-height: 1; }
+        .runner-name-tag .sponsor { font-family: 'Noto Sans KR', sans-serif; font-size: 1.2rem; color: #fde047; margin-top: 4px; font-weight: 900; background: rgba(255,255,255,0.15); padding: 4px 8px; border-radius: 6px; }
+        
+        .dust { position: absolute; width: 40px; height: 40px; background: rgba(220, 220, 220, 0.7); border-radius: 50%; animation: dustFade 0.7s forwards; pointer-events: none; z-index: 15; }
+        @keyframes dustFade { 0% { transform: scale(0.5) translateY(0); opacity: 0.8; } 100% { transform: scale(5.0) translateY(-80px) translateX(-50px); opacity: 0; } }
 
         /* Weather Effects */
         .weather-layer { position: absolute; inset: 0; pointer-events: none; z-index: 35; }
@@ -56,18 +59,48 @@
         .track-HEAT { filter: sepia(0.3) saturate(1.5) hue-rotate(-15deg); }
         .track-WIND { filter: contrast(1.1) brightness(0.9); }
 
+        /* Dramatic Slow-mo Finish */
+        .dramatic-overlay { position: absolute; inset: 0; background: radial-gradient(circle, transparent 10%, rgba(0,0,0,0.85) 100%); pointer-events: none; z-index: 18; opacity: 0; transition: opacity 0.8s; }
+        #race-track-container.is-dramatic .dramatic-overlay { opacity: 1; }
+        #race-track-container.is-dramatic #track-world { filter: brightness(0.5) saturate(1.2); }
+        #race-track-container.is-dramatic .runner-icon { filter: brightness(1.6) drop-shadow(0 0 25px rgba(255,255,255,0.8)); }
+
         /* DOM Events Animation */
         @keyframes slideIn { 0% { transform: translateX(-50px); opacity: 0; } 10% { transform: translateX(0); opacity: 1; } 90% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-50px); opacity: 0; } }
         .animate-slide-in { animation: slideIn 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-        @keyframes cutin { 0% { transform: translateX(-100%) skewX(-15deg); opacity: 0; } 15% { transform: translateX(0) skewX(-15deg); opacity: 1; } 85% { transform: translateX(5%) skewX(-15deg); opacity: 1; } 100% { transform: translateX(100%) skewX(-15deg); opacity: 0; } }
-        .animate-cutin { animation: cutin 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
 
-        /* Gacha Avatars & Rarities */
+        /* 응원 파티클 및 폭발 애니메이션 */
+        @keyframes cheerBubble { 0% { transform: translateY(10px) scale(0.5); opacity: 1; } 50% { opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
+        .cheer-particle { animation: cheerBubble 1.2s ease-out forwards; position: absolute; bottom: 0; z-index: 100; pointer-events: none; filter: drop-shadow(0 0 5px rgba(255,255,255,0.8)); font-size: 3rem; }
+        
+        @keyframes cheerExplode { 0% { transform: scale(0.5); opacity: 1; } 50% { transform: scale(2.5); opacity: 0.8; } 100% { transform: scale(4); opacity: 0; } }
+        .flash-horse { filter: brightness(2) sepia(0.8) hue-rotate(-30deg) saturate(3) drop-shadow(0 0 40px yellow) !important; transition: filter 0.1s; }
+
+        /* PIP Container */
+        #pip-container { position: absolute; left: 20px; top: 140px; bottom: 20px; width: 240px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; z-index: 50; pointer-events: none; }
+        .pip-item { background: rgba(15, 23, 42, 0.9); border-left: 5px solid #ef4444; border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 12px; backdrop-filter: blur(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.6); animation: slideInLeft 0.3s forwards; }
+        .pip-emoji { font-size: 3rem; }
+        .pip-info { flex: 1; min-width: 0; }
+        .pip-name { font-weight: 900; color: white; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pip-dist { color: #94a3b8; font-size: 0.9rem; font-weight: bold; font-family: monospace; }
+        @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Podiums & Avatars */
+        .podium-1 { background: linear-gradient(to top, #d4af37, #fdf5a9); box-shadow: 0 -10px 20px rgba(212, 175, 55, 0.4); }
+        .podium-2 { background: linear-gradient(to top, #94a3b8, #e2e8f0); }
+        .podium-3 { background: linear-gradient(to top, #b45309, #fdba74); }
+        
         .skin-normal { border: 2px solid #64748b; background-color: #334155; }
         .skin-gold { border: 3px solid #fbbf24; background: linear-gradient(135deg, #78350f, #b45309); box-shadow: 0 0 10px rgba(251,191,36,0.6); }
         .skin-holo { border: 3px solid #a855f7; box-shadow: 0 0 15px #a855f7, inset 0 0 10px #a855f7; background: linear-gradient(135deg, #4c1d95, #7e22ce); position: relative; overflow: hidden; }
         .skin-holo::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent); transform: rotate(45deg); animation: holoGleam 2s infinite linear; }
         @keyframes holoGleam { 0% { transform: rotate(45deg) translateX(-100%); } 100% { transform: rotate(45deg) translateX(100%); } }
+        
+        /* 배당률 변동 애니메이션 */
+        @keyframes flashRed { 0% { color: #f87171; } 50% { color: #dc2626; transform: scale(1.1); } 100% { color: #f87171; } }
+        @keyframes flashGreen { 0% { color: #34d399; } 50% { color: #10b981; transform: scale(1.1); } 100% { color: #34d399; } }
+        .odds-down { animation: flashRed 0.5s; color: #ef4444; }
+        .odds-up { animation: flashGreen 0.5s; color: #10b981; }
     </style>
 </head>
 <body>
@@ -98,33 +131,31 @@
             combo: () => { play8BitTone('square', 1000, 0.1, 0.1, 1500); setTimeout(() => play8BitTone('square', 1500, 0.1, 0.1, 2000), 100); },
             start: () => { play8BitTone('square', 400, 0.5, 0.2); setTimeout(() => play8BitTone('square', 600, 0.5, 0.2), 500); setTimeout(() => play8BitTone('square', 800, 1.0, 0.3), 1000); },
             dash: () => { play8BitTone('sawtooth', 150, 0.4, 0.1, 50); },
-            fanfare: () => { play8BitTone('square', 400, 0.2); setTimeout(()=>play8BitTone('square', 500, 0.2), 200); setTimeout(()=>play8BitTone('square', 600, 0.4), 400); },
             gacha: () => { play8BitTone('square', 300, 0.1, 0.1, 600); setTimeout(() => play8BitTone('square', 600, 0.1, 0.1, 1200), 100); setTimeout(() => play8BitTone('square', 1200, 0.4, 0.2, 1800), 200); }
         };
         const playSound = (soundKey) => { if (SOUNDS[soundKey]) SOUNDS[soundKey](); };
         const initAudio = () => { if(audioCtx.state === 'suspended') audioCtx.resume(); };
 
-        // --- 🌟 캐릭터 로스터 ---
+        // --- 캐릭터 로스터 ---
         const HORSES = [
             { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 45, spurt: 85, stability: 70, luck: 30 }, type: 'late' },
             { id: 2, emoji: '🦈', name: '트랄랄레오 트랄랄라', desc: '어디로 튈지 모르는 광기의 육지 상어.', stats: { speed: 50, spurt: 50, stability: 10, luck: 100 }, type: 'luck' },
             { id: 3, emoji: '🏃‍♂️', name: '데이비드 마르티네즈', desc: '산데비스탄 발동! 스타트 라인을 뚫고 나가는 전설.', stats: { speed: 85, spurt: 20, stability: 40, luck: 50 }, type: 'early' },
-            { id: 4, emoji: '🏎️', name: '막스 베르스타펜', desc: 'F1 챔피언의 품격. 컨디션을 무시하는 완벽한 주행.', stats: { speed: 60, spurt: 55, stability: 95, luck: 50 }, type: 'stable' },
+            { id: 4, emoji: '🏎️', name: '막스 베르스타펜', desc: 'F1 챔피언의 품격. 컨디션을 무시하는 완벽한 주행.', stats: { speed: 65, spurt: 65, stability: 95, luck: 50 }, type: 'stable' },
             { id: 5, emoji: '🪅', name: '레인보우 피에스타', desc: '극후반에 터집니다. 엄청난 속도거나, 그대로 멈추거나.', stats: { speed: 50, spurt: 80, stability: 20, luck: 80 }, type: 'conditional' },
             { id: 6, emoji: '🦄', name: '아스트라 혼', desc: '성스러운 기운으로 기복이 매우 심함. 터지면 빛의 속도.', stats: { speed: 55, spurt: 65, stability: 15, luck: 90 }, type: 'luck' },
             { id: 7, emoji: '🐢', name: '늑대거북이', desc: '등껍질에 부스터 장착. 막판 스퍼트는 압도적.', stats: { speed: 40, spurt: 90, stability: 80, luck: 20 }, type: 'late' },
             { id: 8, emoji: '🦬', name: '버팔로 러시', desc: '주변에 다른 주자가 있으면 몸싸움으로 튕겨내고 가속함.', stats: { speed: 62, spurt: 60, stability: 50, luck: 50 }, type: 'chaser' },
             { id: 9, emoji: '🦑', name: '딥 크라켄', desc: '1등의 등짝이 보이면 심해의 힘으로 미친 듯이 쫓아감.', stats: { speed: 65, spurt: 65, stability: 40, luck: 50 }, type: 'chaser' },
             { id: 10, emoji: '🌀', name: '우라칸', desc: '태풍의 눈! 초반에 모든 것을 휩쓸며 날아갑니다.', stats: { speed: 80, spurt: 25, stability: 40, luck: 60 }, type: 'early' },
-            { id: 11, emoji: '🐎', name: '스페셜 먼스', desc: '압도적인 재능은 없지만 절대 멈추지 않는 끈기.', stats: { speed: 60, spurt: 50, stability: 90, luck: 50 }, type: 'stable' },
+            { id: 11, emoji: '🐎', name: '스페셜 먼스', desc: '압도적인 재능은 없지만 절대 멈추지 않는 끈기.', stats: { speed: 65, spurt: 60, stability: 95, luck: 50 }, type: 'stable' },
             { id: 12, emoji: '👨‍🦽‍➡️', name: '케니 가와구치', desc: '휠체어의 전설. 엄청 빠르지만 가끔 바퀴가 헛돔.', stats: { speed: 70, spurt: 60, stability: 20, luck: 70 }, type: 'luck' },
             { id: 13, emoji: '🦖', name: '프라이멀 렉스', desc: '초반은 느리지만, 보폭이 커서 가속이 붙으면 무서움.', stats: { speed: 50, spurt: 65, stability: 70, luck: 40 }, type: 'normal' },
             { id: 14, emoji: '🕴️', name: '마이클 잭슨', desc: '문워크로 가다가 결승선을 앞두고 팝의 황제로 각성함.', stats: { speed: 45, spurt: 95, stability: 60, luck: 30 }, type: 'late' },
             { id: 15, emoji: '🛴', name: '씽씽이 마스터', desc: '킥보드계의 혜성. 돌부리에 걸릴지 1등할지 모름.', stats: { speed: 55, spurt: 55, stability: 15, luck: 85 }, type: 'luck' },
-            { id: 16, emoji: '🐐', name: '소율 더 고트', desc: '물리 엔진을 무시하고 흔들림 없이 정상으로 직진.', stats: { speed: 58, spurt: 52, stability: 100, luck: 50 }, type: 'stable' }
+            { id: 16, emoji: '🐐', name: '소율 더 고트', desc: '물리 엔진을 무시하고 흔들림 없이 정상으로 직진.', stats: { speed: 65, spurt: 60, stability: 100, luck: 50 }, type: 'stable' }
         ];
 
-        // 🌟 상성 시스템 정의 (가위바위보)
         const TYPE_MATCHUP = {
             early:  { strongVs: 'late',   weakVs: 'stable', bonus: 1.08, penalty: 0.94 },
             late:   { strongVs: 'stable', weakVs: 'early',  bonus: 1.08, penalty: 0.94 },
@@ -144,16 +175,36 @@
         ];
 
         const EVENT_MSGS = {
-            spurt: ['🔥 기적의 스퍼트!', '🚀 폭발적인 가속!', '✨ 미친 속도로 치고 나갑니다!'],
-            slip: ['💦 아차! 삐끗했습니다!', '🚨 스텝이 꼬입니다!', '📉 갑자기 속도가 확 죽습니다!'],
-            lead: ['👑 선두 탈환!', '🔥 1위가 바뀝니다!', '⚡ 엄청난 기세로 선두에 오릅니다!'],
-            overtake: ['🌪️ 폭풍 추월!', '💨 순식간에 앞지릅니다!', '🔥 무서운 뒷심 발휘!']
+            spurt: ['🔥 폼 미쳤다! 폭발적인 가속!', '🚀 영혼까지 끌어모은 스퍼트!', '✨ 안보일 정도로 치고 나갑니다!', '💨 폭주 기관차 발동!', '⚡ 갑자기 기어가 바뀌었습니다!', '🌟 이게 진짜 실력이다!!'],
+            slip: ['💦 아차! 돌부리에 걸렸습니다!', '🚨 다리에 쥐가 났나요?!', '📉 갑자기 페이스가 뚝 떨어집니다!', '😰 치명적인 스텝 꼬임!'],
+            lead: ['👑 선두 사수! 버텨라!!', '🔥 1위가 바뀝니다! 과연?!', '⚡ 엄청난 기세로 왕좌 탈환!', '🏆 압도적인 스피드로 1위 등극!'],
+            overtake: ['🌪️ 폭풍 추월!', '💨 순식간에 앞지릅니다!', '🔥 무서운 뒷심 발휘!', '😱 말도 안 되는 역전극!'],
+            neckAndNeck: ['😱 완전 초접전! 한 치의 양보도 없다!', '🎯 나란히 달리는 선두권, 손에 땀을 쥐게 하네요!'],
+            lastSpurt: ['⏰ 마지막 100m! 승부의 갈림길!', '🏁 결승선이 코앞! 여기서 갈린다!'],
+            disaster: ['💥 대참사! 선두권에서 완전히 무너집니다!', '😨 믿을 수 없는 실수가 나왔습니다!'],
+            itemUsed: ['🍌 누군가 바나나를 밟았습니다!!', '☠️ 저주의 기운이 느껴집니다... 불길한 기운!']
         };
+
+        const EVENT_STYLES = {
+            disaster: 'text-3xl text-red-500 bg-red-900/90 border-l-8 border-red-500 font-black',
+            lastSpurt: 'text-2xl text-yellow-300 bg-yellow-900/90 border-l-8 border-yellow-400 font-black',
+            neckAndNeck: 'text-2xl text-orange-200 bg-orange-900/90 border-l-8 border-orange-500',
+            lead: 'text-2xl text-yellow-400 bg-black/90 border-l-8 border-yellow-400',
+            overtake: 'text-xl text-emerald-300 bg-emerald-900/80 border-l-8 border-emerald-500',
+            slip: 'text-xl text-blue-300 bg-blue-900/80 border-l-8 border-blue-500',
+            normal: 'text-lg text-white bg-slate-800/90 border-l-4 border-slate-500'
+        };
+
         const getMsg = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
         const ITEMS = [
-            { id: 'banana', icon: '🍌', name: '바나나', desc: '선택한 캐릭터 속도 -10%' }, { id: 'whip', icon: '🏇', name: '채찍', desc: '선택한 캐릭터 속도 +10%' }, { id: 'carrot', icon: '🥕', name: '당근', desc: '초반 가속 증가' },
-            { id: 'sedative', icon: '💊', name: '진정제', desc: '기복이 심한 캐릭터 안정화' }, { id: 'sand', icon: '🌪️', name: '모래뿌리기', desc: '선택한 캐릭터 앞의 주자 속도 감소' }, { id: 'coin', icon: '🍀', name: '럭키코인', desc: '나의 배당금 20% 증가' }, { id: 'insurance', icon: '📜', name: '보험증', desc: '배팅 실패 시 50% 환급' }
+            { id: 'banana', icon: '🍌', name: '바나나', desc: '선택한 캐릭터 속도 -10%' }, 
+            { id: 'whip', icon: '🏇', name: '채찍', desc: '속도 +25%, 안정성 절반 감소' }, 
+            { id: 'carrot', icon: '🥕', name: '당근', desc: '초반 가속 증가' },
+            { id: 'sedative', icon: '💊', name: '진정제', desc: '기복이 심한 캐릭터 안정화' }, 
+            { id: 'curse', icon: '☠️', name: '저주', desc: '선택한 캐릭터 전체 스탯 -20%' }, 
+            { id: 'coin', icon: '🍀', name: '럭키코인', desc: '당첨금 2배 (50% 확률로 꽝)' }, 
+            { id: 'insurance', icon: '📜', name: '보험증', desc: '배팅 실패 시 25% 환급' }
         ];
 
         const DEFAULT_WORDS = [
@@ -164,13 +215,14 @@
         const generateRoomCode = () => Math.floor(1000 + Math.random() * 9000).toString();
         const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
-        // --- 공용 아바타 렌더러 ---
         function AvatarDisplay({ avatarStr, sizeClasses }) {
             if(!avatarStr) return <div className={`flex items-center justify-center bg-slate-700 rounded-full ${sizeClasses}`}>👤</div>;
             const [hId, rarity] = avatarStr.split('_');
             const horse = HORSES.find(h => h.id === parseInt(hId));
             if(!horse) return null;
-            return <div className={`flex items-center justify-center rounded-full skin-${rarity} ${sizeClasses} shadow-md`} title={`${horse.name} (${rarity})`}>{horse.emoji}</div>;
+            return <div className={`flex items-center justify-center rounded-full skin-${rarity} ${sizeClasses} shadow-md overflow-hidden bg-slate-800`} title={`${horse.name} (${rarity})`}>
+                {horse.img ? <img src={horse.img} className="w-full h-full object-cover" alt={horse.name} /> : horse.emoji}
+            </div>;
         }
 
         // --- 앱 메인 ---
@@ -207,7 +259,7 @@
                         </div>
 
                         <h1 className="text-4xl md:text-6xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 text-center leading-tight mt-12 font-display tracking-wide">
-                            런! 에듀 마스터<br/><span className="text-3xl text-yellow-400 tracking-normal mt-2 inline-block">🔥 실시간 단어 경마 🔥</span>
+                            이모지무스메 더비<br/><span className="text-3xl text-yellow-400 tracking-normal mt-2 inline-block">🔥 영단어 배팅 경마 게임 🔥</span>
                         </h1>
                         <p className="text-slate-400 mb-8 text-center text-sm md:text-base">콤보를 쌓아 돈을 모으고 전략적으로 배팅하세요!</p>
                         
@@ -234,10 +286,10 @@
         }
 
         // ==========================================
-        // GACHA & COLLECTION VIEW
+        // GACHA VIEW
         // ==========================================
         function GachaView({ onExit }) {
-            const [tokens, setTokens] = useState(() => parseInt(localStorage.getItem('edurace_tokens') || '0'));
+            const [tokens, setTokens] = useState(() => parseInt(localStorage.getItem('edurace_tokens') || '30')); 
             const [collection, setCollection] = useState(() => JSON.parse(localStorage.getItem('edurace_collection') || '[]'));
             const [pullResult, setPullResult] = useState(null);
 
@@ -248,7 +300,7 @@
             ]);
 
             const doPull = () => {
-                if(tokens < 30) return alert('토큰이 부족합니다! 게임에 참여하여 토큰을 모으세요.');
+                if(tokens < 30) return alert('토큰이 부족합니다! 게임에 끝까지 참여하여 토큰을 모으세요.');
                 initAudio();
                 setTokens(t => { localStorage.setItem('edurace_tokens', t - 30); return t - 30; });
                 
@@ -277,7 +329,6 @@
                 alert('아바타가 장착되었습니다!');
             };
 
-            // Calculate highest rarity owned per horse for display
             const ownedMap = {};
             collection.forEach(k => {
                 const [id, r] = k.split('_');
@@ -295,8 +346,13 @@
                     {pullResult && (
                         <div className="absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6 fade-in backdrop-blur-sm">
                             <h2 className="text-3xl font-black text-yellow-400 mb-8">🎉 뽑기 결과!</h2>
-                            <div className={`w-40 h-40 flex items-center justify-center text-7xl rounded-full skin-${pullResult.rarity} shadow-2xl mb-6 animate-rise`}>
-                                {pullResult.emoji}
+                            <div className={`w-[200px] h-[300px] flex flex-col items-center justify-center rounded-xl skin-${pullResult.rarity} shadow-[0_0_30px_rgba(0,0,0,0.8)] mb-6 animate-rise overflow-hidden relative bg-slate-800`}>
+                                {pullResult.img ? (
+                                    <img src={pullResult.img} className="absolute inset-0 w-full h-full object-cover z-0" alt="card" />
+                                ) : (
+                                    <div className="text-[6rem] z-10">{pullResult.emoji}</div>
+                                )}
+                                <div className="absolute inset-0 z-20 pointer-events-none shadow-inner"></div>
                             </div>
                             <div className="text-2xl font-black mb-2">{pullResult.name}</div>
                             <div className={`text-lg font-bold mb-8 ${pullResult.rarity==='holo'?'text-purple-400':(pullResult.rarity==='gold'?'text-yellow-400':'text-slate-400')}`}>
@@ -329,7 +385,9 @@
                                 return (
                                     <div key={h.id} onClick={() => isOwned ? equipAvatar(h.id, highestRarity) : null} className={`flex flex-col items-center p-2 rounded-xl border ${isOwned ? 'bg-slate-800 border-slate-600 cursor-pointer hover:bg-slate-700 transition' : 'bg-slate-900/50 border-slate-800 opacity-40'} text-center`}>
                                         {isOwned ? (
-                                            <div className={`w-14 h-14 flex items-center justify-center text-3xl rounded-full skin-${highestRarity} mb-2 shadow-md`}>{h.emoji}</div>
+                                            <div className={`w-14 h-14 flex items-center justify-center text-3xl rounded-full skin-${highestRarity} mb-2 shadow-md overflow-hidden bg-slate-800`}>
+                                                {h.img ? <img src={h.img} className="w-full h-full object-cover" alt=""/> : h.emoji}
+                                            </div>
                                         ) : (
                                             <div className="w-14 h-14 flex items-center justify-center text-3xl rounded-full bg-slate-800 border border-slate-700 mb-2 grayscale">{h.emoji}</div>
                                         )}
@@ -353,6 +411,26 @@
             const [uiState, setUiState] = useState({ ...gameState.current });
             const peerRef = useRef(null);
             const connsRef = useRef({});
+
+            const recalcLiveOdds = () => {
+                let realBetTotal = 0;
+                gameState.current.players.forEach(p => { if (p.bets) Object.values(p.bets).forEach(amt => realBetTotal += amt); });
+                
+                gameState.current.horses.forEach(h => {
+                    let betOnThisHorse = 0;
+                    gameState.current.players.forEach(p => { if (p.bets && p.bets[h.id]) betOnThisHorse += p.bets[h.id]; });
+                    
+                    const virtualBase = 800; 
+                    const poolTotal = realBetTotal + (gameState.current.horses.length * virtualBase);
+                    const poolHorse = betOnThisHorse + virtualBase;
+                    
+                    let rawOdds = (poolTotal / poolHorse) * 0.95; 
+                    if(h.type === 'luck') rawOdds = Math.min(99, rawOdds * 1.5);
+                    else rawOdds = Math.min(50, rawOdds);
+                    
+                    h.odds = Math.max(1.1, rawOdds).toFixed(1);
+                });
+            };
 
             const changeStatus = (newStatus) => { 
                 gameState.current.status = newStatus; 
@@ -417,7 +495,21 @@
                         player.stats.quizCnt++;
                         if(!player.inventory && Math.random() < 0.2) player.inventory = ITEMS[Math.floor(Math.random()*ITEMS.length)].id;
                     }
-                    else if (data.type === 'BET_READY') { player.bets = data.bets; player.usedItemOn = data.usedItemOn; player.isReady = true; }
+                    else if (data.type === 'BET_CHANGE') { 
+                        player.bets = data.bets; 
+                        player.usedItemOn = data.usedItemOn; 
+                        recalcLiveOdds(); 
+                    }
+                    else if (data.type === 'BET_READY') { 
+                        player.bets = data.bets; player.usedItemOn = data.usedItemOn; player.isReady = true; 
+                        recalcLiveOdds();
+                    }
+                    else if (data.type === 'CHEER') {
+                        window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: player.name } }));
+                        Object.values(connsRef.current).forEach(c => {
+                            if(c.open) c.send({ type: 'CHEER_RELAY', horseId: data.horseId, playerName: player.name });
+                        });
+                    }
                 }
             };
 
@@ -428,19 +520,23 @@
                 if (weatherRand < 0.50) gameState.current.weather = WEATHERS[0]; 
                 else gameState.current.weather = WEATHERS[1 + Math.floor(Math.random() * 3)];
                 
-                const roundMulti = 1 + (gameState.current.round * 0.15); 
+                // 🌟 스탯 영구 오염(Shared Reference Mutation) 해결: Deep Copy 적용
                 const selected = shuffle(HORSES).slice(0, 8).map(h => {
                     const cIdx = Math.floor(Math.random() * CONDITIONS.length);
                     const cond = CONDITIONS[cIdx].multi;
                     let power = (h.stats.speed + h.stats.spurt + (h.stats.stability * 0.5)) * cond;
                     if(h.type === 'luck') power *= 0.8;
-                    return { ...h, conditionIdx: cIdx, odds: 0 };
-                });
-
-                const totalPower = selected.reduce((s, h) => s + ((h.stats.speed + h.stats.spurt)*CONDITIONS[h.conditionIdx].multi), 0);
-                selected.forEach(h => {
-                    const p = ((h.stats.speed + h.stats.spurt)*CONDITIONS[h.conditionIdx].multi) / totalPower;
-                    h.odds = Math.max(1.5, Math.min(30, (1 / p) * 0.9 * roundMulti)).toFixed(1);
+                    
+                    let expectedOdds = (1 / (power / 200)) * 0.95;
+                    if(h.type === 'luck') expectedOdds = Math.min(99, expectedOdds * 1.5);
+                    else expectedOdds = Math.min(50, expectedOdds);
+                    
+                    return { 
+                        ...h, 
+                        stats: { ...h.stats }, // 여기서 깊은 복사를 수행하여 라운드별 독립성 보장
+                        conditionIdx: cIdx, 
+                        odds: Math.max(1.1, expectedOdds).toFixed(1) 
+                    }; 
                 });
 
                 gameState.current.round++;
@@ -456,6 +552,8 @@
                 const weather = state.weather.id;
                 const distance = 6000; 
                 
+                recalcLiveOdds();
+
                 const sponsors = {};
                 horses.forEach(h => {
                     let maxBet = 0; let topBettor = null;
@@ -484,14 +582,18 @@
                 const windFates = horses.map(() => Math.random() > 0.5 ? 1.4 : 0.6);
                 const exactFinishTimes = new Array(horses.length).fill(99999); 
 
-                // 🌟 라이벌 기믹 체크 (막스:4, 케니:12)
                 const hasMax = horses.some(h => h.id === 4);
                 const hasKenny = horses.some(h => h.id === 12);
+                
+                let prevRanks = horses.map((_, i) => i);
+                let triggered = { lastSpurt: false };
 
                 for (let t=0; t<=duration; t++) {
                     let tickData = { positions: [], speeds: [], laterals: [], events: [] };
                     const maxPos = Math.max(...positions);
                     const progress = maxPos / distance;
+                    
+                    const avgFieldSpeed = curSpeeds.reduce((a,b)=>a+b, 0) / (horses.length || 1);
 
                     const curStandings = positions.map((p,i)=>({i,p})).sort((a,b)=>b.p - a.p);
                     const curRanks = new Array(horses.length);
@@ -509,7 +611,6 @@
                         let targetSpeed = h.stats.speed * cond;
                         const distToLeader = maxPos - positions[i];
 
-                        // --- 🌟 레이스 상성 시스템 적용 ---
                         let nearestDist = 9999;
                         let nearestType = null;
                         horses.forEach((otherH, otherI) => {
@@ -524,36 +625,47 @@
                             else if (nearestType === TYPE_MATCHUP[h.type].weakVs) targetSpeed *= TYPE_MATCHUP[h.type].penalty;
                         }
 
-                        // 라이벌 버프
                         if (hasMax && hasKenny && (h.id === 4 || h.id === 12)) targetSpeed *= 1.05;
 
-                        // 날씨 예외 적용
                         if(weather === 'RAIN') { if(h.type === 'early') targetSpeed *= 0.85; if(h.type === 'stable') targetSpeed *= 1.1; if(h.type === 'chaser') targetSpeed *= 0.85; }
                         if(weather === 'WIND' && h.type === 'early') { targetSpeed *= windFates[i]; }
 
                         const effects = itemEffects[h.id] || [];
                         effects.forEach(eff => {
-                            if(eff==='banana') targetSpeed *= 0.9; if(eff==='whip') targetSpeed *= 1.1;
-                            if(eff==='carrot' && progress < 0.3) targetSpeed *= 1.3; if(eff==='sand' && curRanks[i] > 0) targetSpeed *= 0.9;
+                            if(eff==='banana') targetSpeed *= 0.9; 
+                            if(eff==='whip') { targetSpeed *= 1.25; h.stats.stability *= 0.5; } 
+                            if(eff==='carrot' && progress < 0.3) targetSpeed *= 1.3; 
+                            if(eff==='sand' && curRanks[i] > 0) targetSpeed *= 0.9;
                             if(eff==='sedative' && (h.type==='luck' || h.type==='early')) h.stats.stability = 90;
+                            if(eff==='curse') targetSpeed *= 0.8; 
                         });
 
-                        if (progress < 0.4 && h.type === 'early') targetSpeed *= 1.15;
-                        else if (progress > 0.6) {
-                            let spurtPower = h.stats.spurt * cond * 0.7;
-                            if(weather === 'HEAT' && h.type === 'late') spurtPower *= 0.8; // 폭염 시 late 스퍼트 약화
-                            if (h.type === 'late') targetSpeed *= 1.3; 
-                            targetSpeed += spurtPower;
+                        // 🌟 Stable, Luck, Early 밸런스 최종 패치 적용
+                        if (h.type === 'stable') {
+                            const floorSpeed = avgFieldSpeed * 1.05; // 평균 속도 방어선
+                            targetSpeed = Math.max(targetSpeed, floorSpeed);
+                            if (progress > 0.85) targetSpeed *= 1.15;
                         }
-                        if (h.type === 'early' && progress > 0.5) targetSpeed *= 0.9;
-                        if (h.type === 'chaser' && curRanks[i] > 0 && distToLeader < 400) targetSpeed *= 1.15;
-                        
-                        if (h.type === 'luck') {
-                            if (Math.random() > 0.98) { targetSpeed *= 1.5; tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.spurt)}); }
-                            else if (Math.random() < 0.02) { targetSpeed *= 0.7; tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.slip)}); }
+                        else if (h.type === 'luck') {
+                            const luckyRoll = Math.random();
+                            if (luckyRoll < 0.15) targetSpeed *= 3.0; // 대폭발
+                            else if (luckyRoll < 0.40) targetSpeed *= 1.8;
+                            else if (luckyRoll < 0.70) targetSpeed *= 0.9;
+                            else targetSpeed *= 0.3; // 폭망
                         }
 
-                        // 🌟 고무줄(Rubber-banding) 부스터 극대화
+                        // Early의 후반 페널티는 점진적으로
+                        if (h.type === 'early' && progress > 0.5 && progress <= 0.85) targetSpeed *= 0.95; 
+
+                        // 🌟 85% 이상 스퍼트 구간 완전 강화
+                        if (progress > 0.85) {
+                            const spurtFactor = (h.stats.spurt / 100) * 2.5; 
+                            targetSpeed *= spurtFactor;
+                            if (h.type === 'late') targetSpeed *= 1.8; 
+                            if (weather === 'HEAT' && h.type === 'late') targetSpeed *= 0.8; 
+                        } else if (h.type === 'chaser' && curRanks[i] > 0 && distToLeader < 400) targetSpeed *= 1.15;
+                        
+
                         let catchUp = (distToLeader / distance) * 2.5; 
                         if (distToLeader > 400) catchUp += (distToLeader - 400) / 300; 
                         if (h.type === 'late' && progress > 0.5) catchUp *= 1.8;
@@ -580,7 +692,7 @@
                         momentums[i] *= 0.9; 
                         
                         let finalSpeed = curSpeeds[i] + momentums[i];
-                        finalSpeed = Math.max(15, Math.min(finalSpeed, 140)); // 상한선 대폭 해제
+                        finalSpeed = Math.max(15, Math.min(finalSpeed, 140)); 
 
                         let prevPos = positions[i];
                         positions[i] += finalSpeed * (distance / 20000);
@@ -592,13 +704,31 @@
                         tickData.speeds.push(finalSpeed);
                         tickData.laterals.push(laterals[i]);
 
-                        // 추월 이벤트 메시지 (선두 탈환 제외)
+                        // 🌟 다이내믹 이벤트 추적: 폭풍 추월 / 대참사
                         if (t % 20 === 0 && progress > 0.3 && t > 50) {
-                            if (curRanks[i] > 0 && curRanks[i] < 4 && tickData.events.length === 0 && Math.random() > 0.9) {
-                                tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.overtake)});
+                            let rankChange = prevRanks[i] - curRanks[i];
+                            if (rankChange >= 2 && Math.random() < 0.5) {
+                                tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.overtake), type: 'overtake'});
+                            } else if (rankChange <= -2 && Math.random() < 0.3) {
+                                // 뒤로 크게 밀림 (대참사 혹은 삐끗)
+                                if (curRanks[i] > 3) tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.disaster), type: 'disaster'});
+                                else tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.slip), type: 'slip'});
                             }
                         }
                     }
+                    
+                    // 🌟 글로벌 이벤트 체크: 마지막 스퍼트 & 초접전
+                    if (progress > 0.90 && progress < 0.92 && !triggered.lastSpurt) {
+                        tickData.events.push({ hIdx: curStandings[0].i, msg: getMsg(EVENT_MSGS.lastSpurt), type: 'lastSpurt' });
+                        triggered.lastSpurt = true;
+                    }
+                    if (t % 10 === 0 && progress > 0.5 && curStandings.length > 1) {
+                        if (Math.abs(curStandings[0].p - curStandings[1].p) < 20 && Math.random() < 0.2) {
+                            tickData.events.push({ hIdx: curStandings[0].i, msg: getMsg(EVENT_MSGS.neckAndNeck), type: 'neckAndNeck' });
+                        }
+                    }
+
+                    prevRanks = [...curRanks];
                     tickData.positions = [...positions];
                     timeline.push(tickData);
                     
@@ -626,9 +756,12 @@
                         if(hId === h2.id) win += amt * parseFloat(h2.odds) * 0.5;
                         if(hId === h3.id) win += amt * parseFloat(h3.odds) * 0.2;
                     });
+                    
                     if(p.usedItemOn?.target === 'self') {
-                        if(p.inventory === 'coin') win *= 1.2;
-                        if(p.inventory === 'insurance' && win < cost) win += cost * 0.5; 
+                        if(p.inventory === 'coin') {
+                            if (Math.random() > 0.5) win *= 2; else win = 0; 
+                        }
+                        if(p.inventory === 'insurance' && win < cost) win += cost * 0.25; 
                         p.inventory = null;
                     }
                     p.money += (win - cost); 
@@ -715,16 +848,17 @@
                                 <div className={`absolute -top-1 left-1/2 -translate-x-1/2 px-6 py-2 rounded-b-xl font-black text-lg border-x border-b border-slate-600 bg-slate-800 shadow-lg z-10 ${uiState.weather.color}`}>
                                     현재 경기장 날씨: {uiState.weather.name} ({uiState.weather.desc})
                                 </div>
-                                <h2 className="text-3xl font-bold text-yellow-400 mb-4 text-center mt-6 shrink-0">💰 배팅 타임!</h2>
-                                <div className="flex justify-between items-center mb-4 shrink-0"><p className="text-slate-300">날씨, 컨디션, 배당률을 보고 전략적으로 투자하세요!</p><div className="bg-slate-800 px-4 py-2 rounded-lg font-bold">준비 완료: <span className="text-emerald-400">{uiState.players.filter(p=>p.isReady).length}</span> / {uiState.players.length}</div></div>
+                                <h2 className="text-3xl font-bold text-yellow-400 mb-2 text-center mt-6 shrink-0">💰 배팅 타임!</h2>
+                                <div className="text-center text-slate-300 font-bold mb-4 shrink-0">(실시간으로 배팅액에 따라 최종 배당률이 변동됩니다!)</div>
+                                <div className="flex justify-between items-center mb-4 shrink-0"><p className="text-slate-400">준비된 학생 비율</p><div className="bg-slate-800 px-4 py-2 rounded-lg font-bold">준비 완료: <span className="text-emerald-400">{uiState.players.filter(p=>p.isReady).length}</span> / {uiState.players.length}</div></div>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 overflow-y-auto custom-scrollbar flex-1 pr-2">
                                     {uiState.horses.map(h => (
-                                        <div key={h.id} className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center shadow-md flex flex-col justify-center">
+                                        <div key={h.id} className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center shadow-md flex flex-col justify-center relative overflow-hidden">
                                             <div className="text-5xl mb-2">{h.emoji}</div>
                                             <div className="font-black text-lg sm:text-xl mb-1 leading-tight break-keep">{h.name}</div>
                                             <div className={`text-sm font-bold ${CONDITIONS[h.conditionIdx].color} mb-2`}>컨디션: {CONDITIONS[h.conditionIdx].label}</div>
-                                            <div className="text-2xl font-black text-red-400">{h.odds}x</div>
+                                            <div className="text-2xl font-black text-red-400">{h.odds}x <span className="text-sm text-slate-500">(예상)</span></div>
                                         </div>
                                     ))}
                                 </div>
@@ -781,7 +915,6 @@
             const connRef = useRef(null);
             const [errorMsg, setErrorMsg] = useState('');
             
-            // 🌟 토큰 지급 트래킹 (한 게임당 1번만 지급)
             const awardedRef = useRef(false);
             const [earnedTokenMsg, setEarnedTokenMsg] = useState(null);
 
@@ -802,6 +935,9 @@
                             setRoomState(data.roomState); setMe(data.players.find(p => p.uid === myUid));
                             if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval);
                         }
+                        else if (data.type === 'CHEER_RELAY') {
+                            window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: data.playerName } }));
+                        }
                     });
                 };
                 
@@ -818,15 +954,14 @@
                 return () => { if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval); peer.destroy(); };
             }, [roomCode, myUid, playerName, myAvatar]);
 
-            // 🌟 게임 종료 시 토큰 지급 로직
             useEffect(() => {
-                if (roomState?.status === 'END_AWARDS' && !awardedRef.current && me) {
+                if (roomState?.status === 'END_PLAYER' && !awardedRef.current && me) {
                     awardedRef.current = true;
                     const sorted = [...roomState.players].sort((a,b) => b.money - a.money);
                     const myRank = sorted.findIndex(p => p.uid === myUid) + 1;
                     const earned = myRank === 1 ? 50 : (myRank <= 3 ? 30 : 10);
                     
-                    const curTokens = parseInt(localStorage.getItem('edurace_tokens') || '0');
+                    const curTokens = parseInt(localStorage.getItem('edurace_tokens') || '30');
                     localStorage.setItem('edurace_tokens', curTokens + earned);
                     setEarnedTokenMsg(`🎉 최종 ${myRank}위 달성! 토큰 ${earned}개 획득!`);
                 }
@@ -861,7 +996,14 @@
                         {roomState.status === 'LOBBY' && <div className="flex items-center justify-center h-full flex-col p-6"><div className="text-6xl mb-6 animate-bounce">🏇</div><h2 className="text-2xl font-black text-center text-slate-300">선생님이 게임을 시작하기를<br/>기다리고 있습니다.</h2></div>}
                         {roomState.status === 'QUIZ' && <QuizPhase me={me} roomState={roomState} sendAction={sendAction} />}
                         {roomState.status === 'BETTING' && <BettingPhase roomState={roomState} me={me} sendAction={sendAction} />}
-                        {roomState.status === 'RACE' && <RacePhase raceData={roomState.raceData} horses={roomState.horses} isHost={false} />}
+                        
+                        {roomState.status === 'RACE' && (
+                            <div className="w-full h-full relative">
+                                <RacePhase raceData={roomState.raceData} horses={roomState.horses} isHost={false} />
+                                <PlayerCheerUI me={me} horses={roomState.horses} sendAction={sendAction} />
+                            </div>
+                        )}
+                        
                         {roomState.status === 'RESULT' && <ResultPhase me={me} />}
                         {roomState.status.startsWith('END') && (
                             <div className="flex items-center justify-center h-full flex-col p-6 text-center">
@@ -873,6 +1015,42 @@
                         )}
                     </div>
                 </div>
+            );
+        }
+
+        // --- 플레이어 전용 응원 UI 컴포넌트 ---
+        function PlayerCheerUI({ me, horses, sendAction }) {
+            const betHorseIds = Object.keys(me.bets || {});
+            if(betHorseIds.length === 0) return null;
+
+            return (
+                <div className="absolute bottom-0 left-0 w-full p-4 pb-6 z-50 flex flex-wrap justify-center gap-2 pointer-events-none">
+                    {betHorseIds.map(hId => {
+                        const h = horses.find(h => h.id == hId);
+                        if (!h) return null;
+                        return <CheerButton key={hId} horse={h} sendAction={sendAction} />;
+                    })}
+                </div>
+            );
+        }
+
+        function CheerButton({ horse, sendAction }) {
+            const [onCd, setOnCd] = useState(false);
+
+            const handleCheer = () => {
+                if(onCd) return;
+                if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(30);
+                
+                sendAction({ type: 'CHEER', horseId: horse.id }); 
+                setOnCd(true);
+                setTimeout(() => setOnCd(false), 800); 
+            };
+
+            return (
+                <button onClick={handleCheer} disabled={onCd} className={`pointer-events-auto relative overflow-hidden flex flex-col items-center justify-center w-[84px] h-[84px] rounded-2xl border-b-4 shadow-xl transition-all ${onCd ? 'bg-slate-600 border-slate-700 translate-y-1 opacity-50' : 'bg-emerald-500 border-emerald-700 active:translate-y-1 active:border-b-0 hover:bg-emerald-400 animate-pulse'}`}>
+                    <div className="text-3xl mb-1 z-10 inline-block -scale-x-100">{horse.emoji}</div>
+                    <div className="font-black text-[12px] z-10 text-white truncate px-1 w-full text-center tracking-tight leading-none">📣 응원!</div>
+                </button>
             );
         }
 
@@ -943,12 +1121,45 @@
             );
         }
 
-        // --- 플레이어 배팅 페이즈 ---
+        // --- 배팅 페이즈 ---
         function BettingPhase({ roomState, me, sendAction }) {
             const [bets, setBets] = useState({}); const [betAmt, setBetAmt] = useState(50); const [useItemMode, setUseItemMode] = useState(false); const [usedItemOn, setUsedItemOn] = useState(null);
             const total = Object.values(bets).reduce((a,b)=>a+b, 0); const avail = me.money - total;
-            const addBet = (hId) => { if(avail >= betAmt) { playSound('coin'); setBets(p => ({...p, [hId]: (p[hId]||0)+betAmt})); } };
-            const useItem = (hId) => { setUsedItemOn({target:'horse', horseId:hId}); setUseItemMode(false); };
+            
+            const prevOdds = useRef({});
+            const oddsTrend = useRef({});
+
+            roomState.horses.forEach(h => {
+                const oldVal = prevOdds.current[h.id];
+                if (oldVal && parseFloat(h.odds) < parseFloat(oldVal)) oddsTrend.current[h.id] = 'down';
+                else if (oldVal && parseFloat(h.odds) > parseFloat(oldVal)) oddsTrend.current[h.id] = 'up';
+                prevOdds.current[h.id] = h.odds;
+            });
+
+            const addBet = (hId) => { 
+                if(avail >= betAmt) { 
+                    playSound('coin'); 
+                    const nb = {...bets, [hId]: (bets[hId]||0)+betAmt};
+                    setBets(nb); 
+                    sendAction({ type: 'BET_CHANGE', bets: nb, usedItemOn }); 
+                } 
+            };
+            const cancelBet = (hId) => {
+                const nb = {...bets}; delete nb[hId]; setBets(nb);
+                sendAction({ type: 'BET_CHANGE', bets: nb, usedItemOn }); 
+            };
+            
+            const useItem = (hId) => { 
+                const nu = {target:'horse', horseId:hId};
+                setUsedItemOn(nu); setUseItemMode(false); 
+                sendAction({ type: 'BET_CHANGE', bets, usedItemOn: nu });
+            };
+            const useSelfItem = () => {
+                const nu = {target:'self'};
+                setUsedItemOn(nu);
+                sendAction({ type: 'BET_CHANGE', bets, usedItemOn: nu });
+            }
+
             const submit = () => sendAction({ type: 'BET_READY', bets, usedItemOn });
 
             if(me.isReady) return <div className="h-full flex flex-col items-center justify-center p-6"><div className="text-5xl mb-4">✅</div><h2 className="text-2xl font-black text-emerald-400">배팅 완료</h2><p className="mt-2 text-slate-400">다른 플레이어를 기다립니다.</p></div>;
@@ -956,9 +1167,16 @@
 
             return (
                 <div className="h-full flex flex-col p-3 pb-20 max-w-5xl mx-auto w-full fade-in">
-                    <div className="mb-2 bg-slate-800 p-2 rounded-lg text-center text-xs font-bold border border-slate-600 shadow-inner">
-                        <span className={roomState.weather.color}>날씨: {roomState.weather.name} ({roomState.weather.desc})</span>
+                    
+                    <div className="flex gap-4 overflow-x-auto custom-scrollbar whitespace-nowrap bg-slate-800 p-2 rounded-lg mb-3 text-sm font-bold border border-slate-700 shadow-inner">
+                        <span className="text-yellow-400 shrink-0"><i className="fas fa-chart-line"></i> 라이브 배당 현황 </span>
+                        {roomState.horses.map(h => (
+                            <span key={`ticker-${h.id}`} className={`shrink-0 ${oddsTrend.current[h.id] === 'down' ? 'odds-down' : (oddsTrend.current[h.id] === 'up' ? 'odds-up' : 'text-slate-300')}`}>
+                                {h.name}: {h.odds}x {oddsTrend.current[h.id] === 'down' ? '📉' : (oddsTrend.current[h.id] === 'up' ? '📈' : '')}
+                            </span>
+                        ))}
                     </div>
+
                     <div className="flex justify-between items-end mb-3"><h2 className="text-xl font-black text-yellow-400">말 정보 & 배팅</h2><div className="text-right text-sm font-bold text-slate-400">가용: <span className="text-emerald-400 text-lg">{Math.floor(avail)}💰</span></div></div>
                     <div className="flex gap-2 mb-3 bg-slate-800 p-2 rounded-xl overflow-x-auto custom-scrollbar shadow-inner border border-slate-700">
                         {[50, 100, 200, 300, '올인'].map(a => { const val = a === '올인' ? Math.floor(avail) : a; const sel = betAmt === val && val > 0; return <button key={a} onClick={()=>setBetAmt(val)} className={`px-4 py-2 rounded-lg font-black text-sm transition shrink-0 ${sel ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-700 text-slate-300'}`}>{a}</button>; })}
@@ -966,7 +1184,7 @@
                     {itemInfo && !usedItemOn && (
                         <div className="mb-3 bg-indigo-900/40 p-3 rounded-xl border border-indigo-500/50 flex justify-between items-center shadow-md">
                             <div><div className="font-black text-indigo-300 text-sm">{itemInfo.icon} {itemInfo.name}</div><div className="text-[10px] text-slate-400">{itemInfo.desc}</div></div>
-                            {['coin','insurance'].includes(itemInfo.id) ? <button onClick={()=>setUsedItemOn({target:'self'})} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow">사용</button>
+                            {['coin','insurance'].includes(itemInfo.id) ? <button onClick={useSelfItem} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow">사용</button>
                             : <button onClick={()=>setUseItemMode(!useItemMode)} className={`${useItemMode?'bg-red-500':'bg-indigo-600'} text-white px-3 py-1.5 rounded-lg text-xs font-black shadow transition`}>{useItemMode?'취소':'타겟 선택'}</button>}
                         </div>
                     )}
@@ -981,13 +1199,13 @@
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start mb-0.5">
                                         <div className="font-black text-[12px] sm:text-xs leading-tight break-keep mr-1">{h.name}</div>
-                                        <div className="text-red-400 font-black text-xs shrink-0">{h.odds}x</div>
+                                        <div className={`font-black text-xs shrink-0 ${oddsTrend.current[h.id] === 'down' ? 'odds-down' : (oddsTrend.current[h.id] === 'up' ? 'odds-up' : 'text-red-400')}`}>{h.odds}x</div>
                                     </div>
                                     <div className="text-[10px] text-slate-400 mb-0.5 truncate">{h.desc}</div>
                                     <div className={`text-[10px] font-bold ${CONDITIONS[h.conditionIdx].color}`}>컨디션: {CONDITIONS[h.conditionIdx].label}</div>
                                 </div>
                                 <div className="ml-2 flex flex-col items-end w-16 shrink-0">
-                                    {bets[h.id] ? (<div className="text-right w-full"><div className="text-xs font-black text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/50 mb-1 truncate w-full text-center">{bets[h.id]}💰</div><button onClick={()=>{const nb={...bets};delete nb[h.id];setBets(nb);}} className="text-[10px] text-red-400 underline w-full text-center">취소</button></div>) 
+                                    {bets[h.id] ? (<div className="text-right w-full"><div className="text-xs font-black text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/50 mb-1 truncate w-full text-center">{bets[h.id]}💰</div><button onClick={()=>cancelBet(h.id)} className="text-[10px] text-red-400 underline w-full text-center">취소</button></div>) 
                                     : <button onClick={()=>addBet(h.id)} disabled={avail<betAmt || avail===0} className="bg-blue-600 disabled:bg-slate-700 w-full py-1.5 rounded-lg font-black text-xs text-white shadow-sm">배팅</button>}
                                 </div>
                             </div>
@@ -1009,14 +1227,17 @@
             const hudDistRef = useRef(null);
             const dustLayerRef = useRef(null);
             const evtContainerRef = useRef(null);
-            const cutinContainerRef = useRef(null);
-
-            const playback = useRef({ startMs: null, lastEvtTick: -1, spurt: false, camX: null });
             
-            // 🌟 선두 탈환 중계 멘트 정확한 타이밍 트래커
+            const particleContainerRef = useRef(null);
+            const cheerTickerRef = useRef(null); 
+
+            const playback = useRef({ startMs: null, lastTs: null, currentTick: 0, lastEvtTick: -1, spurt: false, camX: null });
             const leadTracker = useRef({ currentLeaderIdx: -1, lastLeadChangeTick: -999 });
+            const cheerBoosts = useRef([]);
+            const cheerCounts = useRef([]);
 
             const [isSpurtCSS, setIsSpurtCSS] = useState(false);
+            const [isDramatic, setIsDramatic] = useState(false); 
 
             const TRACK_LENGTH = raceData ? raceData.distance : 6000;
             const VISUAL_SCALE = 15; 
@@ -1039,9 +1260,72 @@
             useEffect(() => { playSound('start'); }, []);
 
             useEffect(() => {
+                cheerBoosts.current = horses.map(() => 0); 
+                cheerCounts.current = horses.map(() => 0); 
+                
+                const onCheer = (e) => {
+                    const { horseId, playerName } = e.detail;
+                    const hIdx = horses.findIndex(h => h.id === horseId);
+                    
+                    if (hIdx > -1) {
+                        cheerCounts.current[hIdx] += 1;
+                        
+                        if (isHost && cheerTickerRef.current && playerName) {
+                            const ticker = document.createElement('div');
+                            ticker.className = 'text-sm font-black text-yellow-300 bg-black/60 px-3 py-1 rounded-full mb-1 border border-yellow-500/50 shadow-md animate-slide-in';
+                            ticker.innerHTML = `${playerName}님이 ${horses[hIdx].name} 응원 중! 🔥`;
+                            cheerTickerRef.current.appendChild(ticker);
+                            setTimeout(() => ticker.remove(), 2000);
+                        }
+                        
+                        if (cheerCounts.current[hIdx] >= 5) {
+                            cheerBoosts.current[hIdx] += 150; 
+                            cheerCounts.current[hIdx] = 0;
+                            
+                            if (particleContainerRef.current) {
+                                const el = document.createElement('div');
+                                el.className = 'cheer-particle';
+                                el.innerHTML = `<span style="display:inline-block; transform:scaleX(-1); filter:hue-rotate(50deg) saturate(2);">${horses[hIdx].emoji}</span>`;
+                                el.style.left = `${10 + Math.random() * 80}%`;
+                                particleContainerRef.current.appendChild(el);
+                                setTimeout(() => el.remove(), 1200);
+
+                                if(horseRefs.current[hIdx]) {
+                                    const burst = document.createElement('div');
+                                    burst.className = 'absolute z-50 text-6xl drop-shadow-[0_0_20px_rgba(255,255,255,1)]';
+                                    burst.style.animation = 'cheerExplode 0.8s ease-out forwards';
+                                    burst.innerHTML = `✨💥✨`;
+                                    horseRefs.current[hIdx].appendChild(burst);
+                                    
+                                    horseRefs.current[hIdx].classList.add('flash-horse');
+                                    setTimeout(() => {
+                                        burst.remove();
+                                        horseRefs.current[hIdx]?.classList.remove('flash-horse');
+                                    }, 800);
+                                }
+                            }
+                        } else {
+                            cheerBoosts.current[hIdx] += 30; 
+                            if (isHost && particleContainerRef.current) {
+                                const el = document.createElement('div');
+                                el.className = 'cheer-particle';
+                                el.innerHTML = `<span style="display:inline-block; transform:scaleX(-1);">${horses[hIdx].emoji}</span>`;
+                                el.style.left = `${10 + Math.random() * 80}%`;
+                                particleContainerRef.current.appendChild(el);
+                                setTimeout(() => el.remove(), 1200);
+                            }
+                        }
+                    }
+                };
+
+                window.addEventListener('HORSE_CHEER', onCheer);
+                return () => window.removeEventListener('HORSE_CHEER', onCheer);
+            }, [horses, isHost]);
+
+            useEffect(() => {
                 if(!raceData || !worldRef.current || !containerRef.current) return;
                 
-                playback.current = { startMs: null, lastEvtTick: -1, spurt: false, camX: START_OFFSET };
+                playback.current = { startMs: null, lastTs: null, currentTick: 0, lastEvtTick: -1, spurt: false, camX: START_OFFSET };
                 leadTracker.current = { currentLeaderIdx: -1, lastLeadChangeTick: -999 };
                 
                 const totalMs = 18000;
@@ -1050,21 +1334,38 @@
                 let animId;
 
                 const step = (ts) => {
-                    if(!playback.current.startMs) playback.current.startMs = ts;
-                    const elapsed = ts - playback.current.startMs;
-                    let exTick = elapsed / msPerTick;
+                    if(!playback.current.startMs) { playback.current.startMs = ts; playback.current.lastTs = ts; }
                     
-                    const maxPosT = Math.max(...(raceData.timeline[Math.min(Math.floor(exTick), ticks)]?.positions || [0]));
+                    const dt = ts - playback.current.lastTs;
+                    playback.current.lastTs = ts;
+                    let tickDelta = dt / msPerTick;
                     
-                    if(maxPosT / TRACK_LENGTH > 0.8) {
-                        if (!playback.current.spurt) { 
-                            playback.current.spurt = true; 
-                            setIsSpurtCSS(true); 
-                            playSound('dash'); 
-                        }
-                        const spurtStart = 0.8 * totalMs;
-                        if(elapsed > spurtStart) exTick = spurtStart/msPerTick + ((elapsed - spurtStart)*0.5) / msPerTick; 
+                    const pMaxPos = Math.max(...(raceData.timeline[Math.min(Math.floor(playback.current.currentTick), ticks)]?.positions || [0]));
+                    const pProgress = pMaxPos / TRACK_LENGTH;
+
+                    if(pProgress > 0.8 && !playback.current.spurt) {
+                        playback.current.spurt = true; 
+                        setIsSpurtCSS(true); 
+                        playSound('dash'); 
                     }
+
+                    if (pProgress > 0.85 && pProgress < 0.98) {
+                        const cPos = raceData.timeline[Math.min(Math.floor(playback.current.currentTick), ticks)]?.positions || [];
+                        const sortedPos = [...cPos].sort((a,b)=>b-a);
+                        const gap1st2nd = sortedPos[0] - sortedPos[1];
+                        
+                        if (gap1st2nd < 150) {
+                            tickDelta *= 0.3; 
+                            setIsDramatic(true);
+                        } else {
+                            setIsDramatic(false);
+                        }
+                    } else {
+                        setIsDramatic(false);
+                    }
+
+                    playback.current.currentTick += tickDelta;
+                    let exTick = playback.current.currentTick;
 
                     if (exTick >= ticks) {
                         exTick = ticks; cancelAnimationFrame(animId);
@@ -1095,7 +1396,6 @@
 
                     let pipHtml = ''; 
 
-                    // 🌟 선두 추적 및 메시지 발동
                     const curRanks = new Array(horses.length);
                     const curStandings = curPos.map((p,i)=>({i,p})).sort((a,b)=>b.p - a.p);
                     curStandings.forEach((s, r) => curRanks[s.i] = r);
@@ -1106,7 +1406,7 @@
                     if (progress > 0.1 && newLeaderIdx !== leadTracker.current.currentLeaderIdx && (t1 - leadTracker.current.lastLeadChangeTick) > 25) {
                         if (leadTracker.current.currentLeaderIdx !== -1 && evtContainerRef.current) {
                             const el = document.createElement('div');
-                            el.className = "bg-black/80 backdrop-blur-md text-white px-4 py-2 rounded-xl text-base md:text-lg font-black border-l-4 border-yellow-400 shadow-xl animate-slide-in mb-2 w-fit";
+                            el.className = `p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES.lead}`;
                             el.innerText = `${horses[newLeaderIdx].name}: ${getMsg(EVENT_MSGS.lead)}`;
                             evtContainerRef.current.appendChild(el);
                             setTimeout(() => el.remove(), 3000);
@@ -1115,10 +1415,14 @@
                         leadTracker.current.lastLeadChangeTick = t1;
                     }
 
-
                     curPos.forEach((pos, i) => {
+                        cheerBoosts.current[i] *= 0.95; 
+                        if (pos > TRACK_LENGTH * 0.9) cheerBoosts.current[i] *= 0.8; 
+                        
+                        const visualPos = pos + cheerBoosts.current[i]; 
+                        
                         const lat = lats1[i]*(1-frac) + lats2[i]*frac;
-                        const { x, y } = getTrackPos(pos, lat);
+                        const { x, y } = getTrackPos(visualPos, lat);
                         
                         if(horseRefs.current[i]) {
                             horseRefs.current[i].style.left = `${x}px`;
@@ -1127,45 +1431,32 @@
 
                             const icon = horseRefs.current[i].querySelector('.runner-icon');
                             if(icon) {
-                                if(spds[i] > 10) icon.classList.add('active');
+                                if(spds[i] > 10 || cheerBoosts.current[i] > 10) icon.classList.add('active');
                                 else icon.classList.remove('active');
                             }
                         }
 
                         const screenX = tx + (x * ZOOM_SCALE);
                         if (screenX < -150) { 
-                            pipHtml += `<div class="pip-item"><div class="pip-emoji">${horses[i].emoji}</div><div class="pip-info"><div class="pip-name">${horses[i].name}</div><div class="pip-dist">${Math.floor(pos)}m</div></div></div>`;
+                            pipHtml += `<div class="pip-item"><div class="pip-emoji">${horses[i].emoji}</div><div class="pip-info"><div class="pip-name">${horses[i].name}</div><div class="pip-dist">${Math.floor(visualPos)}m</div></div></div>`;
                         }
-                        if(spds[i] > 60 && Math.random() < 0.1) createDust(x, y);
+                        if(spds[i] > 60 && Math.random() < 0.1 && !isDramatic) createDust(x, y); 
                     });
 
                     if(hudDistRef.current) hudDistRef.current.innerText = `${Math.min(Math.floor(Math.max(...curPos)), TRACK_LENGTH)}m`;
                     if(pipRef.current) pipRef.current.innerHTML = pipHtml;
 
-                    // 일반 이벤트 처리 (선두 탈환 제외)
                     if (t1 !== playback.current.lastEvtTick && raceData.timeline[t1].events.length > 0) {
                         const evs = raceData.timeline[t1].events;
                         evs.forEach(e => {
                             if(evtContainerRef.current) {
                                 const el = document.createElement('div');
-                                el.className = "bg-black/80 backdrop-blur-md text-white px-4 py-2 rounded-xl text-base md:text-lg font-black border-l-4 border-yellow-400 shadow-xl animate-slide-in mb-2 w-fit";
+                                el.className = `p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES[e.type] || EVENT_STYLES.normal}`;
                                 el.innerText = `${horses[e.hIdx].name}: ${e.msg}`;
                                 evtContainerRef.current.appendChild(el);
-                                setTimeout(() => el.remove(), 3000);
+                                setTimeout(() => el.remove(), 2500);
                             }
                         });
-
-                        const major = evs.find(e => e.msg.includes('기적') || e.msg.includes('스퍼트'));
-                        if(major && cutinContainerRef.current && cutinContainerRef.current.innerHTML === '') { 
-                            cutinContainerRef.current.innerHTML = `
-                                <div class="w-full bg-gradient-to-r from-transparent via-red-600/95 to-transparent flex items-center justify-center animate-cutin py-6 shadow-[0_0_50px_rgba(220,38,38,0.8)] border-y border-red-400">
-                                    <span class="text-[8rem] mr-8 inline-block drop-shadow-2xl">${horses[major.hIdx].emoji}</span>
-                                    <span class="text-5xl font-black text-white italic drop-shadow-[0_6px_6px_#000] font-display">${horses[major.hIdx].name} - ${major.msg}</span>
-                                </div>
-                            `;
-                            playSound('fanfare'); 
-                            setTimeout(() => { if(cutinContainerRef.current) cutinContainerRef.current.innerHTML = ''; }, 2500); 
-                        }
                         playback.current.lastEvtTick = t1;
                     }
                 };
@@ -1183,12 +1474,13 @@
             const trackColorClass = `track-${raceData.weather.id}`;
 
             return (
-                <div id="race-track-container" ref={containerRef} className={isSpurtCSS ? 'camera-shake slow-motion' : ''}>
+                <div id="race-track-container" ref={containerRef} className={`${isSpurtCSS ? 'camera-shake slow-motion' : ''} ${isDramatic ? 'is-dramatic' : ''}`}>
                     
                     {weatherClass && <div className={`weather-layer ${weatherClass}`}></div>}
+                    <div className="dramatic-overlay"></div>
 
                     <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
-                        <div className="bg-black/80 px-10 py-3 rounded-2xl border-2 border-yellow-500 shadow-2xl text-center">
+                        <div className="bg-black/80 px-10 py-3 rounded-2xl border-2 border-yellow-500 shadow-2xl text-center transition-all duration-500">
                             <div className="text-yellow-400 font-bold text-lg tracking-widest mb-[-8px]">🏁 GOAL: {TRACK_LENGTH}m</div>
                             <div ref={hudDistRef} className="text-white font-black text-6xl font-display drop-shadow-md">0m</div>
                         </div>
@@ -1197,10 +1489,13 @@
                                 <span className={raceData.weather.color}>{raceData.weather.name}</span>
                             </div>
                         )}
+                        {isDramatic && <div className="mt-4 text-red-500 font-black text-2xl animate-pulse font-display drop-shadow-md">🔥 숨 막히는 초접전! 🔥</div>}
                     </div>
 
+                    {isHost && <div ref={cheerTickerRef} className="absolute top-8 right-8 z-40 flex flex-col items-end pointer-events-none"></div>}
+
                     <div id="pip-container" ref={pipRef}></div>
-                    {isSpurtCSS && <div id="slow-mo-overlay"></div>}
+                    {isSpurtCSS && !isDramatic && <div id="slow-mo-overlay"></div>}
 
                     <div id="track-world" ref={worldRef} className={trackColorClass}>
                         <svg className="track-path-svg" viewBox="0 0 120000 8000" preserveAspectRatio="none">
@@ -1228,13 +1523,17 @@
                                         <div className="sponsor">🏆 {raceData.sponsors[h.id]}</div>
                                     )}
                                 </div>
-                                <div className="runner-icon drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]">{h.emoji}</div>
+                                {/* 🌟 이모지 크기 및 컨테이너 상향 적용 완료 */}
+                                <div className="runner-icon drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] overflow-hidden rounded-full flex items-center justify-center transition-all duration-300">
+                                    {h.img ? <img src={h.img} className="w-full h-full object-cover" alt=""/> : <span className="inline-block -scale-x-100">{h.emoji}</span>}
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    <div ref={evtContainerRef} className="absolute bottom-10 left-6 z-40 pointer-events-none flex flex-col items-start w-[500px] overflow-hidden"></div>
-                    <div ref={cutinContainerRef} className="absolute top-1/3 inset-x-0 z-50 pointer-events-none overflow-visible"></div>
+                    <div ref={evtContainerRef} className="absolute bottom-10 left-6 z-40 pointer-events-none flex flex-col items-start w-[600px] overflow-hidden font-display tracking-wide"></div>
+                    
+                    <div ref={particleContainerRef} className="absolute inset-0 pointer-events-none z-50 overflow-hidden"></div>
                 </div>
             );
         }
