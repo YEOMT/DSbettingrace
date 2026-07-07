@@ -2,804 +2,1316 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>대송 점프킹 - 캐릭터 선택</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>단어 경마 - 가챠 & 상성 업데이트</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700&display=swap');
-
-        body {
-            margin: 0; padding: 0;
-            background-color: #1a1a2e; color: white;
-            font-family: 'Noto Sans KR', sans-serif;
-            overflow: hidden; touch-action: none;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; height: 100dvh; 
-            padding-bottom: env(safe-area-inset-bottom);
-            box-sizing: border-box;
-        }
-
-        #game-container {
-            position: relative; width: 100%; max-width: 600px; height: 100%;
-            background: linear-gradient(180deg, #16213e 0%, #0f3460 100%);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            overflow: hidden;
-        }
-
-        canvas { display: block; width: 100%; height: 100%; }
-
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: 20px; box-sizing: border-box; z-index: 10;
-        }
-
-        .score-board {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 24px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-        }
-
-        #top-controls {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            pointer-events: auto;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #0f172a; color: #f8fafc; overflow: hidden; user-select: none; margin: 0; }
+        .font-display { font-family: 'Black Han Sans', sans-serif; }
         
-        .top-right-group {
-            display: flex; gap: 10px;
-        }
+        .bg-glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 
-        .save-btn {
-            background: #e94560; color: white; border: none;
-            padding: 8px 16px; border-radius: 20px; font-weight: bold;
-            cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-size: 14px;
-        }
-        .save-btn:active { transform: scale(0.95); }
-        
-        .icon-btn {
-            background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);
-            width: 36px; height: 36px; border-radius: 50%; 
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; font-size: 18px;
-        }
-        .icon-btn:active { transform: scale(0.95); }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes riseUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-rise { animation: riseUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
-        /* 공통 모달 스타일 */
-        .modal-box {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center; background: rgba(0, 0, 0, 0.95);
-            padding: 25px; border-radius: 15px; border: 3px solid #e94560;
-            pointer-events: auto; display: flex; flex-direction: column;
-            gap: 15px; z-index: 20; width: 85%; max-width: 340px;
-        }
+        /* --- REAL RACE TRACK STYLES --- */
+        #race-track-container { position: relative; width: 100%; height: 100%; overflow: hidden; background: #0f172a; box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
+        #track-world { position: absolute; top: 0; left: 0; width: 120000px; height: 8000px; transform-origin: 0 0; will-change: transform; transition: filter 0.5s; }
+        .track-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 
-        h1 { margin: 0; color: #e94560; font-family: 'Black Han Sans', sans-serif; font-size: 32px; letter-spacing: -1px; }
-        
-        input[type="text"] {
-            padding: 10px; border-radius: 5px; border: none;
-            font-size: 16px; text-align: center; font-family: 'Noto Sans KR', sans-serif;
-            width: 100%; box-sizing: border-box;
-        }
+        .runner { position: absolute; width: 160px; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; will-change: transform, left, top; z-index: 20; margin-left: -80px; margin-top: -80px; }
+        .runner-icon { font-size: 8rem; filter: drop-shadow(-10px 10px 10px rgba(0,0,0,0.6)); transition: transform 0.1s; line-height: 1; }
+        .runner-icon.active { animation: bounce 0.2s infinite alternate cubic-bezier(0.2, 0.8, 0.2, 1); }
+        @keyframes bounce { from { transform: translateY(0) scaleY(0.95); } to { transform: translateY(-20px) scaleY(1.05); } }
+        .runner-name-tag { display: flex; flex-direction: column; align-items: center; font-family: 'Black Han Sans', sans-serif; color: white; background: rgba(0, 0, 0, 0.85); padding: 4px 12px; border-radius: 12px; border: 3px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.5); white-space: nowrap; margin-bottom: -15px; text-shadow: 2px 2px 4px black; z-index: 21; position: relative; }
+        .runner-name-tag .name { font-size: 1.5rem; font-weight: 900; line-height: 1; }
+        .runner-name-tag .sponsor { font-family: 'Noto Sans KR', sans-serif; font-size: 0.8rem; color: #fde047; margin-top: 2px; font-weight: 900; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
+        .dust { position: absolute; width: 30px; height: 30px; background: rgba(220, 220, 220, 0.7); border-radius: 50%; animation: dustFade 0.7s forwards; pointer-events: none; z-index: 15; }
+        @keyframes dustFade { 0% { transform: scale(0.5) translateY(0); opacity: 0.8; } 100% { transform: scale(4.0) translateY(-60px) translateX(-40px); opacity: 0; } }
 
-        .primary-btn {
-            background: #e94560; color: white; border: none;
-            padding: 12px 24px; font-size: 18px; border-radius: 8px;
-            cursor: pointer; font-weight: bold; transition: transform 0.1s;
-        }
-        .primary-btn:active { transform: scale(0.95); }
+        /* Weather Effects */
+        .weather-layer { position: absolute; inset: 0; pointer-events: none; z-index: 35; }
+        .weather-rain { background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="0" x2="30" y2="100" stroke="rgba(200,220,255,0.4)" stroke-width="2"/></svg>') repeat; background-size: 60px 60px; animation: rainDrop 0.3s linear infinite; }
+        @keyframes rainDrop { from { background-position: 0 0; } to { background-position: -20px 100px; } }
+        .weather-heat { background: rgba(255, 60, 0, 0.1); backdrop-filter: blur(0.5px); animation: heatHaze 2s infinite alternate; }
+        @keyframes heatHaze { from { backdrop-filter: blur(0.5px); opacity: 0.8; } to { backdrop-filter: blur(1px); opacity: 1; } }
+        .weather-wind { background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="50" x2="0" y2="50" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/></svg>') repeat; background-size: 200px 100px; animation: windBlow 0.15s linear infinite; }
+        @keyframes windBlow { from { background-position: 0 0; } to { background-position: -200px 0; } }
+        .track-RAIN { filter: sepia(0.6) hue-rotate(190deg) brightness(0.6) saturate(0.7); }
+        .track-HEAT { filter: sepia(0.3) saturate(1.5) hue-rotate(-15deg); }
+        .track-WIND { filter: contrast(1.1) brightness(0.9); }
 
-        .secondary-btn {
-            background: transparent; color: #4cc9f0; border: 2px solid #4cc9f0;
-            padding: 8px 16px; font-size: 14px; border-radius: 8px;
-            cursor: pointer; font-weight: bold;
-        }
-        
-        .cancel-btn {
-            background: #555; color: white; border: none;
-            padding: 8px 16px; font-size: 14px; border-radius: 8px;
-            cursor: pointer; font-weight: bold;
-        }
+        /* DOM Events Animation */
+        @keyframes slideIn { 0% { transform: translateX(-50px); opacity: 0; } 10% { transform: translateX(0); opacity: 1; } 90% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-50px); opacity: 0; } }
+        .animate-slide-in { animation: slideIn 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+        @keyframes cutin { 0% { transform: translateX(-100%) skewX(-15deg); opacity: 0; } 15% { transform: translateX(0) skewX(-15deg); opacity: 1; } 85% { transform: translateX(5%) skewX(-15deg); opacity: 1; } 100% { transform: translateX(100%) skewX(-15deg); opacity: 0; } }
+        .animate-cutin { animation: cutin 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
 
-        /* 캐릭터 선택 스타일 */
-        .char-select-container {
-            display: flex; justify-content: center; gap: 10px; margin: 10px 0;
-        }
-        .char-btn {
-            background: #222; border: 2px solid #555; border-radius: 10px;
-            padding: 10px; cursor: pointer; width: 80px; transition: all 0.2s;
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-        }
-        .char-btn.selected {
-            border-color: #ffd700; background: #333; transform: scale(1.05);
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
-        .char-icon { font-size: 30px; }
-        .char-name { font-size: 12px; font-weight: bold; color: #ccc; }
-        .char-desc { font-size: 10px; color: #888; }
-
-        /* Leaderboard Modal */
-        #leaderboard-modal {
-            display: none; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; height: 70%;
-            background: rgba(26, 26, 46, 0.95);
-            border: 2px solid #ffd700; border-radius: 10px;
-            z-index: 30; flex-direction: column;
-            padding: 20px; box-sizing: border-box; color: white;
-        }
-        
-        #leaderboard-list {
-            flex: 1; overflow-y: auto; margin: 10px 0;
-            border-top: 1px solid #444; border-bottom: 1px solid #444;
-        }
-
-        .rank-item {
-            display: flex; justify-content: space-between;
-            padding: 10px; border-bottom: 1px solid #333;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .rank-item:nth-child(1) { color: #ffd700; font-weight: bold; font-size: 1.1em; }
-        .rank-item:nth-child(2) { color: #c0c0c0; font-weight: bold; }
-        .rank-item:nth-child(3) { color: #cd7f32; font-weight: bold; }
-
-        .close-btn {
-            align-self: flex-end; background: #555; color: white;
-            border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;
-        }
-
-        .touch-guide {
-            text-align: center; font-size: 12px; opacity: 0.5; margin-bottom: 20px;
-        }
-        
-        #status-indicator {
-            position: absolute; top: 10px; right: 10px;
-            font-size: 10px; color: #aaa; z-index: 100;
-        }
+        /* Gacha Avatars & Rarities */
+        .skin-normal { border: 2px solid #64748b; background-color: #334155; }
+        .skin-gold { border: 3px solid #fbbf24; background: linear-gradient(135deg, #78350f, #b45309); box-shadow: 0 0 10px rgba(251,191,36,0.6); }
+        .skin-holo { border: 3px solid #a855f7; box-shadow: 0 0 15px #a855f7, inset 0 0 10px #a855f7; background: linear-gradient(135deg, #4c1d95, #7e22ce); position: relative; overflow: hidden; }
+        .skin-holo::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent); transform: rotate(45deg); animation: holoGleam 2s infinite linear; }
+        @keyframes holoGleam { 0% { transform: rotate(45deg) translateX(-100%); } 100% { transform: rotate(45deg) translateX(100%); } }
     </style>
 </head>
 <body>
+    <div id="root" class="h-[100dvh] w-full"></div>
 
-<div id="game-container">
-    <canvas id="gameCanvas"></canvas>
-    <div id="status-indicator">연결 중...</div>
+    <script type="text/babel" data-type="module">
+        const { useState, useEffect, useRef } = React;
 
-    <div id="ui-layer">
-        <div id="top-controls">
-            <div>
-                <div class="score-board">현재: <span id="current-height">0</span>m</div>
-                <div class="score-board" style="font-size: 18px; color: #ffd700;">최고: <span id="max-height">0</span>m</div>
-            </div>
-            <div class="top-right-group">
-                <button class="icon-btn" id="music-btn">🎵</button>
-                <button class="save-btn" id="save-score-btn" style="display:none;">🏁 등반 종료 및 저장</button>
-            </div>
-        </div>
-        <div class="touch-guide">PC: 방향키 / 스페이스바(점프) + 방향키</div>
-    </div>
+        // --- 8-bit 효과음 엔진 ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        const play8BitTone = (type, freq, duration, vol = 0.1, slideFreq = null) => {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            try {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                if(slideFreq) { osc.frequency.exponentialRampToValueAtTime(slideFreq, audioCtx.currentTime + duration); }
+                gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        };
+        const SOUNDS = {
+            coin: () => { play8BitTone('square', 800, 0.1, 0.1, 1200); setTimeout(() => play8BitTone('square', 1200, 0.15, 0.1, 1600), 100); },
+            wrong: () => { play8BitTone('sawtooth', 300, 0.3, 0.15, 100); },
+            combo: () => { play8BitTone('square', 1000, 0.1, 0.1, 1500); setTimeout(() => play8BitTone('square', 1500, 0.1, 0.1, 2000), 100); },
+            start: () => { play8BitTone('square', 400, 0.5, 0.2); setTimeout(() => play8BitTone('square', 600, 0.5, 0.2), 500); setTimeout(() => play8BitTone('square', 800, 1.0, 0.3), 1000); },
+            dash: () => { play8BitTone('sawtooth', 150, 0.4, 0.1, 50); },
+            fanfare: () => { play8BitTone('square', 400, 0.2); setTimeout(()=>play8BitTone('square', 500, 0.2), 200); setTimeout(()=>play8BitTone('square', 600, 0.4), 400); },
+            gacha: () => { play8BitTone('square', 300, 0.1, 0.1, 600); setTimeout(() => play8BitTone('square', 600, 0.1, 0.1, 1200), 100); setTimeout(() => play8BitTone('square', 1200, 0.4, 0.2, 1800), 200); }
+        };
+        const playSound = (soundKey) => { if (SOUNDS[soundKey]) SOUNDS[soundKey](); };
+        const initAudio = () => { if(audioCtx.state === 'suspended') audioCtx.resume(); };
 
-    <!-- 시작 화면 & 캐릭터 선택 -->
-    <div id="message-box" class="modal-box">
-        <h1>대송 점프킹</h1>
-        <p style="font-size:14px; color:#ccc; margin-bottom:5px;">캐릭터를 선택하세요</p>
-        
-        <div class="char-select-container">
-            <div class="char-btn selected" onclick="selectChar('king')">
-                <div class="char-icon">👑</div>
-                <div class="char-name">왕</div>
-                <div class="char-desc">밸런스형<br>브레이크O</div>
-            </div>
-            <div class="char-btn" onclick="selectChar('frog')">
-                <div class="char-icon">🐸</div>
-                <div class="char-name">개구리</div>
-                <div class="char-desc">점프력↑<br>매우 미끄러움</div>
-            </div>
-            <div class="char-btn" onclick="selectChar('ninja')">
-                <div class="char-icon">🥷</div>
-                <div class="char-name">닌자</div>
-                <div class="char-desc">이동속도↑<br>벽점프 가능</div>
-            </div>
-        </div>
+        // --- 🌟 캐릭터 로스터 ---
+        const HORSES = [
+            { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 45, spurt: 85, stability: 70, luck: 30 }, type: 'late' },
+            { id: 2, emoji: '🦈', name: '트랄랄레오 트랄랄라', desc: '어디로 튈지 모르는 광기의 육지 상어.', stats: { speed: 50, spurt: 50, stability: 10, luck: 100 }, type: 'luck' },
+            { id: 3, emoji: '🏃‍♂️', name: '데이비드 마르티네즈', desc: '산데비스탄 발동! 스타트 라인을 뚫고 나가는 전설.', stats: { speed: 85, spurt: 20, stability: 40, luck: 50 }, type: 'early' },
+            { id: 4, emoji: '🏎️', name: '막스 베르스타펜', desc: 'F1 챔피언의 품격. 컨디션을 무시하는 완벽한 주행.', stats: { speed: 60, spurt: 55, stability: 95, luck: 50 }, type: 'stable' },
+            { id: 5, emoji: '🪅', name: '레인보우 피에스타', desc: '극후반에 터집니다. 엄청난 속도거나, 그대로 멈추거나.', stats: { speed: 50, spurt: 80, stability: 20, luck: 80 }, type: 'conditional' },
+            { id: 6, emoji: '🦄', name: '아스트라 혼', desc: '성스러운 기운으로 기복이 매우 심함. 터지면 빛의 속도.', stats: { speed: 55, spurt: 65, stability: 15, luck: 90 }, type: 'luck' },
+            { id: 7, emoji: '🐢', name: '늑대거북이', desc: '등껍질에 부스터 장착. 막판 스퍼트는 압도적.', stats: { speed: 40, spurt: 90, stability: 80, luck: 20 }, type: 'late' },
+            { id: 8, emoji: '🦬', name: '버팔로 러시', desc: '주변에 다른 주자가 있으면 몸싸움으로 튕겨내고 가속함.', stats: { speed: 62, spurt: 60, stability: 50, luck: 50 }, type: 'chaser' },
+            { id: 9, emoji: '🦑', name: '딥 크라켄', desc: '1등의 등짝이 보이면 심해의 힘으로 미친 듯이 쫓아감.', stats: { speed: 65, spurt: 65, stability: 40, luck: 50 }, type: 'chaser' },
+            { id: 10, emoji: '🌀', name: '우라칸', desc: '태풍의 눈! 초반에 모든 것을 휩쓸며 날아갑니다.', stats: { speed: 80, spurt: 25, stability: 40, luck: 60 }, type: 'early' },
+            { id: 11, emoji: '🐎', name: '스페셜 먼스', desc: '압도적인 재능은 없지만 절대 멈추지 않는 끈기.', stats: { speed: 60, spurt: 50, stability: 90, luck: 50 }, type: 'stable' },
+            { id: 12, emoji: '👨‍🦽‍➡️', name: '케니 가와구치', desc: '휠체어의 전설. 엄청 빠르지만 가끔 바퀴가 헛돔.', stats: { speed: 70, spurt: 60, stability: 20, luck: 70 }, type: 'luck' },
+            { id: 13, emoji: '🦖', name: '프라이멀 렉스', desc: '초반은 느리지만, 보폭이 커서 가속이 붙으면 무서움.', stats: { speed: 50, spurt: 65, stability: 70, luck: 40 }, type: 'normal' },
+            { id: 14, emoji: '🕴️', name: '마이클 잭슨', desc: '문워크로 가다가 결승선을 앞두고 팝의 황제로 각성함.', stats: { speed: 45, spurt: 95, stability: 60, luck: 30 }, type: 'late' },
+            { id: 15, emoji: '🛴', name: '씽씽이 마스터', desc: '킥보드계의 혜성. 돌부리에 걸릴지 1등할지 모름.', stats: { speed: 55, spurt: 55, stability: 15, luck: 85 }, type: 'luck' },
+            { id: 16, emoji: '🐐', name: '소율 더 고트', desc: '물리 엔진을 무시하고 흔들림 없이 정상으로 직진.', stats: { speed: 58, spurt: 52, stability: 100, luck: 50 }, type: 'stable' }
+        ];
 
-        <button class="primary-btn" id="start-btn">등반 시작</button>
-        <button class="secondary-btn" id="show-rank-btn" style="margin-top:5px;">🏆 실시간 랭킹</button>
-    </div>
+        // 🌟 상성 시스템 정의 (가위바위보)
+        const TYPE_MATCHUP = {
+            early:  { strongVs: 'late',   weakVs: 'stable', bonus: 1.08, penalty: 0.94 },
+            late:   { strongVs: 'stable', weakVs: 'early',  bonus: 1.08, penalty: 0.94 },
+            stable: { strongVs: 'early',  weakVs: 'late',   bonus: 1.08, penalty: 0.94 }
+        };
 
-    <!-- 종료 시 이름 입력 모달 -->
-    <div id="name-input-modal" class="modal-box" style="display:none;">
-        <h2 style="margin:0; color:#ffd700;">기록 저장</h2>
-        <p>명예의 전당에 남길<br>이름을 입력해주세요.</p>
-        <input type="text" id="end-player-name" placeholder="이름 (8자 이내)" maxlength="8">
-        <div style="display:flex; gap:10px; justify-content: center;">
-            <button class="cancel-btn" id="cancel-save-btn">취소</button>
-            <button class="primary-btn" id="confirm-save-btn">저장하기</button>
-        </div>
-    </div>
+        const CONDITIONS = [
+            { label: '최하', color: 'text-red-500', multi: 0.95 }, { label: '하', color: 'text-orange-400', multi: 0.97 },
+            { label: '중', color: 'text-slate-300', multi: 1.0 }, { label: '상', color: 'text-blue-400', multi: 1.03 }, { label: '최상', color: 'text-purple-400', multi: 1.05 }
+        ];
 
-    <!-- 랭킹 모달 -->
-    <div id="leaderboard-modal">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="margin:0; color:#ffd700;">TOP 10 명예의 전당</h2>
-            <button class="close-btn" id="close-rank-btn">닫기</button>
-        </div>
-        <div style="display:flex; justify-content:space-between; padding: 5px; font-size: 12px; color: #aaa;">
-            <span>순위 / 이름</span>
-            <span>높이</span>
-        </div>
-        <div id="leaderboard-list">
-            <div style="text-align:center; padding:20px;">로딩 중...</div>
-        </div>
-    </div>
-</div>
+        const WEATHERS = [
+            { id: 'SUNNY', name: '맑음 ☀️', desc: '경기하기 딱 좋은 날씨입니다.', color: 'text-yellow-400' },
+            { id: 'RAIN', name: '우천 🌧️', desc: '진흙탕! 몸싸움이 힘들어져 추격마(chaser)가 불리해집니다.', color: 'text-blue-400' },
+            { id: 'HEAT', name: '폭염 🔥', desc: '지칩니다! 추입마(late)의 후반 스퍼트가 약해집니다.', color: 'text-red-500' },
+            { id: 'WIND', name: '강풍 🌬️', desc: '초반러시마의 운명이 엇갈립니다! (순풍 or 역풍)', color: 'text-teal-400' }
+        ];
 
-<script type="module">
-    // =========================================================
-    // Firebase Configuration
-    // =========================================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyBtK7NAfw4wDsS4LRacWF78PHT3zls50IQ",
-        authDomain: "dsgames-fecef.firebaseapp.com",
-        projectId: "dsgames-fecef",
-        storageBucket: "dsgames-fecef.firebasestorage.app",
-        messagingSenderId: "723943517090",
-        appId: "1:723943517090:web:3e8596971cedf46cc460fb",
-        measurementId: "G-GNVR6N4LKQ"
-    };
+        const EVENT_MSGS = {
+            spurt: ['🔥 기적의 스퍼트!', '🚀 폭발적인 가속!', '✨ 미친 속도로 치고 나갑니다!'],
+            slip: ['💦 아차! 삐끗했습니다!', '🚨 스텝이 꼬입니다!', '📉 갑자기 속도가 확 죽습니다!'],
+            lead: ['👑 선두 탈환!', '🔥 1위가 바뀝니다!', '⚡ 엄청난 기세로 선두에 오릅니다!'],
+            overtake: ['🌪️ 폭풍 추월!', '💨 순식간에 앞지릅니다!', '🔥 무서운 뒷심 발휘!']
+        };
+        const getMsg = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        const ITEMS = [
+            { id: 'banana', icon: '🍌', name: '바나나', desc: '선택한 캐릭터 속도 -10%' }, { id: 'whip', icon: '🏇', name: '채찍', desc: '선택한 캐릭터 속도 +10%' }, { id: 'carrot', icon: '🥕', name: '당근', desc: '초반 가속 증가' },
+            { id: 'sedative', icon: '💊', name: '진정제', desc: '기복이 심한 캐릭터 안정화' }, { id: 'sand', icon: '🌪️', name: '모래뿌리기', desc: '선택한 캐릭터 앞의 주자 속도 감소' }, { id: 'coin', icon: '🍀', name: '럭키코인', desc: '나의 배당금 20% 증가' }, { id: 'insurance', icon: '📜', name: '보험증', desc: '배팅 실패 시 50% 환급' }
+        ];
 
-    let app, auth, db;
-    let isOnline = false;
-    let currentUser = null;
-    let playerName = "";
-    let rankUnsubscribe = null;
+        const DEFAULT_WORDS = [
+            { eng: 'Apple', kor: '사과' }, { eng: 'Dog', kor: '개' }, { eng: 'Water', kor: '물' }, { eng: 'Sky', kor: '하늘' },
+            { eng: 'Friend', kor: '친구' }, { eng: 'Love', kor: '사랑' }, { eng: 'Time', kor: '시간' }, { eng: 'Money', kor: '돈' }
+        ];
 
-    // --- BGM 설정 ---
-    // dropbox link with dl=1 for direct streaming
-    const bgmUrl = "https://www.dropbox.com/scl/fi/b64dt3f0lzxyuyhiwj3s6/JumpKingPeace.mp3?rlkey=gv0yeqhb1nzhj9ctucdb9clh5&st=kc3xjgz3&dl=1";
-    const bgMusic = new Audio(bgmUrl);
-    bgMusic.loop = true;
-    bgMusic.volume = 0.4; // 적절한 볼륨
+        const generateRoomCode = () => Math.floor(1000 + Math.random() * 9000).toString();
+        const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
-    // 초기화 로직
-    if (firebaseConfig.apiKey) {
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            isOnline = true;
-            document.getElementById('status-indicator').innerText = "온라인 (랭킹 가능)";
-            
-            signInAnonymously(auth).catch(e => console.error(e));
-            onAuthStateChanged(auth, (user) => {
-                if(user) {
-                    currentUser = user;
-                    console.log("Logged in:", user.uid);
-                }
-            });
-
-        } catch (e) {
-            console.error("Firebase Init Failed:", e);
-            document.getElementById('status-indicator').innerText = "오류: 설정 확인 필요";
+        // --- 공용 아바타 렌더러 ---
+        function AvatarDisplay({ avatarStr, sizeClasses }) {
+            if(!avatarStr) return <div className={`flex items-center justify-center bg-slate-700 rounded-full ${sizeClasses}`}>👤</div>;
+            const [hId, rarity] = avatarStr.split('_');
+            const horse = HORSES.find(h => h.id === parseInt(hId));
+            if(!horse) return null;
+            return <div className={`flex items-center justify-center rounded-full skin-${rarity} ${sizeClasses} shadow-md`} title={`${horse.name} (${rarity})`}>{horse.emoji}</div>;
         }
-    } else {
-        document.getElementById('status-indicator').innerText = "오프라인 모드";
-    }
 
-    // --------------------------------------------------------
-    // 게임 및 UI 로직
-    // --------------------------------------------------------
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // UI 요소
-    const messageBox = document.getElementById('message-box');
-    const nameInputModal = document.getElementById('name-input-modal');
-    const endNameInput = document.getElementById('end-player-name');
-    
-    const startBtn = document.getElementById('start-btn');
-    const showRankBtn = document.getElementById('show-rank-btn');
-    const leaderboardModal = document.getElementById('leaderboard-modal');
-    const closeRankBtn = document.getElementById('close-rank-btn');
-    const saveScoreBtn = document.getElementById('save-score-btn');
-    const leaderboardList = document.getElementById('leaderboard-list');
-    
-    const confirmSaveBtn = document.getElementById('confirm-save-btn');
-    const cancelSaveBtn = document.getElementById('cancel-save-btn');
-    const musicBtn = document.getElementById('music-btn');
+        // --- 앱 메인 ---
+        function App() {
+            const [view, setView] = useState('HOME');
+            const [roomCode, setRoomCode] = useState('');
+            const [playerName, setPlayerName] = useState(() => localStorage.getItem('edurace_last_name') || '');
+            const [myUid] = useState(() => Math.random().toString(36).substr(2, 9));
+            const [myAvatar, setMyAvatar] = useState(() => localStorage.getItem('edurace_avatar') || '');
 
-    // 게임 변수
-    let gameState = 'START';
-    let width, height;
-    let cameraY = 0;
-    let score = 0;
-    let highScore = 0;
-    
-    // 캐릭터 설정 (밸런스 조정)
-    const CHARACTERS = {
-        king: { 
-            emoji: '👑', name: "왕",
-            jumpMult: 0.22, 
-            walkSpeed: 4, 
-            friction: 0.2, 
-            wallSlide: false
-        },
-        frog: { 
-            emoji: '🐸', name: "개구리",
-            jumpMult: 0.28, 
-            walkSpeed: 2.5, 
-            friction: 0.92, 
-            wallSlide: false
-        },
-        ninja: { 
-            emoji: '🥷', name: "닌자",
-            jumpMult: 0.155, 
-            walkSpeed: 6, 
-            friction: 0.2, 
-            wallSlide: true 
-        }
-    };
-    let selectedCharKey = 'king';
-
-    // 플레이어 객체
-    const player = {
-        x: 0, y: 0, vx: 0, vy: 0, width: 30, height: 30,
-        emoji: '👑', isGrounded: false, isCharging: false, isWallSliding: false,
-        charge: 0, facing: 1,
-        // 동적 스탯
-        jumpMult: 0.22,
-        walkSpeed: 4,
-        friction: 0.2,
-        wallSlide: false,
-        touchingWall: 0 // -1: Left, 1: Right, 0: None
-    };
-    
-    let platforms = [];
-    const keys = { ArrowLeft: false, ArrowRight: false, Space: false };
-    
-    // 물리 상수
-    const GRAVITY = 0.5;
-    const AIR_RESISTANCE = 0.99;
-    const BOUNCE = -0.5;
-    const MAX_CHARGE = 100;
-    const WALK_ACCEL = 0.8;
-
-    window.selectChar = function(key) {
-        selectedCharKey = key;
-        document.querySelectorAll('.char-btn').forEach(btn => btn.classList.remove('selected'));
-        const buttons = document.querySelectorAll('.char-btn');
-        if(key === 'king') buttons[0].classList.add('selected');
-        if(key === 'frog') buttons[1].classList.add('selected');
-        if(key === 'ninja') buttons[2].classList.add('selected');
-    };
-
-    function resize() {
-        const container = document.getElementById('game-container');
-        if(!container) return;
-        width = canvas.width = container.offsetWidth;
-        height = canvas.height = container.offsetHeight;
-        if(gameState === 'START' && width > 0) initGame();
-    }
-    window.addEventListener('resize', resize);
-    
-    window.addEventListener('keydown', (e) => {
-        if (nameInputModal.style.display === 'flex') return;
-
-        if (e.code === 'Space') {
-            if (gameState !== 'PLAYING') return;
-            keys.Space = true;
-            if ((player.isGrounded || player.touchingWall !== 0) && !player.isCharging) {
-                if (player.isGrounded || (player.wallSlide && player.touchingWall !== 0)) {
-                    player.isCharging = true;
-                    player.charge = 0;
-                    playSound('charge');
-                }
-            }
-        }
-        if (e.code === 'ArrowLeft') { keys.ArrowLeft = true; player.facing = -1; }
-        if (e.code === 'ArrowRight') { keys.ArrowRight = true; player.facing = 1; }
-    });
-    window.addEventListener('keyup', (e) => {
-        if (e.code === 'Space') {
-            keys.Space = false;
-            if (gameState === 'PLAYING' && player.isCharging) jump();
-        }
-        if (e.code === 'ArrowLeft') keys.ArrowLeft = false;
-        if (e.code === 'ArrowRight') keys.ArrowRight = false;
-    });
-    canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault(); 
-        if(gameState !== 'PLAYING' || nameInputModal.style.display === 'flex') return;
-        
-        const t = e.touches[0];
-        const tx = t.clientX - canvas.getBoundingClientRect().left;
-        if(tx < width/2) { keys.ArrowLeft = true; keys.ArrowRight = false; player.facing = -1; }
-        else { keys.ArrowRight = true; keys.ArrowLeft = false; player.facing = 1; }
-        
-        if((player.isGrounded || (player.wallSlide && player.touchingWall !== 0)) && !player.isCharging) {
-            player.isCharging = true; player.charge = 0; keys.Space = true; playSound('charge');
-        }
-    }, {passive:false});
-    canvas.addEventListener('touchend', (e) => {
-        e.preventDefault(); 
-        if(gameState === 'PLAYING' && player.isCharging) jump();
-        keys.ArrowLeft = false; keys.ArrowRight = false; keys.Space = false;
-    });
-
-    // 시작 버튼 (BGM 재생)
-    startBtn.addEventListener('click', () => {
-        messageBox.style.display = 'none';
-        saveScoreBtn.style.display = 'block';
-        
-        // BGM 재생 시도
-        bgMusic.play().catch(e => console.log("Audio play failed:", e));
-        
-        startGame();
-    });
-
-    // 음악 버튼 토글
-    musicBtn.addEventListener('click', () => {
-        if (bgMusic.paused) {
-            bgMusic.play();
-            musicBtn.innerText = "🎵";
-            musicBtn.style.opacity = "1";
-        } else {
-            bgMusic.pause();
-            musicBtn.innerText = "🔇";
-            musicBtn.style.opacity = "0.5";
-        }
-        // 포커스 해제 (스페이스바 누를 때 버튼 눌림 방지)
-        musicBtn.blur();
-    });
-
-    saveScoreBtn.addEventListener('click', () => {
-        nameInputModal.style.display = 'flex';
-        endNameInput.value = ''; 
-        endNameInput.focus();
-    });
-
-    confirmSaveBtn.addEventListener('click', () => {
-        const name = endNameInput.value.trim();
-        if(!name) { alert("이름을 입력해주세요!"); return; }
-        playerName = name;
-        nameInputModal.style.display = 'none';
-        saveAndEndGame();
-    });
-
-    cancelSaveBtn.addEventListener('click', () => {
-        nameInputModal.style.display = 'none';
-    });
-    
-    showRankBtn.addEventListener('click', () => {
-        leaderboardModal.style.display = 'flex';
-        startRankListener(); 
-    });
-    
-    closeRankBtn.addEventListener('click', () => {
-        leaderboardModal.style.display = 'none';
-        if(rankUnsubscribe) { rankUnsubscribe(); rankUnsubscribe = null; }
-    });
-
-    async function saveAndEndGame() {
-        try {
-            const record = {
-                name: playerName,
-                score: highScore,
-                character: CHARACTERS[selectedCharKey].emoji, 
-                updatedAt: isOnline ? serverTimestamp() : Date.now()
+            const handleHostBtn = () => { initAudio(); setView('HOST'); };
+            const handleJoinBtn = () => { 
+                initAudio();
+                if(roomCode.length === 4 && playerName.trim()) {
+                    localStorage.setItem('edurace_last_name', playerName.trim());
+                    setView('PLAYER');
+                } else alert('방 번호(4자리)와 닉네임을 입력하세요.');
             };
 
-            if(isOnline && currentUser) {
-                const userDoc = doc(db, 'jump_king_ranking', currentUser.uid);
-                await setDoc(userDoc, record);
-            } else {
-                const localData = JSON.parse(localStorage.getItem('jumpking_rank') || '[]');
-                const idx = localData.findIndex(i => i.name === playerName);
-                if(idx >= 0) {
-                    if(highScore > localData[idx].score) {
-                        localData[idx].score = highScore;
-                        localData[idx].character = record.character;
-                    }
-                } else {
-                    localData.push(record);
-                }
-                localStorage.setItem('jumpking_rank', JSON.stringify(localData));
+            if (view === 'GACHA') {
+                return <GachaView onExit={() => { setMyAvatar(localStorage.getItem('edurace_avatar') || ''); setView('HOME'); }} />;
             }
-            
-            gameState = 'GAMEOVER';
-            showGameOverUI();
-        } catch(e) {
-            console.error(e);
-            alert("저장 실패: Firestore 규칙 확인 필요");
-        }
-    }
 
-    function startRankListener() {
-        leaderboardList.innerHTML = '<div style="text-align:center; padding:20px;">로딩 중...</div>';
-        
-        if(isOnline) {
-            const colRef = collection(db, 'jump_king_ranking');
-            rankUnsubscribe = onSnapshot(colRef, (snapshot) => {
-                const data = [];
-                snapshot.forEach(d => data.push(d.data()));
-                data.sort((a,b) => b.score - a.score);
-                renderLeaderboard(data.slice(0, 10));
-            }, (error) => {
-                console.error("Rank Error:", error);
-                leaderboardList.innerHTML = '<div style="text-align:center; color:red;">랭킹 로드 실패</div>';
-            });
-        } else {
-            const data = JSON.parse(localStorage.getItem('jumpking_rank') || '[]');
-            data.sort((a,b) => b.score - a.score);
-            renderLeaderboard(data.slice(0, 10), true);
-        }
-    }
+            if (view === 'HOME') {
+                return (
+                    <div className="flex flex-col items-center justify-center h-full bg-slate-900 text-white p-6 fade-in relative">
+                        <div className="absolute top-4 w-full px-4 flex justify-between items-center">
+                            <button onClick={handleHostBtn} className="text-slate-400 hover:text-yellow-400 flex items-center gap-2 bg-slate-800/50 py-2 px-4 rounded-full border border-slate-700 text-sm font-bold transition">
+                                <i className="fas fa-crown"></i> 방 만들기 (교사용)
+                            </button>
+                            <button onClick={()=>setView('GACHA')} className="text-white flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 py-2 px-4 rounded-full border border-indigo-400 text-sm font-bold shadow-lg hover:scale-105 transition">
+                                <i className="fas fa-star text-yellow-300"></i> 도감 & 뽑기
+                            </button>
+                        </div>
 
-    function renderLeaderboard(data, isOffline = false) {
-        let html = '';
-        if(data.length === 0) {
-            html = '<div style="text-align:center; padding:20px;">기록이 없습니다. 1등이 되어보세요!</div>';
-        } else {
-            data.forEach((item, index) => {
-                const charEmoji = item.character || '👑';
-                html += `
-                    <div class="rank-item">
-                        <span>${index+1}. ${charEmoji} ${escapeHtml(item.name)}</span>
-                        <span>${item.score}m</span>
+                        <h1 className="text-4xl md:text-6xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 text-center leading-tight mt-12 font-display tracking-wide">
+                            런! 에듀 마스터<br/><span className="text-3xl text-yellow-400 tracking-normal mt-2 inline-block">🔥 실시간 단어 경마 🔥</span>
+                        </h1>
+                        <p className="text-slate-400 mb-8 text-center text-sm md:text-base">콤보를 쌓아 돈을 모으고 전략적으로 배팅하세요!</p>
+                        
+                        <div className="bg-glass p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-sm flex flex-col gap-4 border border-slate-600 relative overflow-hidden">
+                            <div className="text-center mb-2"><span className="inline-block bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">학생 참가용</span></div>
+                            <input type="text" placeholder="방 번호 (4자리)" value={roomCode} onChange={e=>setRoomCode(e.target.value.toUpperCase())} maxLength={4}
+                                className="w-full bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-4 text-center text-2xl font-black focus:border-indigo-500 uppercase outline-none" />
+                            <div className="flex gap-2">
+                                <div className="shrink-0 cursor-pointer" onClick={()=>setView('GACHA')} title="아바타 변경">
+                                    <AvatarDisplay avatarStr={myAvatar} sizeClasses="w-14 h-14 text-2xl" />
+                                </div>
+                                <input type="text" placeholder="내 닉네임" value={playerName} onChange={e=>setPlayerName(e.target.value)} maxLength={10}
+                                    className="flex-1 bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-3 text-center text-lg font-bold focus:border-indigo-500 outline-none min-w-0" />
+                            </div>
+                            <button onClick={handleJoinBtn} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xl py-4 rounded-xl shadow-lg active:scale-95 transition mt-2">
+                                게임 참가하기 <i className="fas fa-sign-in-alt ml-1"></i>
+                            </button>
+                        </div>
                     </div>
-                `;
-            });
-        }
-        if(isOffline) html += '<div style="text-align:center; font-size:10px; color:#666; padding:10px;">* 오프라인 모드 (로컬 기록)</div>';
-        leaderboardList.innerHTML = html;
-    }
-
-    function showGameOverUI() {
-        saveScoreBtn.style.display = 'none';
-        messageBox.style.display = 'flex';
-        document.querySelector('.char-select-container').style.display = 'none';
-        document.querySelector('#message-box p').innerText = "기록이 저장되었습니다.";
-        
-        messageBox.innerHTML = `
-            <h1>🏁 등반 종료</h1>
-            <p style="font-size:20px;">${escapeHtml(playerName)}님<br>
-            <strong style="font-size:32px; color:#ffd700;">${highScore}m</strong></p>
-            <p style="color:#aaa; font-size:14px;">캐릭터: ${CHARACTERS[selectedCharKey].emoji} ${CHARACTERS[selectedCharKey].name}</p>
-            <button class="primary-btn" id="restart-btn">다시 도전</button>
-            <button class="secondary-btn" id="show-rank-btn-end">🏆 랭킹 보기</button>
-        `;
-        document.getElementById('restart-btn').addEventListener('click', () => location.reload());
-        document.getElementById('show-rank-btn-end').addEventListener('click', () => {
-            leaderboardModal.style.display = 'flex';
-            startRankListener();
-        });
-    }
-
-    function escapeHtml(text) {
-        if(!text) return "";
-        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    // 오디오 및 게임 로직
-    let audioCtx;
-    function playSound(t) {
-        if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-        if(audioCtx.state === 'suspended') audioCtx.resume();
-        const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-        o.connect(g); g.connect(audioCtx.destination);
-        const now=audioCtx.currentTime;
-        
-        // 점프 소리만 남김 (나머지 제거)
-        if(t==='jump'){
-            o.frequency.setValueAtTime(200,now);
-            o.frequency.exponentialRampToValueAtTime(600,now+0.2);
-            g.gain.setValueAtTime(0.1, now); 
-            g.gain.exponentialRampToValueAtTime(0.01,now+0.2);
-            o.start(now);o.stop(now+0.2);
-        }
-    }
-
-    function initGame() {
-        if(!width) return;
-        
-        const charData = CHARACTERS[selectedCharKey];
-        player.emoji = charData.emoji;
-        player.jumpMult = charData.jumpMult;
-        player.walkSpeed = charData.walkSpeed;
-        player.friction = charData.friction;
-        player.wallSlide = charData.wallSlide;
-        player.isWallSliding = false;
-        player.touchingWall = 0;
-
-        player.x = width/2 - 15; 
-        player.y = height-150; 
-        player.vx=0; player.vy=0;
-        cameraY=0; score=0; highScore=0;
-        generatePlatforms();
-    }
-    function startGame() { initGame(); gameState='PLAYING'; update(); }
-    
-    function generatePlatforms() {
-        platforms = [{x:0, y:height-80, w:width, h:80, type:'ground'}]; 
-        let cY = height-200; 
-        // 1300개로 늘려서 10000m까지 커버
-        for(let i=0; i<1300; i++) {
-            // 난이도 곡선 조정 (1000번째까지 서서히 어려워짐)
-            const diff = Math.min(1, i/1000);
-            let pW, pH;
-            if(Math.random()<0.2) { pW=40+Math.random()*30; pH=15+Math.random()*10; }
-            else if(Math.random()<0.3) { pW=60+Math.random()*60; pH=30+Math.random()*40; }
-            else { pW=70+Math.random()*120*(1-diff*0.5); pH=15+Math.random()*15; }
-            
-            pW = Math.max(40, pW);
-            let pX = Math.random()*(width-pW);
-            
-            platforms.push({x:pX, y:cY, w:pW, h:pH, color:`hsl(${Math.random()*360},60%,60%)`});
-            cY -= (Math.random()*90 + 60);
-        }
-    }
-    
-    function jump() {
-        player.isCharging=false; 
-        
-        let dx=0; if(keys.ArrowLeft) dx=-1; if(keys.ArrowRight) dx=1;
-        const p = player.charge * player.jumpMult; 
-        
-        // 닌자 벽 점프: 벽에 닿아있고(touchingWall != 0), 닌자 특성(wallSlide)일 때
-        if (player.wallSlide && player.touchingWall !== 0) {
-             if(dx !== 0) {
-                 player.vx = dx * p * 0.7; 
-                 player.vy = -p * 0.9;
-             } else {
-                 player.vx = 0;
-                 player.vy = -p;
-             }
-        } else if (player.isGrounded) {
-            if(dx!==0) { player.vx=dx*p*0.6; player.vy=-p*0.9; } else { player.vx=0; player.vy=-p; }
-        } else {
-             if(dx!==0) { player.vx=dx*p*0.6; player.vy=-p*0.9; } else { player.vx=0; player.vy=-p; }
+                );
+            }
+            if (view === 'HOST') return <HostView onExit={() => setView('HOME')} />;
+            if (view === 'PLAYER') return <PlayerView roomCode={roomCode} playerName={playerName} myUid={myUid} myAvatar={myAvatar} onExit={() => setView('HOME')} />;
         }
 
-        player.isGrounded=false;
-        playSound('jump');
-    }
+        // ==========================================
+        // GACHA & COLLECTION VIEW
+        // ==========================================
+        function GachaView({ onExit }) {
+            const [tokens, setTokens] = useState(() => parseInt(localStorage.getItem('edurace_tokens') || '0'));
+            const [collection, setCollection] = useState(() => JSON.parse(localStorage.getItem('edurace_collection') || '[]'));
+            const [pullResult, setPullResult] = useState(null);
 
-    function update() {
-        if(gameState!=='PLAYING') return;
-        
-        // 1. 충전 로직
-        if(player.isCharging) {
-            player.vx *= player.friction; 
-            if(player.charge < MAX_CHARGE) player.charge+=2;
-        } else player.charge=0;
+            const GACHA_POOL = HORSES.flatMap(h => [
+                { ...h, rarity: 'normal', weight: 70 },
+                { ...h, rarity: 'gold', weight: 25 },
+                { ...h, rarity: 'holo', weight: 5 }
+            ]);
 
-        // 2. 물리 및 이동 로직
-        if(player.isGrounded) {
-            if(!player.isCharging) {
-                let moving = false;
-                if(keys.ArrowLeft) { 
-                    player.vx -= WALK_ACCEL; 
-                    player.facing=-1; 
-                    moving=true; 
+            const doPull = () => {
+                if(tokens < 30) return alert('토큰이 부족합니다! 게임에 참여하여 토큰을 모으세요.');
+                initAudio();
+                setTokens(t => { localStorage.setItem('edurace_tokens', t - 30); return t - 30; });
+                
+                const totalW = GACHA_POOL.reduce((s, item) => s + item.weight, 0);
+                let r = Math.random() * totalW;
+                let selected = null;
+                for(let item of GACHA_POOL) { r -= item.weight; if(r <= 0) { selected = item; break; } }
+                
+                const itemKey = `${selected.id}_${selected.rarity}`;
+                setCollection(prev => {
+                    if(!prev.includes(itemKey)) {
+                        const newColl = [...prev, itemKey];
+                        localStorage.setItem('edurace_collection', JSON.stringify(newColl));
+                        return newColl;
+                    }
+                    return prev;
+                });
+                
+                playSound('gacha');
+                setPullResult(selected);
+            };
+
+            const equipAvatar = (hId, rarity) => {
+                const key = `${hId}_${rarity}`;
+                localStorage.setItem('edurace_avatar', key);
+                alert('아바타가 장착되었습니다!');
+            };
+
+            // Calculate highest rarity owned per horse for display
+            const ownedMap = {};
+            collection.forEach(k => {
+                const [id, r] = k.split('_');
+                if(!ownedMap[id]) ownedMap[id] = r;
+                else {
+                    const weight = { 'normal':1, 'gold':2, 'holo':3 };
+                    if(weight[r] > weight[ownedMap[id]]) ownedMap[id] = r;
                 }
-                if(keys.ArrowRight) { 
-                    player.vx += WALK_ACCEL; 
-                    player.facing=1; 
-                    moving=true; 
+            });
+
+            return (
+                <div className="h-full flex flex-col bg-slate-900 text-white p-4 relative fade-in">
+                    <button onClick={onExit} className="absolute top-4 left-4 bg-slate-800 p-3 rounded-full text-slate-300 hover:text-white z-20 shadow-md"><i className="fas fa-arrow-left"></i></button>
+                    
+                    {pullResult && (
+                        <div className="absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6 fade-in backdrop-blur-sm">
+                            <h2 className="text-3xl font-black text-yellow-400 mb-8">🎉 뽑기 결과!</h2>
+                            <div className={`w-40 h-40 flex items-center justify-center text-7xl rounded-full skin-${pullResult.rarity} shadow-2xl mb-6 animate-rise`}>
+                                {pullResult.emoji}
+                            </div>
+                            <div className="text-2xl font-black mb-2">{pullResult.name}</div>
+                            <div className={`text-lg font-bold mb-8 ${pullResult.rarity==='holo'?'text-purple-400':(pullResult.rarity==='gold'?'text-yellow-400':'text-slate-400')}`}>
+                                {pullResult.rarity.toUpperCase()} 스킨 획득!
+                            </div>
+                            <button onClick={()=>setPullResult(null)} className="bg-indigo-600 px-8 py-3 rounded-xl font-bold hover:bg-indigo-500">확인</button>
+                        </div>
+                    )}
+
+                    <div className="text-center mt-6 mb-6">
+                        <h1 className="text-3xl font-black text-purple-400 font-display tracking-widest">내 도감 & 스킨 뽑기</h1>
+                        <div className="mt-4 inline-flex items-center gap-3 bg-slate-800 px-6 py-2 rounded-full border border-slate-700 shadow-inner">
+                            <span className="text-slate-400 font-bold">보유 토큰:</span>
+                            <span className="text-2xl font-black text-yellow-400">{tokens} <i className="fas fa-coins text-sm"></i></span>
+                        </div>
+                    </div>
+
+                    <div className="text-center mb-6">
+                        <button onClick={doPull} disabled={tokens<30} className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 disabled:from-slate-700 disabled:to-slate-700 text-white font-black text-xl py-4 px-10 rounded-2xl shadow-lg active:scale-95 transition">
+                            스킨 뽑기 (30 토큰)
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-800/50 rounded-2xl p-4 border border-slate-700">
+                        <h3 className="text-lg font-bold text-slate-300 mb-4 border-b border-slate-600 pb-2">수집한 캐릭터 (장착하려면 클릭)</h3>
+                        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                            {HORSES.map(h => {
+                                const highestRarity = ownedMap[h.id];
+                                const isOwned = !!highestRarity;
+                                return (
+                                    <div key={h.id} onClick={() => isOwned ? equipAvatar(h.id, highestRarity) : null} className={`flex flex-col items-center p-2 rounded-xl border ${isOwned ? 'bg-slate-800 border-slate-600 cursor-pointer hover:bg-slate-700 transition' : 'bg-slate-900/50 border-slate-800 opacity-40'} text-center`}>
+                                        {isOwned ? (
+                                            <div className={`w-14 h-14 flex items-center justify-center text-3xl rounded-full skin-${highestRarity} mb-2 shadow-md`}>{h.emoji}</div>
+                                        ) : (
+                                            <div className="w-14 h-14 flex items-center justify-center text-3xl rounded-full bg-slate-800 border border-slate-700 mb-2 grayscale">{h.emoji}</div>
+                                        )}
+                                        <div className="text-[10px] font-bold text-slate-300 truncate w-full">{h.name}</div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ==========================================
+        // HOST VIEW
+        // ==========================================
+        function HostView({ onExit }) {
+            const [roomCode] = useState(generateRoomCode);
+            const [setupRounds, setSetupRounds] = useState(3);
+            const gameState = useRef({ status: 'LOBBY', round: 0, totalRounds: 3, horses: [], raceData: null, players: [], weather: WEATHERS[0], customWords: [] });
+            const [uiState, setUiState] = useState({ ...gameState.current });
+            const peerRef = useRef(null);
+            const connsRef = useRef({});
+
+            const changeStatus = (newStatus) => { 
+                gameState.current.status = newStatus; 
+                const stateObj = { roomState: { ...gameState.current, players: undefined }, players: gameState.current.players };
+                Object.values(connsRef.current).forEach(conn => { if(conn.open) conn.send({ type: 'SYNC', ...stateObj }); });
+                setUiState({...gameState.current}); 
+            };
+
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const text = evt.target.result;
+                    const lines = text.split('\n').filter(l => l.trim().length > 0);
+                    const words = lines.map(l => {
+                        const parts = l.includes(',') ? l.split(',') : l.split('\t');
+                        if(parts.length >= 2) return { eng: parts[0].trim(), kor: parts[1].trim() };
+                        return null;
+                    }).filter(w => w !== null);
+                    
+                    if(words.length < 4) { alert('단어가 너무 적습니다. 정답 보기를 위해 최소 4개 이상 필요합니다.'); return; }
+                    gameState.current.customWords = words;
+                    setUiState({...gameState.current});
+                    alert(`${words.length}개의 단어가 성공적으로 업로드되었습니다!`);
+                };
+                reader.readAsText(file);
+            };
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    if (gameState.current.status === 'RACE' || gameState.current.status.startsWith('END')) return;
+                    const stateObj = { roomState: { ...gameState.current, players: undefined }, players: gameState.current.players };
+                    Object.values(connsRef.current).forEach(conn => { if(conn.open) conn.send({ type: 'SYNC', ...stateObj }); });
+                    setUiState({ ...gameState.current });
+                }, 300);
+
+                peerRef.current = new Peer('edurace-' + roomCode, { pingInterval: 5000 });
+                peerRef.current.on('error', (err) => {
+                    if (err.type === 'unavailable-id') { alert(`방 번호 [${roomCode}]가 이미 사용 중입니다. 새로고침을 눌러주세요.`); onExit(); }
+                });
+                peerRef.current.on('connection', (conn) => { conn.on('data', (data) => handlePlayerAction(data, conn)); });
+                peerRef.current.on('disconnected', () => peerRef.current.reconnect());
+                
+                return () => { clearInterval(interval); peerRef.current?.destroy(); };
+            }, [roomCode]);
+
+            const handlePlayerAction = (data, conn) => {
+                const state = gameState.current;
+                let player = state.players.find(p => p.uid === data.uid);
+                if (data.type === 'JOIN') {
+                    if (!player) {
+                        player = { uid: data.uid, name: data.name, avatar: data.avatar, money: 500, inventory: null, bets: {}, isReady: false, stats: { quizCnt: 0, betWin: 0, betLoss: 0 } };
+                        state.players.push(player);
+                    } else { player.name = data.name; player.avatar = data.avatar; }
+                    connsRef.current[data.uid] = conn;
+                    conn.send({ type: 'SYNC', roomState: { ...state, players: undefined }, players: state.players });
+                }
+                else if (player) {
+                    if (data.type === 'QUIZ_CORRECT') {
+                        player.money += (data.earned || 100); 
+                        player.stats.quizCnt++;
+                        if(!player.inventory && Math.random() < 0.2) player.inventory = ITEMS[Math.floor(Math.random()*ITEMS.length)].id;
+                    }
+                    else if (data.type === 'BET_READY') { player.bets = data.bets; player.usedItemOn = data.usedItemOn; player.isReady = true; }
+                }
+            };
+
+            const startRound = () => {
+                if (gameState.current.round === 0) gameState.current.totalRounds = setupRounds;
+                
+                const weatherRand = Math.random();
+                if (weatherRand < 0.50) gameState.current.weather = WEATHERS[0]; 
+                else gameState.current.weather = WEATHERS[1 + Math.floor(Math.random() * 3)];
+                
+                const roundMulti = 1 + (gameState.current.round * 0.15); 
+                const selected = shuffle(HORSES).slice(0, 8).map(h => {
+                    const cIdx = Math.floor(Math.random() * CONDITIONS.length);
+                    const cond = CONDITIONS[cIdx].multi;
+                    let power = (h.stats.speed + h.stats.spurt + (h.stats.stability * 0.5)) * cond;
+                    if(h.type === 'luck') power *= 0.8;
+                    return { ...h, conditionIdx: cIdx, odds: 0 };
+                });
+
+                const totalPower = selected.reduce((s, h) => s + ((h.stats.speed + h.stats.spurt)*CONDITIONS[h.conditionIdx].multi), 0);
+                selected.forEach(h => {
+                    const p = ((h.stats.speed + h.stats.spurt)*CONDITIONS[h.conditionIdx].multi) / totalPower;
+                    h.odds = Math.max(1.5, Math.min(30, (1 / p) * 0.9 * roundMulti)).toFixed(1);
+                });
+
+                gameState.current.round++;
+                gameState.current.horses = selected;
+                gameState.current.raceData = null;
+                gameState.current.players.forEach(p => { p.isReady = false; p.bets = {}; p.usedItemOn = null; });
+                changeStatus('QUIZ');
+            };
+
+            const calculateRace = () => {
+                const state = gameState.current;
+                const horses = [...state.horses];
+                const weather = state.weather.id;
+                const distance = 6000; 
+                
+                const sponsors = {};
+                horses.forEach(h => {
+                    let maxBet = 0; let topBettor = null;
+                    state.players.forEach(p => {
+                        if(p.bets && p.bets[h.id] > maxBet) { maxBet = p.bets[h.id]; topBettor = p.name; }
+                    });
+                    if(topBettor) sponsors[h.id] = topBettor;
+                });
+
+                const itemEffects = {};
+                state.players.forEach(p => {
+                    if (p.usedItemOn && p.inventory && p.usedItemOn.target === 'horse') {
+                        if (!itemEffects[p.usedItemOn.horseId]) itemEffects[p.usedItemOn.horseId] = [];
+                        itemEffects[p.usedItemOn.horseId].push(p.inventory);
+                        p.inventory = null; 
+                    }
+                });
+
+                const duration = 500; 
+                const timeline = [];
+                let positions = horses.map(()=>0);
+                let laterals = horses.map((_, i) => (i - 3.5) * 120); 
+                let curSpeeds = horses.map(()=>0);
+                let momentums = horses.map(()=>0);
+                
+                const windFates = horses.map(() => Math.random() > 0.5 ? 1.4 : 0.6);
+                const exactFinishTimes = new Array(horses.length).fill(99999); 
+
+                // 🌟 라이벌 기믹 체크 (막스:4, 케니:12)
+                const hasMax = horses.some(h => h.id === 4);
+                const hasKenny = horses.some(h => h.id === 12);
+
+                for (let t=0; t<=duration; t++) {
+                    let tickData = { positions: [], speeds: [], laterals: [], events: [] };
+                    const maxPos = Math.max(...positions);
+                    const progress = maxPos / distance;
+
+                    const curStandings = positions.map((p,i)=>({i,p})).sort((a,b)=>b.p - a.p);
+                    const curRanks = new Array(horses.length);
+                    curStandings.forEach((s, r) => curRanks[s.i] = r);
+
+                    for(let i=0; i<horses.length; i++) {
+                        if (positions[i] > distance + 100) {
+                            positions[i] = distance + 100 + (i * 2); 
+                            tickData.speeds.push(0); tickData.laterals.push(laterals[i]);
+                            continue;
+                        }
+
+                        const h = horses[i];
+                        const cond = CONDITIONS[h.conditionIdx].multi;
+                        let targetSpeed = h.stats.speed * cond;
+                        const distToLeader = maxPos - positions[i];
+
+                        // --- 🌟 레이스 상성 시스템 적용 ---
+                        let nearestDist = 9999;
+                        let nearestType = null;
+                        horses.forEach((otherH, otherI) => {
+                            if(i !== otherI) {
+                                let dist = Math.abs(positions[otherI] - positions[i]);
+                                if (dist < 300 && dist < nearestDist) { nearestDist = dist; nearestType = otherH.type; }
+                            }
+                        });
+                        
+                        if (nearestType && TYPE_MATCHUP[h.type]) {
+                            if (nearestType === TYPE_MATCHUP[h.type].strongVs) targetSpeed *= TYPE_MATCHUP[h.type].bonus;
+                            else if (nearestType === TYPE_MATCHUP[h.type].weakVs) targetSpeed *= TYPE_MATCHUP[h.type].penalty;
+                        }
+
+                        // 라이벌 버프
+                        if (hasMax && hasKenny && (h.id === 4 || h.id === 12)) targetSpeed *= 1.05;
+
+                        // 날씨 예외 적용
+                        if(weather === 'RAIN') { if(h.type === 'early') targetSpeed *= 0.85; if(h.type === 'stable') targetSpeed *= 1.1; if(h.type === 'chaser') targetSpeed *= 0.85; }
+                        if(weather === 'WIND' && h.type === 'early') { targetSpeed *= windFates[i]; }
+
+                        const effects = itemEffects[h.id] || [];
+                        effects.forEach(eff => {
+                            if(eff==='banana') targetSpeed *= 0.9; if(eff==='whip') targetSpeed *= 1.1;
+                            if(eff==='carrot' && progress < 0.3) targetSpeed *= 1.3; if(eff==='sand' && curRanks[i] > 0) targetSpeed *= 0.9;
+                            if(eff==='sedative' && (h.type==='luck' || h.type==='early')) h.stats.stability = 90;
+                        });
+
+                        if (progress < 0.4 && h.type === 'early') targetSpeed *= 1.15;
+                        else if (progress > 0.6) {
+                            let spurtPower = h.stats.spurt * cond * 0.7;
+                            if(weather === 'HEAT' && h.type === 'late') spurtPower *= 0.8; // 폭염 시 late 스퍼트 약화
+                            if (h.type === 'late') targetSpeed *= 1.3; 
+                            targetSpeed += spurtPower;
+                        }
+                        if (h.type === 'early' && progress > 0.5) targetSpeed *= 0.9;
+                        if (h.type === 'chaser' && curRanks[i] > 0 && distToLeader < 400) targetSpeed *= 1.15;
+                        
+                        if (h.type === 'luck') {
+                            if (Math.random() > 0.98) { targetSpeed *= 1.5; tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.spurt)}); }
+                            else if (Math.random() < 0.02) { targetSpeed *= 0.7; tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.slip)}); }
+                        }
+
+                        // 🌟 고무줄(Rubber-banding) 부스터 극대화
+                        let catchUp = (distToLeader / distance) * 2.5; 
+                        if (distToLeader > 400) catchUp += (distToLeader - 400) / 300; 
+                        if (h.type === 'late' && progress > 0.5) catchUp *= 1.8;
+                        targetSpeed *= (1 + catchUp);
+
+                        let baseLateral = (i - 3.5) * 120;
+                        let desiredLateral = baseLateral;
+                        
+                        let draftingBoost = 1.0;
+                        horses.forEach((otherH, otherI) => {
+                            if(i !== otherI) {
+                                let dist = positions[otherI] - positions[i];
+                                if(dist > 5 && dist < 400 && Math.abs(laterals[i] - laterals[otherI]) < 100) {
+                                    desiredLateral += (laterals[i] >= laterals[otherI] ? 80 : -80); 
+                                    draftingBoost = Math.max(draftingBoost, 1.3); 
+                                }
+                            }
+                        });
+                        laterals[i] += (desiredLateral - laterals[i]) * 0.08;
+                        targetSpeed *= draftingBoost;
+
+                        curSpeeds[i] += (targetSpeed - curSpeeds[i]) * 0.15;
+                        momentums[i] += (Math.random() - 0.5) * ((100 - h.stats.stability) * 0.1);
+                        momentums[i] *= 0.9; 
+                        
+                        let finalSpeed = curSpeeds[i] + momentums[i];
+                        finalSpeed = Math.max(15, Math.min(finalSpeed, 140)); // 상한선 대폭 해제
+
+                        let prevPos = positions[i];
+                        positions[i] += finalSpeed * (distance / 20000);
+                        
+                        if (prevPos < distance && positions[i] >= distance) {
+                            exactFinishTimes[i] = t + (distance - prevPos) / (positions[i] - prevPos);
+                        }
+
+                        tickData.speeds.push(finalSpeed);
+                        tickData.laterals.push(laterals[i]);
+
+                        // 추월 이벤트 메시지 (선두 탈환 제외)
+                        if (t % 20 === 0 && progress > 0.3 && t > 50) {
+                            if (curRanks[i] > 0 && curRanks[i] < 4 && tickData.events.length === 0 && Math.random() > 0.9) {
+                                tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.overtake)});
+                            }
+                        }
+                    }
+                    tickData.positions = [...positions];
+                    timeline.push(tickData);
+                    
+                    if (Math.min(...positions) >= distance + 100) break; 
+                }
+
+                const finalRanks = horses.map((_, i) => i).sort((a, b) => exactFinishTimes[a] - exactFinishTimes[b]);
+                
+                state.raceData = { timeline, ranks: finalRanks, distance, sponsors, weather: state.weather };
+                changeStatus('RACE');
+            };
+
+            const forceStopRace = () => { if (gameState.current.status === 'RACE') processResults(); };
+
+            const processResults = () => {
+                const state = gameState.current;
+                const [r1, r2, r3] = state.raceData.ranks;
+                const [h1, h2, h3] = [state.horses[r1], state.horses[r2], state.horses[r3]];
+
+                state.players.forEach(p => {
+                    let win = 0, cost = 0;
+                    Object.entries(p.bets||{}).forEach(([hIdStr, amt]) => {
+                        const hId = parseInt(hIdStr); cost += amt;
+                        if(hId === h1.id) win += amt * parseFloat(h1.odds);
+                        if(hId === h2.id) win += amt * parseFloat(h2.odds) * 0.5;
+                        if(hId === h3.id) win += amt * parseFloat(h3.odds) * 0.2;
+                    });
+                    if(p.usedItemOn?.target === 'self') {
+                        if(p.inventory === 'coin') win *= 1.2;
+                        if(p.inventory === 'insurance' && win < cost) win += cost * 0.5; 
+                        p.inventory = null;
+                    }
+                    p.money += (win - cost); 
+                    p.stats.betWin += (win > cost ? win - cost : 0);
+                    p.stats.betLoss += (win < cost ? cost - win : 0);
+                    
+                    p.lastCost = cost; p.lastGrossWin = win; p.lastWin = win - cost;
+                });
+                changeStatus('RESULT');
+            };
+
+            const handleRematch = () => {
+                gameState.current.round = 0;
+                gameState.current.players.forEach(p => {
+                    p.money = 500; p.inventory = null; p.isReady = false; p.bets = {};
+                    p.stats = { quizCnt: 0, betWin: 0, betLoss: 0 };
+                });
+                changeStatus('LOBBY');
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-900 text-white p-4 flex flex-col fade-in relative">
+                    <div className="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-lg mb-4 shrink-0 relative z-50">
+                        <div><div className="text-slate-400 text-sm font-bold">호스트 룸코드</div><div className="text-4xl font-black tracking-widest text-emerald-400">{roomCode}</div></div>
+                        {uiState.status === 'RACE' && (
+                            <button onClick={forceStopRace} className="absolute left-1/2 -translate-x-1/2 bg-red-600 hover:bg-red-500 text-white font-black px-6 py-2 rounded-xl border border-red-400 shadow-[0_0_15px_rgba(220,38,38,0.5)] active:scale-95 transition flex items-center gap-2">
+                                <i className="fas fa-forward"></i> 경주 스킵 (결과 보기)
+                            </button>
+                        )}
+                        <div className="text-right"><div className="text-sm font-bold text-slate-400">참가자: {uiState.players.length}명</div><div className="text-xl font-bold">라운드: {uiState.round}/{uiState.totalRounds}</div></div>
+                    </div>
+
+                    <div className="flex-1 bg-glass rounded-2xl border border-slate-600 flex flex-col overflow-hidden relative">
+                        {uiState.status === 'LOBBY' && (
+                            <div className="m-auto text-center w-full max-w-2xl p-6">
+                                <h2 className="text-3xl font-bold mb-8">학생들의 접속을 대기중입니다...</h2>
+                                
+                                <div className="bg-slate-800 p-4 rounded-xl border border-slate-600 mb-6 text-left shadow-inner">
+                                    <h3 className="font-bold text-blue-400 mb-2"><i className="fas fa-file-upload"></i> 커스텀 단어장 업로드 (선택)</h3>
+                                    <p className="text-xs text-slate-400 mb-3">메모장에 <b>'영단어,뜻'</b>(쉼표) 또는 <b>'영단어[탭]뜻'</b> 형식으로 작성한 txt 파일을 올리세요.</p>
+                                    <div className="flex items-center gap-4">
+                                        <input type="file" accept=".txt" onChange={handleFileUpload} className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"/>
+                                        <span className="shrink-0 text-sm font-bold text-emerald-400 border border-emerald-500/50 bg-emerald-900/30 px-3 py-1 rounded-full">
+                                            현재 단어 수: {uiState.customWords.length > 0 ? uiState.customWords.length : DEFAULT_WORDS.length}(기본)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center items-center gap-4 mb-8 bg-slate-800 py-4 px-6 rounded-2xl border border-slate-600">
+                                    <span className="text-xl font-bold text-slate-300">진행할 라운드:</span>
+                                    <select value={setupRounds} onChange={e=>setSetupRounds(Number(e.target.value))} className="bg-slate-700 text-white font-black text-xl px-4 py-2 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500">
+                                        {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} 라운드</option>)}
+                                    </select>
+                                </div>
+                                <div className="flex flex-wrap justify-center gap-3 mb-8 min-h-[100px] content-start">
+                                    {uiState.players.map(p => (
+                                        <div key={p.uid} className="flex items-center gap-2 bg-indigo-900/50 pr-4 rounded-full border border-indigo-500/50 font-bold shadow-md">
+                                            <AvatarDisplay avatarStr={p.avatar} sizeClasses="w-10 h-10 text-xl" />
+                                            {p.name}
+                                        </div>
+                                    ))}
+                                    {uiState.players.length === 0 && <div className="text-slate-500 font-bold w-full text-center mt-4">참가자가 없습니다.</div>}
+                                </div>
+                                <button onClick={startRound} disabled={uiState.players.length===0} className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-black py-4 px-12 rounded-xl text-xl transition active:scale-95 shadow-lg w-full">게임 시작하기</button>
+                            </div>
+                        )}
+                        {uiState.status === 'QUIZ' && (
+                            <div className="m-auto text-center w-full p-6">
+                                <h2 className="text-3xl font-bold text-blue-400 mb-2">📝 퀴즈 진행 중 (자본금 획득)</h2><p className="text-slate-400 mb-8">학생들이 스마트폰에서 문제를 풀며 투자금을 모으고 있습니다. (연속 정답 시 상금 증가!)</p>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto mb-8 pr-2 custom-scrollbar text-left">
+                                    {uiState.players.map(p => (
+                                        <div key={p.uid} className="bg-slate-800 p-2 rounded-lg border border-slate-700 shadow-sm flex items-center gap-2">
+                                            <AvatarDisplay avatarStr={p.avatar} sizeClasses="w-8 h-8 text-base shrink-0" />
+                                            <span className="font-bold truncate flex-1">{p.name}</span>
+                                            <span className="text-emerald-400 font-bold shrink-0">{p.money}💰</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button onClick={()=>changeStatus('BETTING')} className="bg-yellow-600 hover:bg-yellow-500 text-white font-black py-3 px-8 rounded-xl transition shadow-lg">배팅 단계로 강제 이동</button>
+                            </div>
+                        )}
+                        {uiState.status === 'BETTING' && (
+                            <div className="flex flex-col h-full w-full max-w-5xl mx-auto relative p-6">
+                                <div className={`absolute -top-1 left-1/2 -translate-x-1/2 px-6 py-2 rounded-b-xl font-black text-lg border-x border-b border-slate-600 bg-slate-800 shadow-lg z-10 ${uiState.weather.color}`}>
+                                    현재 경기장 날씨: {uiState.weather.name} ({uiState.weather.desc})
+                                </div>
+                                <h2 className="text-3xl font-bold text-yellow-400 mb-4 text-center mt-6 shrink-0">💰 배팅 타임!</h2>
+                                <div className="flex justify-between items-center mb-4 shrink-0"><p className="text-slate-300">날씨, 컨디션, 배당률을 보고 전략적으로 투자하세요!</p><div className="bg-slate-800 px-4 py-2 rounded-lg font-bold">준비 완료: <span className="text-emerald-400">{uiState.players.filter(p=>p.isReady).length}</span> / {uiState.players.length}</div></div>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 overflow-y-auto custom-scrollbar flex-1 pr-2">
+                                    {uiState.horses.map(h => (
+                                        <div key={h.id} className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center shadow-md flex flex-col justify-center">
+                                            <div className="text-5xl mb-2">{h.emoji}</div>
+                                            <div className="font-black text-lg sm:text-xl mb-1 leading-tight break-keep">{h.name}</div>
+                                            <div className={`text-sm font-bold ${CONDITIONS[h.conditionIdx].color} mb-2`}>컨디션: {CONDITIONS[h.conditionIdx].label}</div>
+                                            <div className="text-2xl font-black text-red-400">{h.odds}x</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="text-center shrink-0"><button onClick={calculateRace} className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-12 rounded-xl text-2xl transition shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-pulse">경주 시작! 🏁</button></div>
+                            </div>
+                        )}
+                        {uiState.status === 'RACE' && (
+                            <div className="absolute inset-0 z-10 bg-slate-900 rounded-2xl overflow-hidden border-4 border-slate-600 shadow-2xl">
+                                <RacePhase raceData={uiState.raceData} horses={uiState.horses} isHost={true} onFinish={processResults} />
+                            </div>
+                        )}
+                        {uiState.status === 'RESULT' && (
+                            <div className="m-auto text-center w-full max-w-4xl z-20 p-6">
+                                <h2 className="text-4xl font-black text-purple-400 mb-8">🏆 {uiState.round}라운드 결과</h2>
+                                <HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} />
+                                <div className="bg-slate-800 rounded-xl p-4 mb-8 border border-slate-700 shadow-md">
+                                    <h3 className="text-xl font-bold mb-4 border-b border-slate-600 pb-2">현재 재산 순위</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-left">
+                                        {[...uiState.players].sort((a,b)=>b.money-a.money).slice(0,9).map((p,i)=>(
+                                            <div key={p.uid} className="flex justify-between items-center bg-slate-700 px-3 py-2 rounded-lg font-bold"><span className="truncate flex items-center gap-2"><AvatarDisplay avatarStr={p.avatar} sizeClasses="w-6 h-6 text-xs"/>{i+1}. {p.name}</span><span className="text-emerald-400 shrink-0">{Math.floor(p.money)}💰</span></div>
+                                        ))}
+                                    </div>
+                                </div>
+                                {uiState.round < uiState.totalRounds ? <button onClick={startRound} className="bg-emerald-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-emerald-500">다음 라운드 준비</button>
+                                : <button onClick={()=>changeStatus('END_HORSE')} className="bg-red-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-red-500">게임 종료 (최종 랭킹 보기)</button>}
+                            </div>
+                        )}
+                        {uiState.status === 'END_HORSE' && (
+                            <div className="m-auto text-center w-full p-6"><h2 className="text-5xl font-black text-slate-100 mb-12 drop-shadow-md">마지막 경주 우승마</h2><HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} /><button onClick={()=>changeStatus('END_PLAYER')} className="mt-12 bg-blue-600 px-8 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">최종 부자 랭킹 발표 ➡️</button></div>
+                        )}
+                        {uiState.status === 'END_PLAYER' && (
+                            <div className="m-auto text-center w-full p-6"><h2 className="text-5xl font-black text-yellow-400 mb-12 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] font-display tracking-widest">🎉 최종 부자 랭킹 포디움 🎉</h2><PlayerPodium players={uiState.players} /><button onClick={()=>changeStatus('END_AWARDS')} className="mt-12 bg-blue-600 px-8 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">특별 시상식 ➡️</button></div>
+                        )}
+                        {uiState.status === 'END_AWARDS' && (
+                            <div className="m-auto text-center w-full max-w-5xl p-6">
+                                <h2 className="text-5xl font-black text-purple-400 mb-12 drop-shadow-md font-display tracking-wider">🌟 특별 시상식 🌟</h2><SpecialAwards players={uiState.players} />
+                                <div className="mt-16 flex justify-center gap-6">
+                                    <button onClick={handleRematch} className="bg-indigo-600 hover:bg-indigo-500 px-8 py-4 rounded-xl font-black text-xl shadow-lg transition-transform hover:scale-105">같은 멤버로 1라운드 다시 시작</button>
+                                    <button onClick={onExit} className="bg-slate-700 hover:bg-slate-600 border border-slate-500 px-8 py-4 rounded-xl font-black text-xl shadow-lg">방 폭파 (처음으로)</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // ==========================================
+        // PLAYER VIEW
+        // ==========================================
+        function PlayerView({ roomCode, playerName, myUid, myAvatar, onExit }) {
+            const [roomState, setRoomState] = useState(null);
+            const [me, setMe] = useState(null);
+            const connRef = useRef(null);
+            const [errorMsg, setErrorMsg] = useState('');
+            
+            // 🌟 토큰 지급 트래킹 (한 게임당 1번만 지급)
+            const awardedRef = useRef(false);
+            const [earnedTokenMsg, setEarnedTokenMsg] = useState(null);
+
+            useEffect(() => {
+                const peer = new Peer({ pingInterval: 5000 });
+                let joinTimeout, joinInterval, retryCount = 0, conn = null;
+
+                const connectToHost = () => {
+                    conn = peer.connect('edurace-' + roomCode); 
+                    conn.on('open', () => {
+                        connRef.current = conn;
+                        const tryJoin = () => { if (conn.open) conn.send({ type: 'JOIN', uid: myUid, name: playerName, avatar: myAvatar }); };
+                        tryJoin();
+                        if(joinInterval) clearInterval(joinInterval); joinInterval = setInterval(tryJoin, 1000); 
+                    });
+                    conn.on('data', (data) => {
+                        if (data.type === 'SYNC') {
+                            setRoomState(data.roomState); setMe(data.players.find(p => p.uid === myUid));
+                            if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval);
+                        }
+                    });
+                };
+                
+                peer.on('open', () => {
+                    connectToHost();
+                    joinTimeout = setTimeout(() => { if (!connRef.current || !connRef.current.open) setErrorMsg('호스트와의 연결이 지연되고 있습니다.'); }, 15000); 
+                });
+                peer.on('error', (err) => {
+                    if (err.type === 'peer-unavailable' && retryCount < 3) { retryCount++; setTimeout(connectToHost, 1500); } 
+                    else { setErrorMsg(`접속 오류가 발생했습니다. 방 번호를 다시 확인해주세요.`); }
+                });
+                peer.on('disconnected', () => peer.reconnect());
+                
+                return () => { if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval); peer.destroy(); };
+            }, [roomCode, myUid, playerName, myAvatar]);
+
+            // 🌟 게임 종료 시 토큰 지급 로직
+            useEffect(() => {
+                if (roomState?.status === 'END_AWARDS' && !awardedRef.current && me) {
+                    awardedRef.current = true;
+                    const sorted = [...roomState.players].sort((a,b) => b.money - a.money);
+                    const myRank = sorted.findIndex(p => p.uid === myUid) + 1;
+                    const earned = myRank === 1 ? 50 : (myRank <= 3 ? 30 : 10);
+                    
+                    const curTokens = parseInt(localStorage.getItem('edurace_tokens') || '0');
+                    localStorage.setItem('edurace_tokens', curTokens + earned);
+                    setEarnedTokenMsg(`🎉 최종 ${myRank}위 달성! 토큰 ${earned}개 획득!`);
+                }
+                if (roomState?.status === 'LOBBY') {
+                    awardedRef.current = false;
+                    setEarnedTokenMsg(null);
+                }
+            }, [roomState?.status, me, myUid, roomState?.players]);
+
+            const sendAction = (action) => { if(connRef.current?.open) connRef.current.send({ uid: myUid, ...action }); };
+
+            if (errorMsg) return (
+                <div className="h-full flex flex-col items-center justify-center bg-slate-900 text-white p-6 text-center">
+                    <div className="text-5xl mb-4 text-red-500">⚠️</div><div className="text-xl font-bold mb-2 text-red-400">접속 오류</div><div className="text-slate-300 text-sm break-keep leading-relaxed">{errorMsg}</div>
+                    <button onClick={onExit} className="mt-8 px-6 py-3 bg-slate-800 rounded-xl font-bold text-white shadow-lg active:scale-95 transition border border-slate-700">처음으로 돌아가기</button>
+                </div>
+            );
+            if (!roomState || !me) return (
+                <div className="h-full flex flex-col items-center justify-center bg-slate-900 text-white p-6 text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-indigo-500 mb-4"></div><div className="text-xl font-bold animate-pulse mb-2">방 접속 중...</div>
+                    <button onClick={onExit} className="mt-8 px-4 py-2 bg-slate-800 rounded-lg font-bold text-slate-300 hover:text-white border border-slate-700 active:scale-95 transition">취소하고 돌아가기</button>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100 overflow-hidden">
+                    <div className="bg-slate-800 p-3 shadow-md flex justify-between items-center border-b border-slate-700 shrink-0 z-10 relative">
+                        <div className="font-black text-lg flex items-center gap-2"><AvatarDisplay avatarStr={me.avatar} sizeClasses="w-8 h-8 text-base"/>{me.name}</div>
+                        <div className="flex gap-2"><div className="bg-slate-900 px-3 py-1 rounded-lg font-bold border border-slate-600 shadow-inner flex items-center text-sm"><span className="text-emerald-400 mr-1">💰</span> {Math.floor(me.money)}</div><div className="bg-slate-900 px-3 py-1 rounded-lg font-bold border border-slate-600 shadow-inner flex items-center text-sm"><span className="text-purple-400 mr-1">🎒</span> {me.inventory ? ITEMS.find(i=>i.id===me.inventory)?.icon : '비어있음'}</div></div>
+                    </div>
+                    <div className="flex-1 relative overflow-hidden bg-slate-900">
+                        {roomState.status === 'LOBBY' && <div className="flex items-center justify-center h-full flex-col p-6"><div className="text-6xl mb-6 animate-bounce">🏇</div><h2 className="text-2xl font-black text-center text-slate-300">선생님이 게임을 시작하기를<br/>기다리고 있습니다.</h2></div>}
+                        {roomState.status === 'QUIZ' && <QuizPhase me={me} roomState={roomState} sendAction={sendAction} />}
+                        {roomState.status === 'BETTING' && <BettingPhase roomState={roomState} me={me} sendAction={sendAction} />}
+                        {roomState.status === 'RACE' && <RacePhase raceData={roomState.raceData} horses={roomState.horses} isHost={false} />}
+                        {roomState.status === 'RESULT' && <ResultPhase me={me} />}
+                        {roomState.status.startsWith('END') && (
+                            <div className="flex items-center justify-center h-full flex-col p-6 text-center">
+                                <div className="text-6xl mb-6">🏆</div><h2 className="text-2xl font-black text-yellow-400 mb-4">모든 경주 종료!</h2>
+                                {earnedTokenMsg && <div className="bg-slate-800 border-2 border-yellow-500 px-6 py-3 rounded-xl font-bold text-lg shadow-[0_0_15px_rgba(234,179,8,0.3)] animate-rise">{earnedTokenMsg}</div>}
+                                <p className="mt-8 text-slate-400 font-bold">호스트 화면에서 최종 결과를 확인하세요!</p>
+                                <button onClick={onExit} className="mt-8 border border-slate-600 bg-slate-800 px-6 py-2 rounded-lg text-slate-300 hover:text-white">나가기</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // --- 퀴즈 페이즈 ---
+        function QuizPhase({ me, roomState, sendAction }) {
+            const [timeLeft, setTimeLeft] = useState(30); 
+            const [feedback, setFeedback] = useState(null);
+            const [combo, setCombo] = useState(0);
+            const [currentQ, setCurrentQ] = useState(null);
+
+            const generateQuestion = () => {
+                const words = (roomState.customWords && roomState.customWords.length >= 4) ? roomState.customWords : DEFAULT_WORDS;
+                const pool = shuffle([...words]);
+                const correctItem = pool[0];
+                const wrongItems = pool.slice(1, 4).map(w => w.kor);
+                const options = shuffle([correctItem.kor, ...wrongItems]);
+                return { q: `${correctItem.eng}의 뜻은?`, a: options, ans: options.indexOf(correctItem.kor) };
+            };
+
+            useEffect(() => { 
+                setCurrentQ(generateQuestion());
+                const tmr = setInterval(() => setTimeLeft(t => t > 0 ? t - 1 : 0), 1000); 
+                return () => clearInterval(tmr); 
+            }, []);
+
+            const ansClick = (idx) => {
+                if(feedback || !currentQ) return; 
+                
+                if(idx === currentQ.ans) { 
+                    const newCombo = combo + 1;
+                    setCombo(newCombo);
+                    const earned = 100 + ((newCombo - 1) * 20); 
+                    
+                    if(newCombo > 1) playSound('combo'); else playSound('coin');
+                    
+                    setFeedback({ type: 'success', msg: `정답! +${earned}💰`, sub: `${newCombo} COMBO 🔥` }); 
+                    sendAction({ type: 'QUIZ_CORRECT', earned }); 
+                } else { 
+                    setCombo(0);
+                    playSound('wrong'); 
+                    setFeedback({ type: 'error', msg: '오답! 😥', sub: '콤보가 초기화됩니다.' }); 
                 }
                 
-                if(Math.abs(player.vx) > player.walkSpeed) {
-                    player.vx = Math.sign(player.vx) * player.walkSpeed;
-                }
+                setTimeout(() => { 
+                    setFeedback(null); 
+                    setCurrentQ(generateQuestion()); 
+                }, 1000);
+            };
 
-                if(!moving) {
-                    player.vx *= player.friction; 
-                    if(Math.abs(player.vx) < 0.1) player.vx = 0;
-                } else {
-                    player.vx *= 0.85; 
-                }
-            } else {
-                player.vx *= player.friction;
-            }
-        } else {
-            player.vx *= AIR_RESISTANCE;
+            if(timeLeft === 0) return <div className="h-full flex flex-col items-center justify-center p-6"><div className="text-5xl mb-4">⏳</div><h2 className="text-2xl font-black text-slate-300">시간 종료!</h2><p className="mt-2 text-slate-400">곧 배팅이 시작됩니다.</p></div>;
+            if(!currentQ) return null;
+
+            return (
+                <div className="h-full flex flex-col p-4 max-w-md mx-auto w-full fade-in relative">
+                    <div className="absolute top-4 right-4 text-emerald-400 font-black text-xl bg-slate-800 px-3 py-1 rounded-lg border border-emerald-500/50">{combo} COMBO 🔥</div>
+                    <div className="w-full bg-slate-800 h-3 rounded-full mb-6 overflow-hidden border border-slate-700 shadow-inner mt-10"><div className="bg-indigo-500 h-full transition-all duration-1000 ease-linear" style={{ width: `${(timeLeft/30)*100}%` }}></div></div>
+                    <div className="flex-1 flex flex-col justify-center relative">
+                        {feedback && (
+                            <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl text-white ${feedback.type==='success'?'bg-emerald-600/95':'bg-red-600/95'} backdrop-blur-sm animate-pulse`}>
+                                <div className="text-3xl font-black mb-2">{feedback.msg}</div>
+                                <div className="text-lg font-bold text-yellow-300">{feedback.sub}</div>
+                            </div>
+                        )}
+                        <h2 className="text-4xl font-black text-center mb-8 text-white break-keep leading-tight px-2">{currentQ.q}</h2>
+                        <div className="grid grid-cols-2 gap-3">{currentQ.a.map((opt, i) => <button key={i} onClick={()=>ansClick(i)} className="bg-slate-800 hover:bg-slate-700 border border-slate-600 p-5 rounded-xl text-lg font-bold text-slate-200 shadow-md active:scale-95 transition">{opt}</button>)}</div>
+                    </div>
+                </div>
+            );
         }
 
-        player.vy += GRAVITY; 
-        
-        // --- 닌자 벽타기 로직 ---
-        if(player.wallSlide && player.touchingWall !== 0 && player.vy > 0) {
-            // [NERF] 미끄러지는 속도 대폭 증가 (1.5 -> 3.5)
-            // 충전 중이거나 키를 누르고 있어도 빠르게 미끄러짐
-            player.vy = Math.min(player.vy, 3.5); 
+        // --- 플레이어 배팅 페이즈 ---
+        function BettingPhase({ roomState, me, sendAction }) {
+            const [bets, setBets] = useState({}); const [betAmt, setBetAmt] = useState(50); const [useItemMode, setUseItemMode] = useState(false); const [usedItemOn, setUsedItemOn] = useState(null);
+            const total = Object.values(bets).reduce((a,b)=>a+b, 0); const avail = me.money - total;
+            const addBet = (hId) => { if(avail >= betAmt) { playSound('coin'); setBets(p => ({...p, [hId]: (p[hId]||0)+betAmt})); } };
+            const useItem = (hId) => { setUsedItemOn({target:'horse', horseId:hId}); setUseItemMode(false); };
+            const submit = () => sendAction({ type: 'BET_READY', bets, usedItemOn });
+
+            if(me.isReady) return <div className="h-full flex flex-col items-center justify-center p-6"><div className="text-5xl mb-4">✅</div><h2 className="text-2xl font-black text-emerald-400">배팅 완료</h2><p className="mt-2 text-slate-400">다른 플레이어를 기다립니다.</p></div>;
+            const itemInfo = me.inventory ? ITEMS.find(i=>i.id===me.inventory) : null;
+
+            return (
+                <div className="h-full flex flex-col p-3 pb-20 max-w-5xl mx-auto w-full fade-in">
+                    <div className="mb-2 bg-slate-800 p-2 rounded-lg text-center text-xs font-bold border border-slate-600 shadow-inner">
+                        <span className={roomState.weather.color}>날씨: {roomState.weather.name} ({roomState.weather.desc})</span>
+                    </div>
+                    <div className="flex justify-between items-end mb-3"><h2 className="text-xl font-black text-yellow-400">말 정보 & 배팅</h2><div className="text-right text-sm font-bold text-slate-400">가용: <span className="text-emerald-400 text-lg">{Math.floor(avail)}💰</span></div></div>
+                    <div className="flex gap-2 mb-3 bg-slate-800 p-2 rounded-xl overflow-x-auto custom-scrollbar shadow-inner border border-slate-700">
+                        {[50, 100, 200, 300, '올인'].map(a => { const val = a === '올인' ? Math.floor(avail) : a; const sel = betAmt === val && val > 0; return <button key={a} onClick={()=>setBetAmt(val)} className={`px-4 py-2 rounded-lg font-black text-sm transition shrink-0 ${sel ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-700 text-slate-300'}`}>{a}</button>; })}
+                    </div>
+                    {itemInfo && !usedItemOn && (
+                        <div className="mb-3 bg-indigo-900/40 p-3 rounded-xl border border-indigo-500/50 flex justify-between items-center shadow-md">
+                            <div><div className="font-black text-indigo-300 text-sm">{itemInfo.icon} {itemInfo.name}</div><div className="text-[10px] text-slate-400">{itemInfo.desc}</div></div>
+                            {['coin','insurance'].includes(itemInfo.id) ? <button onClick={()=>setUsedItemOn({target:'self'})} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow">사용</button>
+                            : <button onClick={()=>setUseItemMode(!useItemMode)} className={`${useItemMode?'bg-red-500':'bg-indigo-600'} text-white px-3 py-1.5 rounded-lg text-xs font-black shadow transition`}>{useItemMode?'취소':'타겟 선택'}</button>}
+                        </div>
+                    )}
+                    {usedItemOn && <div className="mb-3 bg-slate-800 p-2 text-center text-xs font-bold text-yellow-400 rounded-lg border border-slate-600">아이템 사용 예약됨!</div>}
+                    
+                    <div className="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1 content-start">
+                        {roomState.horses.map(h => (
+                            <div key={h.id} className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex items-center relative overflow-hidden shadow-sm">
+                                {useItemMode && <div onClick={()=>useItem(h.id)} className="absolute inset-0 bg-indigo-600/40 z-10 flex flex-col items-center justify-center font-black text-white cursor-pointer backdrop-blur-[2px] transition-all hover:bg-indigo-600/60"><div className="bg-indigo-900/80 px-3 py-1 rounded-full shadow-lg">🎯 여기에 적용</div></div>}
+                                
+                                <div className="text-4xl mr-3 shrink-0">{h.emoji}</div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start mb-0.5">
+                                        <div className="font-black text-[12px] sm:text-xs leading-tight break-keep mr-1">{h.name}</div>
+                                        <div className="text-red-400 font-black text-xs shrink-0">{h.odds}x</div>
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 mb-0.5 truncate">{h.desc}</div>
+                                    <div className={`text-[10px] font-bold ${CONDITIONS[h.conditionIdx].color}`}>컨디션: {CONDITIONS[h.conditionIdx].label}</div>
+                                </div>
+                                <div className="ml-2 flex flex-col items-end w-16 shrink-0">
+                                    {bets[h.id] ? (<div className="text-right w-full"><div className="text-xs font-black text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/50 mb-1 truncate w-full text-center">{bets[h.id]}💰</div><button onClick={()=>{const nb={...bets};delete nb[h.id];setBets(nb);}} className="text-[10px] text-red-400 underline w-full text-center">취소</button></div>) 
+                                    : <button onClick={()=>addBet(h.id)} disabled={avail<betAmt || avail===0} className="bg-blue-600 disabled:bg-slate-700 w-full py-1.5 rounded-lg font-black text-xs text-white shadow-sm">배팅</button>}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="absolute bottom-0 left-0 w-full bg-slate-800/95 backdrop-blur border-t border-slate-700 p-3 flex justify-between items-center z-20"><div className="font-bold text-slate-300 text-sm">총 배팅: <span className="text-white text-lg font-black">{total}</span> 💰</div><button onClick={submit} className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-6 py-2.5 rounded-xl font-black shadow-[0_0_15px_rgba(234,179,8,0.4)] transition">준비 완료</button></div>
+                </div>
+            );
         }
 
-        player.x += player.vx; 
-        player.y += player.vy;
+        // ==========================================
+        // 🏁 레이싱 카메라 뷰 🏁
+        // ==========================================
+        function RacePhase({ raceData, horses, isHost, onFinish }) {
+            const containerRef = useRef(null);
+            const worldRef = useRef(null);
+            const horseRefs = useRef([]);
+            const pipRef = useRef(null);
+            const hudDistRef = useRef(null);
+            const dustLayerRef = useRef(null);
+            const evtContainerRef = useRef(null);
+            const cutinContainerRef = useRef(null);
 
-        // 벽 충돌 및 접촉 감지
-        player.touchingWall = 0; // 초기화
-
-        if(player.x <= 0){ 
-            player.x = 0;
-            player.touchingWall = -1;
+            const playback = useRef({ startMs: null, lastEvtTick: -1, spurt: false, camX: null });
             
-            if(player.wallSlide && !player.isGrounded) {
-                // 항상 0으로 수렴 (벽에 붙음)
-                player.vx = 0; 
-            } else {
-                player.vx *= BOUNCE;
-            }
-        }
-        else if(player.x + player.width >= width){ 
-            player.x = width - player.width;
-            player.touchingWall = 1;
+            // 🌟 선두 탈환 중계 멘트 정확한 타이밍 트래커
+            const leadTracker = useRef({ currentLeaderIdx: -1, lastLeadChangeTick: -999 });
 
-            if(player.wallSlide && !player.isGrounded) {
-                player.vx = 0;
-            } else {
-                player.vx *= BOUNCE;
-            }
+            const [isSpurtCSS, setIsSpurtCSS] = useState(false);
+
+            const TRACK_LENGTH = raceData ? raceData.distance : 6000;
+            const VISUAL_SCALE = 15; 
+            const START_OFFSET = 1000; 
+            const TRACK_CY = 4000;
+            const ZOOM_SCALE = isHost ? 0.48 : 0.3;
+
+            const getTrackPos = (pos, lateral) => { return { x: START_OFFSET + (pos * VISUAL_SCALE), y: TRACK_CY + lateral }; };
+
+            const createDust = (x, y) => {
+                if(!dustLayerRef.current) return;
+                const el = document.createElement('div');
+                el.className = 'dust';
+                el.style.left = `${x - (Math.random()-0.5)*40 - 40}px`; 
+                el.style.top = `${y + (Math.random()-0.5)*40}px`;
+                dustLayerRef.current.appendChild(el);
+                setTimeout(() => el.remove(), 700);
+            };
+
+            useEffect(() => { playSound('start'); }, []);
+
+            useEffect(() => {
+                if(!raceData || !worldRef.current || !containerRef.current) return;
+                
+                playback.current = { startMs: null, lastEvtTick: -1, spurt: false, camX: START_OFFSET };
+                leadTracker.current = { currentLeaderIdx: -1, lastLeadChangeTick: -999 };
+                
+                const totalMs = 18000;
+                const ticks = raceData.timeline.length - 1;
+                const msPerTick = totalMs / ticks;
+                let animId;
+
+                const step = (ts) => {
+                    if(!playback.current.startMs) playback.current.startMs = ts;
+                    const elapsed = ts - playback.current.startMs;
+                    let exTick = elapsed / msPerTick;
+                    
+                    const maxPosT = Math.max(...(raceData.timeline[Math.min(Math.floor(exTick), ticks)]?.positions || [0]));
+                    
+                    if(maxPosT / TRACK_LENGTH > 0.8) {
+                        if (!playback.current.spurt) { 
+                            playback.current.spurt = true; 
+                            setIsSpurtCSS(true); 
+                            playSound('dash'); 
+                        }
+                        const spurtStart = 0.8 * totalMs;
+                        if(elapsed > spurtStart) exTick = spurtStart/msPerTick + ((elapsed - spurtStart)*0.5) / msPerTick; 
+                    }
+
+                    if (exTick >= ticks) {
+                        exTick = ticks; cancelAnimationFrame(animId);
+                        if (isHost && onFinish) setTimeout(onFinish, 3000);
+                    } else {
+                        animId = requestAnimationFrame(step);
+                    }
+
+                    const t1 = Math.floor(exTick), t2 = Math.min(t1+1, ticks), frac = exTick - t1;
+                    const p1 = raceData.timeline[t1].positions, p2 = raceData.timeline[t2].positions;
+                    const spds = raceData.timeline[t1].speeds;
+                    const lats1 = raceData.timeline[t1].laterals || horses.map((_,i) => (i - 3.5)*120);
+                    const lats2 = raceData.timeline[t2]?.laterals || lats1;
+                    
+                    const curPos = p1.map((p,i) => p*(1-frac) + p2[i]*frac);
+                    
+                    const activeRunners = curPos.map((pos, i) => ({pos, i})).filter(r => r.pos < TRACK_LENGTH + 50);
+                    let leadPos = activeRunners.length > 0 ? Math.max(...activeRunners.map(r => r.pos)) : TRACK_LENGTH + 150;
+
+                    const leadData = getTrackPos(leadPos, 0);
+                    playback.current.camX += (leadData.x - playback.current.camX) * 0.1;
+                    
+                    const cw = containerRef.current.clientWidth;
+                    const ch = containerRef.current.clientHeight;
+                    const tx = (cw * 0.35) - (playback.current.camX * ZOOM_SCALE);
+                    const ty = (ch / 2) - (TRACK_CY * ZOOM_SCALE);
+                    worldRef.current.style.transform = `translate(${tx}px, ${ty}px) scale(${ZOOM_SCALE})`;
+
+                    let pipHtml = ''; 
+
+                    // 🌟 선두 추적 및 메시지 발동
+                    const curRanks = new Array(horses.length);
+                    const curStandings = curPos.map((p,i)=>({i,p})).sort((a,b)=>b.p - a.p);
+                    curStandings.forEach((s, r) => curRanks[s.i] = r);
+                    
+                    let newLeaderIdx = curStandings[0].i;
+                    let progress = leadPos / TRACK_LENGTH;
+
+                    if (progress > 0.1 && newLeaderIdx !== leadTracker.current.currentLeaderIdx && (t1 - leadTracker.current.lastLeadChangeTick) > 25) {
+                        if (leadTracker.current.currentLeaderIdx !== -1 && evtContainerRef.current) {
+                            const el = document.createElement('div');
+                            el.className = "bg-black/80 backdrop-blur-md text-white px-4 py-2 rounded-xl text-base md:text-lg font-black border-l-4 border-yellow-400 shadow-xl animate-slide-in mb-2 w-fit";
+                            el.innerText = `${horses[newLeaderIdx].name}: ${getMsg(EVENT_MSGS.lead)}`;
+                            evtContainerRef.current.appendChild(el);
+                            setTimeout(() => el.remove(), 3000);
+                        }
+                        leadTracker.current.currentLeaderIdx = newLeaderIdx;
+                        leadTracker.current.lastLeadChangeTick = t1;
+                    }
+
+
+                    curPos.forEach((pos, i) => {
+                        const lat = lats1[i]*(1-frac) + lats2[i]*frac;
+                        const { x, y } = getTrackPos(pos, lat);
+                        
+                        if(horseRefs.current[i]) {
+                            horseRefs.current[i].style.left = `${x}px`;
+                            horseRefs.current[i].style.top = `${y}px`;
+                            horseRefs.current[i].style.zIndex = Math.floor(y + 100);
+
+                            const icon = horseRefs.current[i].querySelector('.runner-icon');
+                            if(icon) {
+                                if(spds[i] > 10) icon.classList.add('active');
+                                else icon.classList.remove('active');
+                            }
+                        }
+
+                        const screenX = tx + (x * ZOOM_SCALE);
+                        if (screenX < -150) { 
+                            pipHtml += `<div class="pip-item"><div class="pip-emoji">${horses[i].emoji}</div><div class="pip-info"><div class="pip-name">${horses[i].name}</div><div class="pip-dist">${Math.floor(pos)}m</div></div></div>`;
+                        }
+                        if(spds[i] > 60 && Math.random() < 0.1) createDust(x, y);
+                    });
+
+                    if(hudDistRef.current) hudDistRef.current.innerText = `${Math.min(Math.floor(Math.max(...curPos)), TRACK_LENGTH)}m`;
+                    if(pipRef.current) pipRef.current.innerHTML = pipHtml;
+
+                    // 일반 이벤트 처리 (선두 탈환 제외)
+                    if (t1 !== playback.current.lastEvtTick && raceData.timeline[t1].events.length > 0) {
+                        const evs = raceData.timeline[t1].events;
+                        evs.forEach(e => {
+                            if(evtContainerRef.current) {
+                                const el = document.createElement('div');
+                                el.className = "bg-black/80 backdrop-blur-md text-white px-4 py-2 rounded-xl text-base md:text-lg font-black border-l-4 border-yellow-400 shadow-xl animate-slide-in mb-2 w-fit";
+                                el.innerText = `${horses[e.hIdx].name}: ${e.msg}`;
+                                evtContainerRef.current.appendChild(el);
+                                setTimeout(() => el.remove(), 3000);
+                            }
+                        });
+
+                        const major = evs.find(e => e.msg.includes('기적') || e.msg.includes('스퍼트'));
+                        if(major && cutinContainerRef.current && cutinContainerRef.current.innerHTML === '') { 
+                            cutinContainerRef.current.innerHTML = `
+                                <div class="w-full bg-gradient-to-r from-transparent via-red-600/95 to-transparent flex items-center justify-center animate-cutin py-6 shadow-[0_0_50px_rgba(220,38,38,0.8)] border-y border-red-400">
+                                    <span class="text-[8rem] mr-8 inline-block drop-shadow-2xl">${horses[major.hIdx].emoji}</span>
+                                    <span class="text-5xl font-black text-white italic drop-shadow-[0_6px_6px_#000] font-display">${horses[major.hIdx].name} - ${major.msg}</span>
+                                </div>
+                            `;
+                            playSound('fanfare'); 
+                            setTimeout(() => { if(cutinContainerRef.current) cutinContainerRef.current.innerHTML = ''; }, 2500); 
+                        }
+                        playback.current.lastEvtTick = t1;
+                    }
+                };
+                animId = requestAnimationFrame(step);
+                return () => cancelAnimationFrame(animId);
+            }, [raceData, isHost]);
+
+            if(!raceData) return <div className="h-full flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-white"></div></div>;
+
+            const pStart = { x: START_OFFSET - 2000, y: TRACK_CY };
+            const pEnd = { x: START_OFFSET + TRACK_LENGTH * VISUAL_SCALE + 3000, y: TRACK_CY };
+            const dPath = `M ${pStart.x} ${pStart.y} L ${pEnd.x} ${pEnd.y}`;
+
+            const weatherClass = raceData.weather.id === 'RAIN' ? 'weather-rain' : (raceData.weather.id === 'HEAT' ? 'weather-heat' : (raceData.weather.id === 'WIND' ? 'weather-wind' : ''));
+            const trackColorClass = `track-${raceData.weather.id}`;
+
+            return (
+                <div id="race-track-container" ref={containerRef} className={isSpurtCSS ? 'camera-shake slow-motion' : ''}>
+                    
+                    {weatherClass && <div className={`weather-layer ${weatherClass}`}></div>}
+
+                    <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
+                        <div className="bg-black/80 px-10 py-3 rounded-2xl border-2 border-yellow-500 shadow-2xl text-center">
+                            <div className="text-yellow-400 font-bold text-lg tracking-widest mb-[-8px]">🏁 GOAL: {TRACK_LENGTH}m</div>
+                            <div ref={hudDistRef} className="text-white font-black text-6xl font-display drop-shadow-md">0m</div>
+                        </div>
+                        {raceData.weather.id !== 'SUNNY' && (
+                            <div className="mt-2 bg-slate-800/80 px-4 py-1 rounded-full font-bold text-sm border border-slate-600 backdrop-blur-sm">
+                                <span className={raceData.weather.color}>{raceData.weather.name}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div id="pip-container" ref={pipRef}></div>
+                    {isSpurtCSS && <div id="slow-mo-overlay"></div>}
+
+                    <div id="track-world" ref={worldRef} className={trackColorClass}>
+                        <svg className="track-path-svg" viewBox="0 0 120000 8000" preserveAspectRatio="none">
+                            <path d={dPath} fill="none" stroke="#1e293b" strokeWidth="1200" strokeLinecap="square" />
+                            <path d={dPath} fill="none" stroke="#334155" strokeWidth="1100" strokeLinecap="square" />
+                            
+                            {[-3,-2,-1,0,1,2,3,4].map(i => {
+                                const offset = i * 120 - 60;
+                                const lPath = `M ${pStart.x} ${pStart.y + offset} L ${pEnd.x} ${pEnd.y + offset}`;
+                                return <path key={i} d={lPath} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="12" strokeDasharray="100, 100" />;
+                            })}
+                            
+                            <line x1={START_OFFSET} y1={pStart.y - 550} x2={START_OFFSET} y2={pStart.y + 550} stroke="white" strokeWidth="60" />
+                            <line x1={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y1={pEnd.y - 550} x2={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y2={pEnd.y + 550} stroke="white" strokeWidth="60" />
+                            <line x1={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE + 60} y1={pEnd.y - 550} x2={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE + 60} y2={pEnd.y + 550} stroke="#fbbf24" strokeWidth="60" strokeDasharray="60,60" />
+                        </svg>
+
+                        <div ref={dustLayerRef} className="absolute inset-0 pointer-events-none z-10"></div>
+                        
+                        {horses.map((h, i) => (
+                            <div key={h.id} ref={el=>horseRefs.current[i]=el} className="runner">
+                                <div className="runner-name-tag">
+                                    <div className="name">{h.name}</div>
+                                    {raceData.sponsors && raceData.sponsors[h.id] && (
+                                        <div className="sponsor">🏆 {raceData.sponsors[h.id]}</div>
+                                    )}
+                                </div>
+                                <div className="runner-icon drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]">{h.emoji}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div ref={evtContainerRef} className="absolute bottom-10 left-6 z-40 pointer-events-none flex flex-col items-start w-[500px] overflow-hidden"></div>
+                    <div ref={cutinContainerRef} className="absolute top-1/3 inset-x-0 z-50 pointer-events-none overflow-visible"></div>
+                </div>
+            );
         }
 
-        // 플랫폼 충돌
-        player.isGrounded=false;
-        for(let p of platforms) {
-            if(player.x < p.x+p.w && player.x+player.width > p.x && player.y < p.y+p.h && player.y+player.height > p.y) {
-                const py = player.y-player.vy;
-                if(py+player.height <= p.y+10 && player.vy>=0) {
-                    player.y = p.y-player.height; player.vy=0; player.isGrounded=true;
-                    if(Math.abs(player.vx)<0.1 && !keys.ArrowLeft && !keys.ArrowRight) player.vx=0;
-                    playSound('land');
-                } else {
-                    if(py >= p.y+p.h) { player.y=p.y+p.h; player.vy *= -0.5; playSound('bump'); }
-                    else player.vx *= -1;
-                }
-            }
+        function ResultPhase({ me }) {
+            return (
+                <div className="h-full flex flex-col p-6 max-w-md mx-auto fade-in text-center items-center justify-center">
+                    <h2 className="text-2xl font-black text-slate-300 mb-6">라운드 정산 결과</h2>
+                    <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl w-full shadow-lg mb-6 flex flex-col gap-2">
+                        <div className="text-sm font-bold text-slate-400 mb-2">배팅 결과 (배팅금: {me.lastCost||0}💰)</div>
+                        <div className="text-lg font-bold text-slate-300">당첨금: {Math.floor(me.lastGrossWin||0)} 💰</div>
+                        <div className={`text-4xl font-black mt-2 ${me.lastWin>0?'text-red-400':(me.lastWin<0?'text-blue-400':'text-slate-300')}`}>{me.lastWin>0?'+':''}{Math.floor(me.lastWin||0)} 💰</div>
+                        <div className="text-xs text-slate-500 font-bold mb-2">순수익</div>
+                        <div className="mt-2 text-emerald-400 font-bold bg-slate-900 py-3 rounded-xl border border-slate-700 text-xl">최종 잔액: {Math.floor(me.money)} 💰</div>
+                    </div>
+                    <p className="text-slate-400 font-bold animate-pulse">호스트 대기중...</p>
+                </div>
+            );
         }
-        if(player.y > height+500) { player.y=height-150; player.vy=0; cameraY=0; }
-        
-        const tY = -player.y + height*0.7;
-        cameraY += (tY-cameraY)*0.1; if(cameraY<0) cameraY=0;
-        
-        score = Math.floor(Math.max(0, height-20-player.y)/10);
-        if(score>highScore) highScore=score;
-        
-        document.getElementById('current-height').innerText=score;
-        document.getElementById('max-height').innerText=highScore;
-        
-        draw();
-        requestAnimationFrame(update);
-    }
 
-    function draw() {
-        ctx.fillStyle='#1a1a2e'; ctx.fillRect(0,0,width,height);
-        ctx.save(); ctx.translate(0, cameraY);
-        platforms.forEach(p => {
-            if(p.y+cameraY > -100 && p.y+cameraY < height+100) {
-                ctx.fillStyle=p.type==='ground'?'#555':p.color; ctx.fillRect(p.x,p.y,p.w,p.h);
-                ctx.strokeStyle='white'; ctx.strokeRect(p.x,p.y,p.w,p.h);
-            }
-        });
-        ctx.font=`${player.width}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.save(); ctx.translate(player.x+player.width/2, player.y+player.height/2);
-        ctx.scale(player.facing,1); ctx.fillText(player.emoji,0,2); ctx.restore();
-        
-        if(player.isCharging) {
-            const bw=40, bh=6, bx=player.x+player.width/2-bw/2, by=player.y-15;
-            ctx.fillStyle='#333'; ctx.fillRect(bx,by,bw,bh);
-            ctx.fillStyle = (player.charge/MAX_CHARGE)*bw > bw*0.8 ? '#ff3333':'#ffcc00';
-            ctx.fillRect(bx,by,(player.charge/MAX_CHARGE)*bw,bh);
-            ctx.strokeStyle='white'; ctx.strokeRect(bx,by,bw,bh);
+        // --- 공용 시상식 컴포넌트 ---
+        function HorsePodium({ horses, ranks }) {
+            const h1=horses[ranks[0]], h2=horses[ranks[1]], h3=horses[ranks[2]];
+            return (
+                <div className="flex justify-center items-end gap-3 h-56 mb-8 px-4">
+                    <div className="w-1/3 flex flex-col items-center animate-rise" style={{animationDelay:'0.3s'}}>
+                        <div className="text-4xl md:text-5xl mb-1">{h2.emoji}</div><div className="font-black text-sm md:text-base text-slate-300 truncate w-full text-center">{h2.name}</div>
+                        <div className="w-full h-24 podium-2 rounded-t-xl mt-2 flex items-start justify-center pt-2 shadow-lg"><span className="font-black text-slate-700 text-2xl font-display">2</span></div>
+                    </div>
+                    <div className="w-[40%] flex flex-col items-center animate-rise z-10" style={{animationDelay:'0.6s'}}>
+                        <div className="text-5xl md:text-6xl mb-1 animate-bounce">{h1.emoji}</div><div className="font-black text-base md:text-lg text-yellow-400 truncate w-full text-center">{h1.name}</div>
+                        <div className="w-full h-36 podium-1 rounded-t-xl mt-2 flex items-start justify-center pt-3 shadow-2xl border-t border-yellow-200"><span className="font-black text-yellow-900 text-3xl font-display">1</span></div>
+                    </div>
+                    <div className="w-1/3 flex flex-col items-center animate-rise" style={{animationDelay:'0s'}}>
+                        <div className="text-3xl md:text-4xl mb-1">{h3.emoji}</div><div className="font-black text-sm md:text-base text-orange-400 truncate w-full text-center">{h3.name}</div>
+                        <div className="w-full h-16 podium-3 rounded-t-xl mt-2 flex items-start justify-center pt-1 shadow-lg"><span className="font-black text-orange-900 text-xl font-display">3</span></div>
+                    </div>
+                </div>
+            );
         }
-        ctx.restore();
-    }
-    resize();
-</script>
+
+        function PlayerPodium({ players }) {
+            const s = [...players].sort((a,b)=>b.money-a.money);
+            const p1=s[0], p2=s[1], p3=s[2];
+            return (
+                <div className="flex justify-center items-end gap-3 h-56 mb-8 px-4">
+                    {p2 && <div className="w-1/3 flex flex-col items-center animate-rise" style={{animationDelay:'0.3s'}}><div className="font-black text-base md:text-lg truncate w-full text-slate-200 text-center flex flex-col items-center gap-1"><AvatarDisplay avatarStr={p2.avatar} sizeClasses="w-8 h-8 text-base"/>{p2.name}</div><div className="text-xs text-emerald-400 font-bold mb-1">{Math.floor(p2.money)}</div><div className="w-full h-24 podium-2 rounded-t-xl mt-1 flex items-start justify-center pt-2 shadow-lg"><span className="font-black text-slate-700 text-2xl font-display">2</span></div></div>}
+                    {p1 && <div className="w-[40%] flex flex-col items-center animate-rise z-10" style={{animationDelay:'0.6s'}}><div className="text-3xl mb-1">👑</div><div className="font-black text-lg md:text-xl text-yellow-400 truncate w-full drop-shadow-md text-center flex flex-col items-center gap-1"><AvatarDisplay avatarStr={p1.avatar} sizeClasses="w-10 h-10 text-xl"/>{p1.name}</div><div className="text-sm text-emerald-400 font-black mb-1">{Math.floor(p1.money)}</div><div className="w-full h-36 podium-1 rounded-t-xl mt-1 flex items-start justify-center pt-3 shadow-2xl border-t border-yellow-200"><span className="font-black text-yellow-900 text-3xl font-display">1</span></div></div>}
+                    {p3 && <div className="w-1/3 flex flex-col items-center animate-rise" style={{animationDelay:'0s'}}><div className="font-black text-base md:text-lg truncate w-full text-orange-300 text-center flex flex-col items-center gap-1"><AvatarDisplay avatarStr={p3.avatar} sizeClasses="w-8 h-8 text-base"/>{p3.name}</div><div className="text-xs text-emerald-400 font-bold mb-1">{Math.floor(p3.money)}</div><div className="w-full h-16 podium-3 rounded-t-xl mt-1 flex items-start justify-center pt-1 shadow-lg"><span className="font-black text-orange-900 text-xl font-display">3</span></div></div>}
+                </div>
+            );
+        }
+
+        function SpecialAwards({ players }) {
+            const active = players.filter(p=>p.stats.quizCnt>0 || p.stats.betWin>0 || p.stats.betLoss>0);
+            if(active.length===0) return null;
+            const a1 = [...active].sort((a,b)=>b.stats.quizCnt - a.stats.quizCnt)[0];
+            const a2 = [...active].sort((a,b)=>b.stats.betWin - a.stats.betWin)[0];
+            const a3 = [...active].sort((a,b)=>b.stats.betLoss - a.stats.betLoss)[0];
+            const Card = ({icon, title, desc, name, val, cBorder, cText, avatarStr}) => (
+                <div className={`bg-slate-800 p-5 rounded-2xl text-center border-t-4 ${cBorder} shadow-lg transform transition hover:scale-105 flex-1 mx-2 mb-4`}>
+                    <div className="text-4xl mb-3">{icon}</div><div className={`text-lg font-black ${cText} mb-1`}>{title}</div><div className="text-[11px] text-slate-400 mb-3">{desc}</div>
+                    <div className="flex justify-center mb-2"><AvatarDisplay avatarStr={avatarStr} sizeClasses="w-10 h-10 text-xl"/></div>
+                    <div className="text-xl font-black text-white bg-slate-900 rounded-lg py-2 mb-2 truncate border border-slate-700 shadow-inner px-2">{name||'-'}</div><div className="text-emerald-400 font-black text-sm">{val}</div>
+                </div>
+            );
+            return (
+                <div className="flex flex-col md:flex-row justify-center max-w-4xl mx-auto w-full px-2">
+                    <Card icon="🧠" title="지식의 탐구자" desc="퀴즈 최다 정답" name={a1?.name} avatarStr={a1?.avatar} val={`${a1?.stats.quizCnt||0}개`} cBorder="border-blue-500" cText="text-blue-400"/>
+                    <Card icon="🃏" title="전설의 타짜" desc="배팅 순수익 1위" name={a2?.name} avatarStr={a2?.avatar} val={`+${a2?.stats.betWin||0}💰`} cBorder="border-red-500" cText="text-red-400"/>
+                    <Card icon="💸" title="기부 천사" desc="배팅 손실액 1위" name={a3?.name} avatarStr={a3?.avatar} val={`-${a3?.stats.betLoss||0}💰`} cBorder="border-slate-500" cText="text-slate-400"/>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
