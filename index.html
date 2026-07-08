@@ -5,17 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>이모지무스메 더비 - 영단어 배팅 경마 게임</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- PeerJS -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
@@ -88,7 +82,7 @@
         .pip-dist { color: #94a3b8; font-size: 0.9rem; font-weight: bold; font-family: monospace; }
         @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* Podiums & Avatars (Bronze, Silver, Gold) */
+        /* Podiums & Avatars */
         .podium-1 { background: linear-gradient(to top, #d4af37, #fdf5a9); box-shadow: 0 -10px 20px rgba(212, 175, 55, 0.4); }
         .podium-2 { background: linear-gradient(to top, #94a3b8, #e2e8f0); }
         .podium-3 { background: linear-gradient(to top, #b45309, #fdba74); }
@@ -109,8 +103,34 @@
 <body>
     <div id="root" class="h-[100dvh] w-full"></div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push, onChildAdded, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // 사용자 제공 Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtK7NAfw4wDsS4LRacWF78PHT3zls50IQ",
+            authDomain: "dsgames-fecef.firebaseapp.com",
+            projectId: "dsgames-fecef",
+            storageBucket: "dsgames-fecef.firebasestorage.app",
+            messagingSenderId: "723943517090",
+            appId: "1:723943517090:web:3e8596971cedf46cc460fb",
+            databaseURL: "https://dsgames-fecef-default-rtdb.firebaseio.com"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.firebaseDb = getDatabase(app);
+    </script>
+
     <script type="text/babel" data-type="module">
         const { useState, useEffect, useRef } = React;
+
+        // 🎵 BGM 설정 (여기에 Dropbox 링크를 넣어주세요)
+        // 주의: 링크 끝이 ?dl=0 이어도 시스템이 알아서 재생 가능한 주소로 자동 변환합니다.
+        const BGM_URLS = {
+            lobby: '', // 예: 'https://www.dropbox.com/s/xxxx/lobby_bgm.mp3'
+            race: ''   // 예: 'https://www.dropbox.com/s/yyyy/race_bgm.mp3'
+        };
 
         // --- 8-bit 효과음 엔진 ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -139,7 +159,7 @@
         const playSound = (soundKey) => { if (SOUNDS[soundKey]) SOUNDS[soundKey](); };
         const initAudio = () => { if(audioCtx.state === 'suspended') audioCtx.resume(); };
 
-        // --- 🌟 20종 캐릭터 로스터 확장 및 패치 ---
+        // --- 🌟 캐릭터 로스터 ---
         const HORSES = [
             { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 45, spurt: 85, stability: 70, luck: 30 }, type: 'late' },
             { id: 2, emoji: '🦈', name: '트랄랄레오 트랄랄라', desc: '어디로 튈지 모르는 광기의 육지 상어.', stats: { speed: 50, spurt: 50, stability: 10, luck: 100 }, type: 'luck' },
@@ -419,6 +439,35 @@
             const [uiState, setUiState] = useState({ ...gameState.current });
             const peerRef = useRef(null);
             const connsRef = useRef({});
+            
+            // 🌟 드롭박스 BGM 플레이어
+            const audioRef = useRef(null);
+            useEffect(() => {
+                if (!audioRef.current) {
+                    audioRef.current = new Audio();
+                    audioRef.current.loop = true;
+                    audioRef.current.volume = 0.5;
+                }
+                const audio = audioRef.current;
+                const getDirectLink = (url) => url ? url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '') : '';
+                
+                const playBGM = (url) => {
+                    const directUrl = getDirectLink(url);
+                    if (!directUrl) { audio.pause(); return; }
+                    if (audio.src !== directUrl) {
+                        audio.src = directUrl;
+                        audio.play().catch(e => console.log('BGM Play blocked. Host interaction required.', e));
+                    } else if (audio.paused) {
+                        audio.play().catch(e => console.log(e));
+                    }
+                };
+
+                if (['LOBBY', 'QUIZ', 'BETTING', 'RESULT', 'END_HORSE', 'END_PLAYER', 'END_AWARDS'].includes(uiState.status)) {
+                    playBGM(BGM_URLS.lobby);
+                } else if (uiState.status === 'RACE') {
+                    playBGM(BGM_URLS.race);
+                }
+            }, [uiState.status]);
 
             const recalcLiveOdds = () => {
                 let realBetTotal = 0;
@@ -492,7 +541,11 @@
                 peerRef.current.on('connection', (conn) => { conn.on('data', (data) => handlePlayerAction(data, conn)); });
                 peerRef.current.on('disconnected', () => peerRef.current.reconnect());
                 
-                return () => { clearInterval(interval); peerRef.current?.destroy(); };
+                return () => { 
+                    clearInterval(interval); 
+                    peerRef.current?.destroy(); 
+                    if(audioRef.current) audioRef.current.pause();
+                };
             }, [roomCode]);
 
             const handlePlayerAction = (data, conn) => {
@@ -533,6 +586,7 @@
                 if (weatherRand < 0.50) gameState.current.weather = WEATHERS[0]; 
                 else gameState.current.weather = WEATHERS[1 + Math.floor(Math.random() * 3)];
                 
+                // 🌟 Deep Copy
                 const selected = shuffle(HORSES).slice(0, 8).map(h => {
                     const cIdx = Math.floor(Math.random() * CONDITIONS.length);
                     const cond = CONDITIONS[cIdx].multi;
@@ -771,7 +825,6 @@
                         p.inventory = null;
                     }
                     
-                    // 🌟 소수점 오차 방지를 위해 모든 계산에 Math.round 적용
                     win = Math.round(win);
                     cost = Math.round(cost);
                     
@@ -807,26 +860,38 @@
 
                     <div className="flex-1 bg-glass rounded-2xl border border-slate-600 flex flex-col overflow-hidden relative">
                         {uiState.status === 'LOBBY' && (
-                            <div className="m-auto text-center w-full max-w-2xl p-6">
+                            <div className="m-auto text-center w-full max-w-4xl p-6 overflow-y-auto custom-scrollbar max-h-full">
                                 <h2 className="text-3xl font-bold mb-8">학생들의 접속을 대기중입니다...</h2>
                                 
-                                <div className="bg-slate-800 p-4 rounded-xl border border-slate-600 mb-6 text-left shadow-inner">
-                                    <h3 className="font-bold text-blue-400 mb-2"><i className="fas fa-file-upload"></i> 커스텀 단어장 업로드 (선택)</h3>
-                                    <p className="text-xs text-slate-400 mb-3">메모장에 <b>'영단어,뜻'</b>(쉼표) 또는 <b>'영단어[탭]뜻'</b> 형식으로 작성한 txt 파일을 올리세요.</p>
-                                    <div className="flex items-center gap-4">
-                                        <input type="file" accept=".txt" onChange={handleFileUpload} className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"/>
-                                        <span className="shrink-0 text-sm font-bold text-emerald-400 border border-emerald-500/50 bg-emerald-900/30 px-3 py-1 rounded-full">
-                                            현재 단어 수: {uiState.customWords.length > 0 ? uiState.customWords.length : DEFAULT_WORDS.length}(기본)
-                                        </span>
+                                <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch mb-8">
+                                    {/* 🌟 QR 코드 영역 */}
+                                    <div className="bg-slate-800 p-6 rounded-2xl border border-slate-600 shadow-xl flex flex-col items-center justify-center shrink-0">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://yeomt.github.io/DSbettingrace/" className="rounded-xl shadow-md mb-3 bg-white p-2" alt="QR Code" />
+                                        <div className="text-yellow-400 font-black text-lg">스마트폰 스캔 접속!</div>
+                                        <div className="text-slate-400 text-xs mt-1">yeomt.github.io/DSbettingrace/</div>
+                                    </div>
+
+                                    <div className="flex-1 flex flex-col gap-4">
+                                        <div className="bg-slate-800 p-4 rounded-xl border border-slate-600 text-left shadow-inner flex-1 flex flex-col justify-center">
+                                            <h3 className="font-bold text-blue-400 mb-2"><i className="fas fa-file-upload"></i> 커스텀 단어장 업로드 (선택)</h3>
+                                            <p className="text-xs text-slate-400 mb-3">메모장에 <b>'영단어,뜻'</b>(쉼표) 또는 <b>'영단어[탭]뜻'</b> 형식으로 작성한 txt 파일을 올리세요.</p>
+                                            <div className="flex items-center gap-4">
+                                                <input type="file" accept=".txt" onChange={handleFileUpload} className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"/>
+                                                <span className="shrink-0 text-sm font-bold text-emerald-400 border border-emerald-500/50 bg-emerald-900/30 px-3 py-1 rounded-full">
+                                                    현재 단어 수: {uiState.customWords.length > 0 ? uiState.customWords.length : DEFAULT_WORDS.length}(기본)
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-center items-center gap-4 bg-slate-800 py-4 px-6 rounded-2xl border border-slate-600">
+                                            <span className="text-xl font-bold text-slate-300">진행할 라운드:</span>
+                                            <select value={setupRounds} onChange={e=>setSetupRounds(Number(e.target.value))} className="bg-slate-700 text-white font-black text-xl px-4 py-2 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500">
+                                                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} 라운드</option>)}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="flex justify-center items-center gap-4 mb-8 bg-slate-800 py-4 px-6 rounded-2xl border border-slate-600">
-                                    <span className="text-xl font-bold text-slate-300">진행할 라운드:</span>
-                                    <select value={setupRounds} onChange={e=>setSetupRounds(Number(e.target.value))} className="bg-slate-700 text-white font-black text-xl px-4 py-2 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500">
-                                        {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} 라운드</option>)}
-                                    </select>
-                                </div>
                                 <div className="flex flex-wrap justify-center gap-3 mb-8 min-h-[100px] content-start">
                                     {uiState.players.map(p => (
                                         <div key={p.uid} className="flex items-center gap-2 bg-indigo-900/50 pr-4 rounded-full border border-indigo-500/50 font-bold shadow-md">
@@ -836,13 +901,13 @@
                                     ))}
                                     {uiState.players.length === 0 && <div className="text-slate-500 font-bold w-full text-center mt-4">참가자가 없습니다.</div>}
                                 </div>
-                                <button onClick={startRound} disabled={uiState.players.length===0} className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-black py-4 px-12 rounded-xl text-xl transition active:scale-95 shadow-lg w-full">게임 시작하기</button>
+                                <button onClick={startRound} disabled={uiState.players.length===0} className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-black py-4 px-12 rounded-xl text-xl transition active:scale-95 shadow-lg w-full max-w-lg">게임 시작하기</button>
                             </div>
                         )}
                         {uiState.status === 'QUIZ' && (
-                            <div className="m-auto text-center w-full p-6">
+                            <div className="m-auto text-center w-full p-6 overflow-y-auto custom-scrollbar max-h-full">
                                 <h2 className="text-3xl font-bold text-blue-400 mb-2">📝 퀴즈 진행 중 (자본금 획득)</h2><p className="text-slate-400 mb-8">학생들이 스마트폰에서 문제를 풀며 투자금을 모으고 있습니다. (연속 정답 시 상금 증가!)</p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto mb-8 pr-2 custom-scrollbar text-left">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8 text-left">
                                     {uiState.players.map(p => (
                                         <div key={p.uid} className="bg-slate-800 p-2 rounded-lg border border-slate-700 shadow-sm flex items-center gap-2">
                                             <AvatarDisplay avatarStr={p.avatar} sizeClasses="w-8 h-8 text-base shrink-0" />
@@ -860,8 +925,7 @@
                                     현재 경기장 날씨: {uiState.weather.name} ({uiState.weather.desc})
                                 </div>
                                 <h2 className="text-3xl font-bold text-yellow-400 mb-2 text-center mt-6 shrink-0">💰 배팅 타임!</h2>
-                                <div className="text-center text-slate-300 font-bold mb-4 shrink-0">(실시간으로 배팅액에 따라 최종 배당률이 변동됩니다!)</div>
-                                <div className="flex justify-between items-center mb-4 shrink-0"><p className="text-slate-400">준비된 학생 비율</p><div className="bg-slate-800 px-4 py-2 rounded-lg font-bold">준비 완료: <span className="text-emerald-400">{uiState.players.filter(p=>p.isReady).length}</span> / {uiState.players.length}</div></div>
+                                <div className="text-center text-slate-300 font-bold mb-4 shrink-0">(학생들이 실시간 배팅 중입니다. 원할 때 경주를 시작하세요.)</div>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 overflow-y-auto custom-scrollbar flex-1 pr-2">
                                     {uiState.horses.map(h => (
@@ -882,9 +946,8 @@
                             </div>
                         )}
                         {uiState.status === 'RESULT' && (
-                            <div className="m-auto text-center w-full max-w-4xl z-20 p-6">
-                                {/* 🌟 호스트 컨트롤 버튼 상단 배치 */}
-                                <div className="mb-8 flex justify-center">
+                            <div className="m-auto text-center w-full max-w-4xl z-20 p-6 overflow-y-auto custom-scrollbar max-h-full">
+                                <div className="mb-8 flex justify-center sticky top-0 z-30">
                                     {uiState.round < uiState.totalRounds ? 
                                         <button onClick={startRound} className="bg-emerald-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-emerald-500">다음 라운드 준비 ➡️</button>
                                     : 
@@ -904,8 +967,8 @@
                             </div>
                         )}
                         {uiState.status === 'END_HORSE' && (
-                            <div className="m-auto text-center w-full p-6">
-                                <div className="mb-8 flex justify-center">
+                            <div className="m-auto text-center w-full p-6 overflow-y-auto custom-scrollbar max-h-full">
+                                <div className="mb-8 flex justify-center sticky top-0 z-30">
                                     <button onClick={()=>changeStatus('END_PLAYER')} className="bg-blue-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">최종 부자 랭킹 발표 ➡️</button>
                                 </div>
                                 <h2 className="text-5xl font-black text-slate-100 mb-12 drop-shadow-md">마지막 경주 우승마</h2>
@@ -913,12 +976,13 @@
                             </div>
                         )}
                         {uiState.status === 'END_PLAYER' && (
-                            <div className="m-auto text-center w-full p-6 max-h-full overflow-y-auto custom-scrollbar">
-                                <div className="mb-4 flex justify-center">
+                            <div className="m-auto text-center w-full p-6 max-h-full overflow-y-auto custom-scrollbar relative">
+                                <div className="mb-4 flex justify-center sticky top-0 z-30">
                                     <button onClick={()=>changeStatus('END_AWARDS')} className="bg-blue-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">특별 시상식 ➡️</button>
                                 </div>
                                 <h2 className="text-5xl font-black text-yellow-400 mb-12 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] font-display tracking-widest mt-2">🎉 최종 부자 랭킹 포디움 🎉</h2>
                                 <PlayerPodium players={uiState.players} />
+                                
                                 <div className="mt-8 bg-slate-800 p-6 rounded-2xl border border-slate-600 max-w-2xl mx-auto w-full mb-8">
                                     <h3 className="text-2xl font-bold mb-4 text-slate-300 border-b border-slate-700 pb-3">전체 랭킹 보드</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -933,8 +997,8 @@
                             </div>
                         )}
                         {uiState.status === 'END_AWARDS' && (
-                            <div className="m-auto text-center w-full max-w-5xl p-6">
-                                <div className="mb-12 flex justify-center gap-6">
+                            <div className="m-auto text-center w-full max-w-5xl p-6 overflow-y-auto custom-scrollbar max-h-full">
+                                <div className="mb-12 flex justify-center gap-6 sticky top-0 z-30">
                                     <button onClick={handleRematch} className="bg-indigo-600 hover:bg-indigo-500 px-8 py-4 rounded-xl font-black text-xl shadow-lg transition-transform hover:scale-105">같은 멤버로 1라운드 다시 시작</button>
                                     <button onClick={onExit} className="bg-slate-700 hover:bg-slate-600 border border-slate-500 px-8 py-4 rounded-xl font-black text-xl shadow-lg">방 폭파 (처음으로)</button>
                                 </div>
@@ -994,7 +1058,6 @@
                 return () => { if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval); peer.destroy(); };
             }, [roomCode, myUid, playerName, myAvatar]);
 
-            // 🌟 END_HORSE 단계에서 즉각 토큰 보상 처리 (이탈 방지)
             useEffect(() => {
                 if (roomState?.status === 'END_HORSE' && !awardedRef.current && me) {
                     awardedRef.current = true;
@@ -1088,7 +1151,6 @@
                 
                 sendAction({ type: 'CHEER', horseId: horse.id }); 
                 setOnCd(true);
-                // 🌟 응원 쿨타임 1초 적용
                 setTimeout(() => setOnCd(false), 1000); 
             };
 
@@ -1275,6 +1337,7 @@
             const hudDistRef = useRef(null);
             const dustLayerRef = useRef(null);
             const evtContainerRef = useRef(null);
+            
             const particleContainerRef = useRef(null);
             const cheerTickerRef = useRef(null); 
 
@@ -1305,7 +1368,6 @@
 
             useEffect(() => { playSound('start'); }, []);
 
-            // 🌟 응원 효과 리스너 (순수 시각적 효과만)
             useEffect(() => {
                 cheerEffects.current = horses.map(() => 0); 
                 const cheerCounts = horses.map(() => 0); 
@@ -1316,7 +1378,7 @@
                     
                     if (hIdx > -1) {
                         cheerCounts[hIdx] += 1;
-                        cheerEffects.current[hIdx] = 100; // 글로우 이펙트 발동
+                        cheerEffects.current[hIdx] = 100; 
                         
                         if (isHost && cheerTickerRef.current && playerName) {
                             const ticker = document.createElement('div');
@@ -1431,7 +1493,7 @@
                     let leadPos = activeRunners.length > 0 ? Math.max(...activeRunners.map(r => r.pos)) : TRACK_LENGTH + 150;
 
                     const leadData = getTrackPos(leadPos, 0);
-                    playback.current.camX += (leadData.x - playback.current.camX) * 0.1;
+                    playback.current.camX += (leadData.x - playback.current.camX) * 0.15;
                     
                     const cw = containerRef.current.clientWidth;
                     const ch = containerRef.current.clientHeight;
@@ -1463,7 +1525,6 @@
                     curPos.forEach((pos, i) => {
                         cheerEffects.current[i] *= 0.9; 
                         
-                        // 물리엔진 조작을 빼고 순수 시각적 효과만 남김
                         const visualPos = pos;
                         
                         const lat = lats1[i]*(1-frac) + lats2[i]*frac;
@@ -1480,7 +1541,7 @@
                                 else icon.classList.remove('active');
                                 
                                 if (cheerEffects.current[i] > 30) {
-                                    icon.style.filter = 'drop-shadow(0 0 20px rgba(250,204,21,1)) brightness(1.2)';
+                                    icon.style.filter = 'drop-shadow(0 0 40px rgba(250,204,21,1)) brightness(1.3)';
                                 } else {
                                     icon.style.filter = ''; 
                                 }
