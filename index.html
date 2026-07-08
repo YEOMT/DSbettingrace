@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>이모지무스메 더비 - 영단어 배팅 경마 게임</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
@@ -35,7 +32,6 @@
         #track-world { position: absolute; top: 0; left: 0; width: 120000px; height: 8000px; transform-origin: 0 0; will-change: transform; transition: filter 0.5s; }
         .track-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 
-        /* 🌟 가시성 상향 패치 */
         .runner { position: absolute; width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; will-change: transform, left, top; z-index: 20; margin-left: -110px; margin-top: -110px; }
         .runner-icon { font-size: 11rem; filter: drop-shadow(-15px 15px 15px rgba(0,0,0,0.7)); transition: transform 0.1s, filter 0.2s; line-height: 1; }
         .runner-icon.active { animation: bounce 0.2s infinite alternate cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -107,7 +103,6 @@
 <body>
     <div id="root" class="h-[100dvh] w-full"></div>
 
-    <!-- 🌟 Firebase 모듈 스크립트 분리 (가장 안전한 로딩 방식) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, onChildAdded, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
@@ -119,11 +114,11 @@
             storageBucket: "dsgames-fecef.firebasestorage.app",
             messagingSenderId: "723943517090",
             appId: "1:723943517090:web:3e8596971cedf46cc460fb",
-            databaseURL: "https://dsgames-fecef-default-rtdb.firebaseio.com"
+            // ⚠️ 주의: 데이터베이스 위치가 아시아(싱가포르)일 경우 아래 URL이 다를 수 있습니다. 콘솔에서 꼭 확인하세요!
+            databaseURL: "https://dsgames-fecef-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
         const app = initializeApp(firebaseConfig);
-        // 전역 객체로 전달하여 React 내부에서 에러 없이 사용 가능하게 함
         window.firebaseDb = getDatabase(app);
         window.fbRef = ref;
         window.fbSet = set;
@@ -131,6 +126,7 @@
         window.fbPush = push;
         window.fbOnChildAdded = onChildAdded;
         window.fbRemove = remove;
+        window.fbOnDisconnect = onDisconnect; // 🌟 자동 폭파를 위한 onDisconnect 모듈 추가
     </script>
 
     <script type="text/babel">
@@ -168,7 +164,7 @@
         const playSound = (soundKey) => { if (SOUNDS[soundKey]) SOUNDS[soundKey](); };
         const initAudio = () => { if(audioCtx.state === 'suspended') audioCtx.resume(); };
 
-        // --- 🌟 20종 캐릭터 로스터 ---
+        // --- 캐릭터 로스터 ---
         const HORSES = [
             { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 45, spurt: 85, stability: 70, luck: 30 }, type: 'late' },
             { id: 2, emoji: '🦈', name: '트랄랄레오 트랄랄라', desc: '어디로 튈지 모르는 광기의 육지 상어.', stats: { speed: 50, spurt: 50, stability: 10, luck: 100 }, type: 'luck' },
@@ -251,6 +247,7 @@
         const generateRoomCode = () => Math.floor(1000 + Math.random() * 9000).toString();
         const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
+        // --- 공용 아바타 렌더러 ---
         function AvatarDisplay({ avatarStr, sizeClasses }) {
             if(!avatarStr) return <div className={`flex items-center justify-center bg-slate-700 rounded-full ${sizeClasses}`}>👤</div>;
             const [hId, rarity] = avatarStr.split('_');
@@ -457,7 +454,7 @@
         // HOST VIEW
         // ==========================================
         function HostView({ onExit }) {
-            const { fbRef: ref, fbSet: set, fbOnChildAdded: onChildAdded, fbRemove: remove } = window;
+            const { fbRef: ref, fbSet: set, fbOnChildAdded: onChildAdded, fbRemove: remove, fbOnDisconnect: onDisconnect } = window;
             const db = window.firebaseDb;
             
             const [roomCode] = useState(generateRoomCode);
@@ -542,7 +539,11 @@
             };
 
             useEffect(() => {
-                // 파이어베이스 리스너 세팅
+                const roomRef = ref(db, `rooms/${roomCode}`);
+                
+                // 🌟 유령 방 방지: 호스트 연결 끊기면 서버에서 해당 방 즉시 자동 폭파
+                onDisconnect(roomRef).remove(); 
+                
                 set(ref(db, `rooms/${roomCode}/state`), { roomState: gameState.current, players: gameState.current.players });
 
                 const actionsRef = ref(db, `rooms/${roomCode}/actions`);
@@ -561,8 +562,8 @@
                     const state = gameState.current;
                     const beforeCount = state.players.length;
                     
-                    // 15초 동안 Ping이 없으면 유령 플레이어 자동 삭제
-                    state.players = state.players.filter(p => (now - (p.lastPing || now)) < 15000); 
+                    // 🌟 빠른 삭제: 8초 동안 Ping 없으면 유령으로 간주하고 삭제
+                    state.players = state.players.filter(p => (now - (p.lastPing || now)) < 8000); 
 
                     set(ref(db, `rooms/${roomCode}/state`), { roomState: state, players: state.players });
                     if (state.players.length !== beforeCount) setUiState({ ...state });
@@ -618,7 +619,7 @@
                 if (weatherRand < 0.50) gameState.current.weather = WEATHERS[0]; 
                 else gameState.current.weather = WEATHERS[1 + Math.floor(Math.random() * 3)];
                 
-                // 🌟 버그 픽스: 스탯 영구 오염(Mutation)을 막는 완벽한 깊은 복사(Deep Copy)
+                // 깊은 복사(Deep Copy)를 통한 스탯 유지
                 const selected = shuffle(HORSES).slice(0, 8).map(h => {
                     const cIdx = Math.floor(Math.random() * CONDITIONS.length);
                     const cond = CONDITIONS[cIdx].multi;
@@ -741,7 +742,6 @@
                             if(eff==='curse') targetSpeed *= 0.8; 
                         });
 
-                        // 🌟 Stable, Luck, Early 밸런스 최종 패치 적용
                         if (h.type === 'stable') {
                             const floorSpeed = avgFieldSpeed * (0.95 + cond * 0.15); 
                             targetSpeed = Math.max(targetSpeed, floorSpeed * (1 + (Math.random()*0.02 - 0.01))); 
@@ -757,7 +757,6 @@
 
                         if (h.type === 'early' && progress > 0.5 && progress <= 0.85) targetSpeed *= 0.98; 
 
-                        // 🌟 85% 이상 스퍼트 구간
                         if (progress > 0.85) {
                             const spurtFactor = (h.stats.spurt / 100) * 2.8; 
                             targetSpeed *= spurtFactor;
@@ -1060,8 +1059,10 @@
             const awardedRef = useRef(false);
             const [earnedTokenMsg, setEarnedTokenMsg] = useState(null);
 
+            // 접속 상태 추적용 ref
+            const hasJoined = useRef(false);
+
             useEffect(() => {
-                let joinInterval;
                 const stateRef = ref(db, `rooms/${roomCode}/state`);
                 const actionsRef = ref(db, `rooms/${roomCode}/actions`);
                 const cheersRef = ref(db, `rooms/${roomCode}/cheers`);
@@ -1071,9 +1072,12 @@
                         const data = snapshot.val();
                         setRoomState(data.roomState);
                         const meData = data.players?.find(p => p.uid === myUid);
-                        if(meData) setMe(meData);
+                        if(meData) {
+                            hasJoined.current = true;
+                            setMe(meData);
+                        }
                     } else {
-                        setErrorMsg('방이 종료되었거나 찾을 수 없습니다.');
+                        setErrorMsg('방이 폭파되었거나 찾을 수 없습니다.');
                     }
                 });
 
@@ -1086,14 +1090,23 @@
 
                 push(actionsRef, { type: 'JOIN', uid: myUid, name: playerName, avatar: myAvatar });
                 
+                // 🌟 8초 타임아웃 방어막 (호스트가 응답 안 하면 에러 출력)
+                const joinTimeout = setTimeout(() => {
+                    if (!hasJoined.current) {
+                        setErrorMsg('호스트가 응답하지 않습니다. 이전 방 번호이거나 선생님의 연결이 끊겼습니다.');
+                    }
+                }, 8000);
+
+                // 🌟 3초마다 Ping 발송
                 const pingInterval = setInterval(() => {
                     push(actionsRef, { type: 'PING', uid: myUid, name: playerName, avatar: myAvatar });
-                }, 4000);
+                }, 3000);
 
                 return () => {
                     unsubscribeState();
                     unsubscribeCheers();
                     clearInterval(pingInterval);
+                    clearTimeout(joinTimeout);
                 };
             }, [roomCode, myUid, playerName, myAvatar]);
 
@@ -1125,8 +1138,8 @@
 
             if (errorMsg) return (
                 <div className="h-full flex flex-col items-center justify-center bg-slate-900 text-white p-6 text-center">
-                    <div className="text-5xl mb-4 text-red-500">⚠️</div><div className="text-xl font-bold mb-2 text-red-400">접속 오류</div><div className="text-slate-300 text-sm break-keep leading-relaxed">{errorMsg}</div>
-                    <button onClick={onExit} className="mt-8 px-6 py-3 bg-slate-800 rounded-xl font-bold text-white shadow-lg active:scale-95 transition border border-slate-700">처음으로 돌아가기</button>
+                    <div className="text-5xl mb-4 text-red-500">⚠️</div><div className="text-xl font-bold mb-2 text-red-400">접속 오류</div><div className="text-slate-300 text-sm break-keep leading-relaxed mb-8">{errorMsg}</div>
+                    <button onClick={onExit} className="px-8 py-4 bg-slate-800 rounded-xl font-bold text-white shadow-lg active:scale-95 transition border border-slate-700">처음으로 돌아가기</button>
                 </div>
             );
             if (!roomState || !me) return (
@@ -1535,7 +1548,6 @@
                     let leadPos = activeRunners.length > 0 ? Math.max(...activeRunners.map(r => r.pos)) : TRACK_LENGTH + 150;
 
                     const leadData = getTrackPos(leadPos, 0);
-                    // 🌟 선두 트래킹 카메라 부드러움 향상
                     playback.current.camX += (leadData.x - playback.current.camX) * 0.15;
                     
                     const cw = containerRef.current.clientWidth;
