@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>이모지무스메 더비 - 영단어 배팅 경마 게임</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
@@ -32,6 +35,7 @@
         #track-world { position: absolute; top: 0; left: 0; width: 120000px; height: 8000px; transform-origin: 0 0; will-change: transform; transition: filter 0.5s; }
         .track-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 
+        /* 🌟 가시성 상향 패치 */
         .runner { position: absolute; width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; will-change: transform, left, top; z-index: 20; margin-left: -110px; margin-top: -110px; }
         .runner-icon { font-size: 11rem; filter: drop-shadow(-15px 15px 15px rgba(0,0,0,0.7)); transition: transform 0.1s, filter 0.2s; line-height: 1; }
         .runner-icon.active { animation: bounce 0.2s infinite alternate cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -93,7 +97,7 @@
         .skin-gold::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent); transform: rotate(45deg); animation: holoGleam 2s infinite linear; }
         @keyframes holoGleam { 0% { transform: rotate(45deg) translateX(-100%); } 100% { transform: rotate(45deg) translateX(100%); } }
         
-        /* 배당률 변동 애니메이션 */
+        /* 배당률 애니메이션 */
         @keyframes flashRed { 0% { color: #f87171; } 50% { color: #dc2626; transform: scale(1.1); } 100% { color: #f87171; } }
         @keyframes flashGreen { 0% { color: #34d399; } 50% { color: #10b981; transform: scale(1.1); } 100% { color: #34d399; } }
         .odds-down { animation: flashRed 0.5s; color: #ef4444; }
@@ -103,11 +107,11 @@
 <body>
     <div id="root" class="h-[100dvh] w-full"></div>
 
+    <!-- 🌟 Firebase 모듈 스크립트 분리 (가장 안전한 로딩 방식) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, onChildAdded, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // 사용자 제공 Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBtK7NAfw4wDsS4LRacWF78PHT3zls50IQ",
             authDomain: "dsgames-fecef.firebaseapp.com",
@@ -119,20 +123,25 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        // 전역 객체로 전달하여 React 내부에서 에러 없이 사용 가능하게 함
         window.firebaseDb = getDatabase(app);
+        window.fbRef = ref;
+        window.fbSet = set;
+        window.fbOnValue = onValue;
+        window.fbPush = push;
+        window.fbOnChildAdded = onChildAdded;
+        window.fbRemove = remove;
     </script>
 
-    <script type="text/babel" data-type="module">
+    <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
         // 🎵 BGM 설정 (여기에 Dropbox 링크를 넣어주세요)
-        // 주의: 링크 끝이 ?dl=0 이어도 시스템이 알아서 재생 가능한 주소로 자동 변환합니다.
         const BGM_URLS = {
-            lobby: '', // 예: 'https://www.dropbox.com/s/xxxx/lobby_bgm.mp3'
-            race: ''   // 예: 'https://www.dropbox.com/s/yyyy/race_bgm.mp3'
+            lobby: '', 
+            race: ''   
         };
 
-        // --- 8-bit 효과음 엔진 ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioContext();
         const play8BitTone = (type, freq, duration, vol = 0.1, slideFreq = null) => {
@@ -159,7 +168,7 @@
         const playSound = (soundKey) => { if (SOUNDS[soundKey]) SOUNDS[soundKey](); };
         const initAudio = () => { if(audioCtx.state === 'suspended') audioCtx.resume(); };
 
-        // --- 🌟 캐릭터 로스터 ---
+        // --- 🌟 20종 캐릭터 로스터 ---
         const HORSES = [
             { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 45, spurt: 85, stability: 70, luck: 30 }, type: 'late' },
             { id: 2, emoji: '🦈', name: '트랄랄레오 트랄랄라', desc: '어디로 튈지 모르는 광기의 육지 상어.', stats: { speed: 50, spurt: 50, stability: 10, luck: 100 }, type: 'luck' },
@@ -242,7 +251,6 @@
         const generateRoomCode = () => Math.floor(1000 + Math.random() * 9000).toString();
         const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
-        // --- 공용 아바타 렌더러 ---
         function AvatarDisplay({ avatarStr, sizeClasses }) {
             if(!avatarStr) return <div className={`flex items-center justify-center bg-slate-700 rounded-full ${sizeClasses}`}>👤</div>;
             const [hId, rarity] = avatarStr.split('_');
@@ -255,11 +263,23 @@
 
         // --- 앱 메인 ---
         function App() {
+            const [fbLoaded, setFbLoaded] = useState(false);
             const [view, setView] = useState('HOME');
             const [roomCode, setRoomCode] = useState('');
             const [playerName, setPlayerName] = useState(() => localStorage.getItem('edurace_last_name') || '');
             const [myUid] = useState(() => Math.random().toString(36).substr(2, 9));
             const [myAvatar, setMyAvatar] = useState(() => localStorage.getItem('edurace_avatar') || '');
+
+            // 🌟 파이어베이스 로딩 보장
+            useEffect(() => {
+                const checkFb = setInterval(() => {
+                    if(window.firebaseDb && window.fbRef) {
+                        clearInterval(checkFb);
+                        setFbLoaded(true);
+                    }
+                }, 50);
+                return () => clearInterval(checkFb);
+            }, []);
 
             const handleHostBtn = () => { initAudio(); setView('HOST'); };
             const handleJoinBtn = () => { 
@@ -269,6 +289,10 @@
                     setView('PLAYER');
                 } else alert('방 번호(4자리)와 닉네임을 입력하세요.');
             };
+
+            if (!fbLoaded) {
+                return <div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white font-bold text-xl">🚀 게임 엔진 로딩 중...</div>;
+            }
 
             if (view === 'GACHA') {
                 return <GachaView onExit={() => { setMyAvatar(localStorage.getItem('edurace_avatar') || ''); setView('HOME'); }} />;
@@ -433,15 +457,16 @@
         // HOST VIEW
         // ==========================================
         function HostView({ onExit }) {
+            const { fbRef: ref, fbSet: set, fbOnChildAdded: onChildAdded, fbRemove: remove } = window;
+            const db = window.firebaseDb;
+            
             const [roomCode] = useState(generateRoomCode);
             const [setupRounds, setSetupRounds] = useState(3);
             const gameState = useRef({ status: 'LOBBY', round: 0, totalRounds: 3, horses: [], raceData: null, players: [], weather: WEATHERS[0], customWords: [] });
             const [uiState, setUiState] = useState({ ...gameState.current });
-            const peerRef = useRef(null);
-            const connsRef = useRef({});
             
-            // 🌟 드롭박스 BGM 플레이어
             const audioRef = useRef(null);
+            
             useEffect(() => {
                 if (!audioRef.current) {
                     audioRef.current = new Audio();
@@ -491,8 +516,7 @@
 
             const changeStatus = (newStatus) => { 
                 gameState.current.status = newStatus; 
-                const stateObj = { roomState: { ...gameState.current, players: undefined }, players: gameState.current.players };
-                Object.values(connsRef.current).forEach(conn => { if(conn.open) conn.send({ type: 'SYNC', ...stateObj }); });
+                set(ref(db, `rooms/${roomCode}/state`), { roomState: gameState.current, players: gameState.current.players });
                 setUiState({...gameState.current}); 
             };
 
@@ -518,48 +542,56 @@
             };
 
             useEffect(() => {
-                const interval = setInterval(() => {
+                // 파이어베이스 리스너 세팅
+                set(ref(db, `rooms/${roomCode}/state`), { roomState: gameState.current, players: gameState.current.players });
+
+                const actionsRef = ref(db, `rooms/${roomCode}/actions`);
+                const unsubscribeActions = onChildAdded(actionsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if(data) {
+                        handlePlayerAction(data);
+                        remove(snapshot.ref);
+                    }
+                });
+
+                const syncInterval = setInterval(() => {
                     if (gameState.current.status === 'RACE' || gameState.current.status.startsWith('END')) return;
                     
-                    const activePlayers = [];
-                    gameState.current.players.forEach(p => {
-                        const c = connsRef.current[p.uid];
-                        if (c && c.open) activePlayers.push(p);
-                        else delete connsRef.current[p.uid]; 
-                    });
-                    gameState.current.players = activePlayers;
+                    const now = Date.now();
+                    const state = gameState.current;
+                    const beforeCount = state.players.length;
+                    
+                    // 15초 동안 Ping이 없으면 유령 플레이어 자동 삭제
+                    state.players = state.players.filter(p => (now - (p.lastPing || now)) < 15000); 
 
-                    const stateObj = { roomState: { ...gameState.current, players: undefined }, players: gameState.current.players };
-                    Object.values(connsRef.current).forEach(conn => { if(conn.open) conn.send({ type: 'SYNC', ...stateObj }); });
-                    setUiState({ ...gameState.current });
-                }, 300);
-
-                peerRef.current = new Peer('edurace-' + roomCode, { pingInterval: 5000 });
-                peerRef.current.on('error', (err) => {
-                    if (err.type === 'unavailable-id') { alert(`방 번호 [${roomCode}]가 이미 사용 중입니다. 새로고침을 눌러주세요.`); onExit(); }
-                });
-                peerRef.current.on('connection', (conn) => { conn.on('data', (data) => handlePlayerAction(data, conn)); });
-                peerRef.current.on('disconnected', () => peerRef.current.reconnect());
+                    set(ref(db, `rooms/${roomCode}/state`), { roomState: state, players: state.players });
+                    if (state.players.length !== beforeCount) setUiState({ ...state });
+                }, 1000); 
                 
                 return () => { 
-                    clearInterval(interval); 
-                    peerRef.current?.destroy(); 
+                    clearInterval(syncInterval); 
+                    unsubscribeActions();
+                    remove(ref(db, `rooms/${roomCode}`));
                     if(audioRef.current) audioRef.current.pause();
                 };
             }, [roomCode]);
 
-            const handlePlayerAction = (data, conn) => {
+            const handlePlayerAction = (data) => {
                 const state = gameState.current;
                 let player = state.players.find(p => p.uid === data.uid);
-                if (data.type === 'JOIN') {
-                    if (!player) {
-                        player = { uid: data.uid, name: data.name, avatar: data.avatar, money: 10000, inventory: null, bets: {}, isReady: false, stats: { quizCnt: 0, betWin: 0, betLoss: 0 } };
+                
+                if (data.type === 'JOIN' || data.type === 'PING') {
+                    if (!player && data.type === 'JOIN') {
+                        player = { uid: data.uid, name: data.name, avatar: data.avatar, money: 10000, inventory: null, bets: {}, isReady: false, stats: { quizCnt: 0, betWin: 0, betLoss: 0 }, lastPing: Date.now() };
                         state.players.push(player);
-                    } else { player.name = data.name; player.avatar = data.avatar; }
-                    connsRef.current[data.uid] = conn;
-                    conn.send({ type: 'SYNC', roomState: { ...state, players: undefined }, players: state.players });
+                    } else if (player) {
+                        player.name = data.name; 
+                        player.avatar = data.avatar;
+                        player.lastPing = Date.now();
+                    }
                 }
                 else if (player) {
+                    player.lastPing = Date.now();
                     if (data.type === 'QUIZ_CORRECT') {
                         player.money += Math.round(data.earned || 1000); 
                         player.stats.quizCnt++;
@@ -568,13 +600,13 @@
                     else if (data.type === 'BET_CHANGE') { 
                         player.bets = data.bets; 
                         player.usedItemOn = data.usedItemOn; 
+                        player.isReady = true;
                         recalcLiveOdds(); 
                     }
                     else if (data.type === 'CHEER') {
                         window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: player.name } }));
-                        Object.values(connsRef.current).forEach(c => {
-                            if(c.open) c.send({ type: 'CHEER_RELAY', horseId: data.horseId, playerName: player.name });
-                        });
+                        const { fbPush } = window;
+                        fbPush(ref(db, `rooms/${roomCode}/cheers`), { horseId: data.horseId, playerName: player.name, ts: Date.now() });
                     }
                 }
             };
@@ -586,7 +618,7 @@
                 if (weatherRand < 0.50) gameState.current.weather = WEATHERS[0]; 
                 else gameState.current.weather = WEATHERS[1 + Math.floor(Math.random() * 3)];
                 
-                // 🌟 Deep Copy
+                // 🌟 버그 픽스: 스탯 영구 오염(Mutation)을 막는 완벽한 깊은 복사(Deep Copy)
                 const selected = shuffle(HORSES).slice(0, 8).map(h => {
                     const cIdx = Math.floor(Math.random() * CONDITIONS.length);
                     const cond = CONDITIONS[cIdx].multi;
@@ -609,6 +641,9 @@
                 gameState.current.horses = selected;
                 gameState.current.raceData = null;
                 gameState.current.players.forEach(p => { p.isReady = false; p.bets = {}; p.usedItemOn = null; });
+                
+                remove(ref(db, `rooms/${roomCode}/cheers`)); 
+
                 changeStatus('QUIZ');
             };
 
@@ -706,6 +741,7 @@
                             if(eff==='curse') targetSpeed *= 0.8; 
                         });
 
+                        // 🌟 Stable, Luck, Early 밸런스 최종 패치 적용
                         if (h.type === 'stable') {
                             const floorSpeed = avgFieldSpeed * (0.95 + cond * 0.15); 
                             targetSpeed = Math.max(targetSpeed, floorSpeed * (1 + (Math.random()*0.02 - 0.01))); 
@@ -721,6 +757,7 @@
 
                         if (h.type === 'early' && progress > 0.5 && progress <= 0.85) targetSpeed *= 0.98; 
 
+                        // 🌟 85% 이상 스퍼트 구간
                         if (progress > 0.85) {
                             const spurtFactor = (h.stats.spurt / 100) * 2.8; 
                             targetSpeed *= spurtFactor;
@@ -864,9 +901,8 @@
                                 <h2 className="text-3xl font-bold mb-8">학생들의 접속을 대기중입니다...</h2>
                                 
                                 <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch mb-8">
-                                    {/* 🌟 QR 코드 영역 */}
                                     <div className="bg-slate-800 p-6 rounded-2xl border border-slate-600 shadow-xl flex flex-col items-center justify-center shrink-0">
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://yeomt.github.io/DSbettingrace/" className="rounded-xl shadow-md mb-3 bg-white p-2" alt="QR Code" />
+                                        <img src={"https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://yeomt.github.io/DSbettingrace/"} className="rounded-xl shadow-md mb-3 bg-white p-2" alt="QR Code" />
                                         <div className="text-yellow-400 font-black text-lg">스마트폰 스캔 접속!</div>
                                         <div className="text-slate-400 text-xs mt-1">yeomt.github.io/DSbettingrace/</div>
                                     </div>
@@ -1014,48 +1050,51 @@
         // PLAYER VIEW
         // ==========================================
         function PlayerView({ roomCode, playerName, myUid, myAvatar, onExit }) {
+            const { fbRef: ref, fbOnValue: onValue, fbPush: push, fbOnChildAdded: onChildAdded } = window;
+            const db = window.firebaseDb;
+            
             const [roomState, setRoomState] = useState(null);
             const [me, setMe] = useState(null);
-            const connRef = useRef(null);
             const [errorMsg, setErrorMsg] = useState('');
             
             const awardedRef = useRef(false);
             const [earnedTokenMsg, setEarnedTokenMsg] = useState(null);
 
             useEffect(() => {
-                const peer = new Peer({ pingInterval: 5000 });
-                let joinTimeout, joinInterval, retryCount = 0, conn = null;
+                let joinInterval;
+                const stateRef = ref(db, `rooms/${roomCode}/state`);
+                const actionsRef = ref(db, `rooms/${roomCode}/actions`);
+                const cheersRef = ref(db, `rooms/${roomCode}/cheers`);
 
-                const connectToHost = () => {
-                    conn = peer.connect('edurace-' + roomCode); 
-                    conn.on('open', () => {
-                        connRef.current = conn;
-                        const tryJoin = () => { if (conn.open) conn.send({ type: 'JOIN', uid: myUid, name: playerName, avatar: myAvatar }); };
-                        tryJoin();
-                        if(joinInterval) clearInterval(joinInterval); joinInterval = setInterval(tryJoin, 1000); 
-                    });
-                    conn.on('data', (data) => {
-                        if (data.type === 'SYNC') {
-                            setRoomState(data.roomState); setMe(data.players.find(p => p.uid === myUid));
-                            if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval);
-                        }
-                        else if (data.type === 'CHEER_RELAY') {
-                            window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: data.playerName } }));
-                        }
-                    });
+                const unsubscribeState = onValue(stateRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        setRoomState(data.roomState);
+                        const meData = data.players?.find(p => p.uid === myUid);
+                        if(meData) setMe(meData);
+                    } else {
+                        setErrorMsg('방이 종료되었거나 찾을 수 없습니다.');
+                    }
+                });
+
+                const unsubscribeCheers = onChildAdded(cheersRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if(data) {
+                        window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: data.playerName } }));
+                    }
+                });
+
+                push(actionsRef, { type: 'JOIN', uid: myUid, name: playerName, avatar: myAvatar });
+                
+                const pingInterval = setInterval(() => {
+                    push(actionsRef, { type: 'PING', uid: myUid, name: playerName, avatar: myAvatar });
+                }, 4000);
+
+                return () => {
+                    unsubscribeState();
+                    unsubscribeCheers();
+                    clearInterval(pingInterval);
                 };
-                
-                peer.on('open', () => {
-                    connectToHost();
-                    joinTimeout = setTimeout(() => { if (!connRef.current || !connRef.current.open) setErrorMsg('호스트와의 연결이 지연되고 있습니다.'); }, 15000); 
-                });
-                peer.on('error', (err) => {
-                    if (err.type === 'peer-unavailable' && retryCount < 3) { retryCount++; setTimeout(connectToHost, 1500); } 
-                    else { setErrorMsg(`접속 오류가 발생했습니다. 방 번호를 다시 확인해주세요.`); }
-                });
-                peer.on('disconnected', () => peer.reconnect());
-                
-                return () => { if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval); peer.destroy(); };
             }, [roomCode, myUid, playerName, myAvatar]);
 
             useEffect(() => {
@@ -1064,7 +1103,7 @@
                     const sorted = [...roomState.players].sort((a,b) => b.money - a.money);
                     const myRank = sorted.findIndex(p => p.uid === myUid) + 1;
                     
-                    let earned = 30; // 기본
+                    let earned = 30; 
                     if (myRank === 1) earned = 100;
                     else if (myRank === 2) earned = 70;
                     else if (myRank === 3) earned = 50;
@@ -1079,7 +1118,10 @@
                 }
             }, [roomState?.status, me, myUid, roomState?.players]);
 
-            const sendAction = (action) => { if(connRef.current?.open) connRef.current.send({ uid: myUid, ...action }); };
+            const sendAction = (action) => { 
+                const { fbPush: push } = window;
+                push(ref(db, `rooms/${roomCode}/actions`), { uid: myUid, ...action }); 
+            };
 
             if (errorMsg) return (
                 <div className="h-full flex flex-col items-center justify-center bg-slate-900 text-white p-6 text-center">
@@ -1132,7 +1174,7 @@
         function PlayerCheerUI({ horses, sendAction }) {
             return (
                 <div className="w-full p-2 pb-4 z-50 bg-slate-900/90 backdrop-blur border-t border-slate-700 shrink-0">
-                    <div className="text-center text-xs font-bold text-yellow-400 mb-2">📣 모든 경주마 응원 가능! (터치 연타)</div>
+                    <div className="text-center text-xs font-bold text-yellow-400 mb-2">📣 모든 경주마 응원 가능! (빛나는 이펙트)</div>
                     <div className="grid grid-cols-4 gap-2">
                         {horses.map(h => (
                             <CheerButton key={h.id} horse={h} sendAction={sendAction} />
@@ -1493,6 +1535,7 @@
                     let leadPos = activeRunners.length > 0 ? Math.max(...activeRunners.map(r => r.pos)) : TRACK_LENGTH + 150;
 
                     const leadData = getTrackPos(leadPos, 0);
+                    // 🌟 선두 트래킹 카메라 부드러움 향상
                     playback.current.camX += (leadData.x - playback.current.camX) * 0.15;
                     
                     const cw = containerRef.current.clientWidth;
