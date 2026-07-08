@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>이모지무스메 더비 - 영단어 배팅 경마 게임</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- PeerJS -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
@@ -34,7 +38,6 @@
         #track-world { position: absolute; top: 0; left: 0; width: 120000px; height: 8000px; transform-origin: 0 0; will-change: transform; transition: filter 0.5s; }
         .track-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 
-        /* 🌟 가시성 확대를 위해 주자(runner) 컨테이너와 내부 폰트 크기 대폭 상향 */
         .runner { position: absolute; width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; will-change: transform, left, top; z-index: 20; margin-left: -110px; margin-top: -110px; }
         .runner-icon { font-size: 11rem; filter: drop-shadow(-15px 15px 15px rgba(0,0,0,0.7)); transition: transform 0.1s, filter 0.2s; line-height: 1; }
         .runner-icon.active { animation: bounce 0.2s infinite alternate cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -85,15 +88,15 @@
         .pip-dist { color: #94a3b8; font-size: 0.9rem; font-weight: bold; font-family: monospace; }
         @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* Podiums & Avatars */
+        /* Podiums & Avatars (Bronze, Silver, Gold) */
         .podium-1 { background: linear-gradient(to top, #d4af37, #fdf5a9); box-shadow: 0 -10px 20px rgba(212, 175, 55, 0.4); }
         .podium-2 { background: linear-gradient(to top, #94a3b8, #e2e8f0); }
         .podium-3 { background: linear-gradient(to top, #b45309, #fdba74); }
         
-        .skin-normal { border: 2px solid #64748b; background-color: #334155; }
-        .skin-gold { border: 3px solid #fbbf24; background: linear-gradient(135deg, #78350f, #b45309); box-shadow: 0 0 10px rgba(251,191,36,0.6); }
-        .skin-holo { border: 3px solid #a855f7; box-shadow: 0 0 15px #a855f7, inset 0 0 10px #a855f7; background: linear-gradient(135deg, #4c1d95, #7e22ce); position: relative; overflow: hidden; }
-        .skin-holo::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent); transform: rotate(45deg); animation: holoGleam 2s infinite linear; }
+        .skin-bronze { border: 3px solid #b87333; background: linear-gradient(135deg, #8c5220, #d99a6c); box-shadow: 0 0 10px rgba(184,115,51,0.4); }
+        .skin-silver { border: 3px solid #c0c0c0; background: linear-gradient(135deg, #808080, #e0e0e0); box-shadow: 0 0 10px rgba(192,192,192,0.6); }
+        .skin-gold { border: 3px solid #fbbf24; box-shadow: 0 0 20px #fbbf24, inset 0 0 10px #fbbf24; background: linear-gradient(135deg, #b45309, #fde047); position: relative; overflow: hidden; }
+        .skin-gold::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent); transform: rotate(45deg); animation: holoGleam 2s infinite linear; }
         @keyframes holoGleam { 0% { transform: rotate(45deg) translateX(-100%); } 100% { transform: rotate(45deg) translateX(100%); } }
         
         /* 배당률 변동 애니메이션 */
@@ -299,9 +302,9 @@
             const [pullResult, setPullResult] = useState(null);
 
             const GACHA_POOL = HORSES.flatMap(h => [
-                { ...h, rarity: 'normal', weight: 70 },
-                { ...h, rarity: 'gold', weight: 25 },
-                { ...h, rarity: 'holo', weight: 5 }
+                { ...h, rarity: 'bronze', weight: 70 },
+                { ...h, rarity: 'silver', weight: 25 },
+                { ...h, rarity: 'gold', weight: 5 }
             ]);
 
             const doPull = () => {
@@ -339,7 +342,7 @@
                 const [id, r] = k.split('_');
                 if(!ownedMap[id]) ownedMap[id] = r;
                 else {
-                    const weight = { 'normal':1, 'gold':2, 'holo':3 };
+                    const weight = { 'bronze':1, 'silver':2, 'gold':3 };
                     if(weight[r] > weight[ownedMap[id]]) ownedMap[id] = r;
                 }
             });
@@ -360,7 +363,7 @@
                                 <div className="absolute inset-0 z-20 pointer-events-none shadow-inner"></div>
                             </div>
                             <div className="text-2xl font-black mb-2">{pullResult.name}</div>
-                            <div className={`text-lg font-bold mb-8 ${pullResult.rarity==='holo'?'text-purple-400':(pullResult.rarity==='gold'?'text-yellow-400':'text-slate-400')}`}>
+                            <div className={`text-lg font-bold mb-8 ${pullResult.rarity==='gold'?'text-yellow-400':(pullResult.rarity==='silver'?'text-slate-300':'text-orange-400')}`}>
                                 {pullResult.rarity.toUpperCase()} 스킨 획득!
                             </div>
                             <button onClick={()=>setPullResult(null)} className="bg-indigo-600 px-8 py-3 rounded-xl font-bold hover:bg-indigo-500">확인</button>
@@ -417,7 +420,6 @@
             const peerRef = useRef(null);
             const connsRef = useRef({});
 
-            // 🌟 라이브 배당률 재계산 함수
             const recalcLiveOdds = () => {
                 let realBetTotal = 0;
                 gameState.current.players.forEach(p => { if (p.bets) Object.values(p.bets).forEach(amt => realBetTotal += amt); });
@@ -470,12 +472,11 @@
                 const interval = setInterval(() => {
                     if (gameState.current.status === 'RACE' || gameState.current.status.startsWith('END')) return;
                     
-                    // 🌟 튕긴 유저 정리 로직 강화 (Heartbeat Cleanup)
                     const activePlayers = [];
                     gameState.current.players.forEach(p => {
                         const c = connsRef.current[p.uid];
                         if (c && c.open) activePlayers.push(p);
-                        else delete connsRef.current[p.uid]; // 연결 끊긴 유저 삭제
+                        else delete connsRef.current[p.uid]; 
                     });
                     gameState.current.players = activePlayers;
 
@@ -507,7 +508,7 @@
                 }
                 else if (player) {
                     if (data.type === 'QUIZ_CORRECT') {
-                        player.money += (data.earned || 1000); 
+                        player.money += Math.round(data.earned || 1000); 
                         player.stats.quizCnt++;
                         if(!player.inventory && Math.random() < 0.2) player.inventory = ITEMS[Math.floor(Math.random()*ITEMS.length)].id;
                     }
@@ -532,7 +533,6 @@
                 if (weatherRand < 0.50) gameState.current.weather = WEATHERS[0]; 
                 else gameState.current.weather = WEATHERS[1 + Math.floor(Math.random() * 3)];
                 
-                // 🌟 Deep Copy (스탯 오염 방지)
                 const selected = shuffle(HORSES).slice(0, 8).map(h => {
                     const cIdx = Math.floor(Math.random() * CONDITIONS.length);
                     const cond = CONDITIONS[cIdx].multi;
@@ -652,7 +652,6 @@
                             if(eff==='curse') targetSpeed *= 0.8; 
                         });
 
-                        // 🌟 Stable, Luck, Early 밸런스 최종 패치 적용
                         if (h.type === 'stable') {
                             const floorSpeed = avgFieldSpeed * (0.95 + cond * 0.15); 
                             targetSpeed = Math.max(targetSpeed, floorSpeed * (1 + (Math.random()*0.02 - 0.01))); 
@@ -668,7 +667,6 @@
 
                         if (h.type === 'early' && progress > 0.5 && progress <= 0.85) targetSpeed *= 0.98; 
 
-                        // 🌟 85% 이상 스퍼트 구간
                         if (progress > 0.85) {
                             const spurtFactor = (h.stats.spurt / 100) * 2.8; 
                             targetSpeed *= spurtFactor;
@@ -772,9 +770,14 @@
                         if(p.inventory === 'insurance' && win < cost) win += cost * 0.25; 
                         p.inventory = null;
                     }
-                    p.money += (win - cost); 
-                    p.stats.betWin += (win > cost ? win - cost : 0);
-                    p.stats.betLoss += (win < cost ? cost - win : 0);
+                    
+                    // 🌟 소수점 오차 방지를 위해 모든 계산에 Math.round 적용
+                    win = Math.round(win);
+                    cost = Math.round(cost);
+                    
+                    p.money = Math.round(p.money + (win - cost)); 
+                    p.stats.betWin += Math.round(win > cost ? win - cost : 0);
+                    p.stats.betLoss += Math.round(win < cost ? cost - win : 0);
                     
                     p.lastCost = cost; p.lastGrossWin = win; p.lastWin = win - cost;
                 });
@@ -857,7 +860,8 @@
                                     현재 경기장 날씨: {uiState.weather.name} ({uiState.weather.desc})
                                 </div>
                                 <h2 className="text-3xl font-bold text-yellow-400 mb-2 text-center mt-6 shrink-0">💰 배팅 타임!</h2>
-                                <div className="text-center text-slate-300 font-bold mb-4 shrink-0">(학생들이 실시간 배팅 중입니다. 모든 학생들이 배팅을 마치면 방장이 경주를 시작하세요.)</div>
+                                <div className="text-center text-slate-300 font-bold mb-4 shrink-0">(실시간으로 배팅액에 따라 최종 배당률이 변동됩니다!)</div>
+                                <div className="flex justify-between items-center mb-4 shrink-0"><p className="text-slate-400">준비된 학생 비율</p><div className="bg-slate-800 px-4 py-2 rounded-lg font-bold">준비 완료: <span className="text-emerald-400">{uiState.players.filter(p=>p.isReady).length}</span> / {uiState.players.length}</div></div>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 overflow-y-auto custom-scrollbar flex-1 pr-2">
                                     {uiState.horses.map(h => (
@@ -879,6 +883,14 @@
                         )}
                         {uiState.status === 'RESULT' && (
                             <div className="m-auto text-center w-full max-w-4xl z-20 p-6">
+                                {/* 🌟 호스트 컨트롤 버튼 상단 배치 */}
+                                <div className="mb-8 flex justify-center">
+                                    {uiState.round < uiState.totalRounds ? 
+                                        <button onClick={startRound} className="bg-emerald-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-emerald-500">다음 라운드 준비 ➡️</button>
+                                    : 
+                                        <button onClick={()=>changeStatus('END_HORSE')} className="bg-red-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-red-500">게임 종료 (최종 랭킹 보기) ➡️</button>
+                                    }
+                                </div>
                                 <h2 className="text-4xl font-black text-purple-400 mb-8">🏆 {uiState.round}라운드 결과</h2>
                                 <HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} />
                                 <div className="bg-slate-800 rounded-xl p-4 mb-8 border border-slate-700 shadow-md">
@@ -889,19 +901,24 @@
                                         ))}
                                     </div>
                                 </div>
-                                {uiState.round < uiState.totalRounds ? <button onClick={startRound} className="bg-emerald-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-emerald-500">다음 라운드 준비</button>
-                                : <button onClick={()=>changeStatus('END_HORSE')} className="bg-red-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-red-500">게임 종료 (최종 랭킹 보기)</button>}
                             </div>
                         )}
                         {uiState.status === 'END_HORSE' && (
-                            <div className="m-auto text-center w-full p-6"><h2 className="text-5xl font-black text-slate-100 mb-12 drop-shadow-md">마지막 경주 우승마</h2><HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} /><button onClick={()=>changeStatus('END_PLAYER')} className="mt-12 bg-blue-600 px-8 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">최종 부자 랭킹 발표 ➡️</button></div>
+                            <div className="m-auto text-center w-full p-6">
+                                <div className="mb-8 flex justify-center">
+                                    <button onClick={()=>changeStatus('END_PLAYER')} className="bg-blue-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">최종 부자 랭킹 발표 ➡️</button>
+                                </div>
+                                <h2 className="text-5xl font-black text-slate-100 mb-12 drop-shadow-md">마지막 경주 우승마</h2>
+                                <HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} />
+                            </div>
                         )}
                         {uiState.status === 'END_PLAYER' && (
                             <div className="m-auto text-center w-full p-6 max-h-full overflow-y-auto custom-scrollbar">
-                                <h2 className="text-5xl font-black text-yellow-400 mb-12 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] font-display tracking-widest mt-6">🎉 최종 부자 랭킹 포디움 🎉</h2>
+                                <div className="mb-4 flex justify-center">
+                                    <button onClick={()=>changeStatus('END_AWARDS')} className="bg-blue-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">특별 시상식 ➡️</button>
+                                </div>
+                                <h2 className="text-5xl font-black text-yellow-400 mb-12 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] font-display tracking-widest mt-2">🎉 최종 부자 랭킹 포디움 🎉</h2>
                                 <PlayerPodium players={uiState.players} />
-                                
-                                {/* 🌟 전체 랭킹 보드 신설 */}
                                 <div className="mt-8 bg-slate-800 p-6 rounded-2xl border border-slate-600 max-w-2xl mx-auto w-full mb-8">
                                     <h3 className="text-2xl font-bold mb-4 text-slate-300 border-b border-slate-700 pb-3">전체 랭킹 보드</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -913,16 +930,15 @@
                                         ))}
                                     </div>
                                 </div>
-                                <button onClick={()=>changeStatus('END_AWARDS')} className="mb-10 bg-blue-600 px-8 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">특별 시상식 ➡️</button>
                             </div>
                         )}
                         {uiState.status === 'END_AWARDS' && (
                             <div className="m-auto text-center w-full max-w-5xl p-6">
-                                <h2 className="text-5xl font-black text-purple-400 mb-12 drop-shadow-md font-display tracking-wider">🌟 특별 시상식 🌟</h2><SpecialAwards players={uiState.players} />
-                                <div className="mt-16 flex justify-center gap-6">
+                                <div className="mb-12 flex justify-center gap-6">
                                     <button onClick={handleRematch} className="bg-indigo-600 hover:bg-indigo-500 px-8 py-4 rounded-xl font-black text-xl shadow-lg transition-transform hover:scale-105">같은 멤버로 1라운드 다시 시작</button>
                                     <button onClick={onExit} className="bg-slate-700 hover:bg-slate-600 border border-slate-500 px-8 py-4 rounded-xl font-black text-xl shadow-lg">방 폭파 (처음으로)</button>
                                 </div>
+                                <h2 className="text-5xl font-black text-purple-400 mb-12 drop-shadow-md font-display tracking-wider">🌟 특별 시상식 🌟</h2><SpecialAwards players={uiState.players} />
                             </div>
                         )}
                     </div>
@@ -978,12 +994,17 @@
                 return () => { if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval); peer.destroy(); };
             }, [roomCode, myUid, playerName, myAvatar]);
 
+            // 🌟 END_HORSE 단계에서 즉각 토큰 보상 처리 (이탈 방지)
             useEffect(() => {
-                if (roomState?.status === 'END_PLAYER' && !awardedRef.current && me) {
+                if (roomState?.status === 'END_HORSE' && !awardedRef.current && me) {
                     awardedRef.current = true;
                     const sorted = [...roomState.players].sort((a,b) => b.money - a.money);
                     const myRank = sorted.findIndex(p => p.uid === myUid) + 1;
-                    const earned = myRank === 1 ? 50 : (myRank <= 3 ? 30 : 10);
+                    
+                    let earned = 30; // 기본
+                    if (myRank === 1) earned = 100;
+                    else if (myRank === 2) earned = 70;
+                    else if (myRank === 3) earned = 50;
                     
                     const curTokens = parseInt(localStorage.getItem('edurace_tokens') || '30');
                     localStorage.setItem('edurace_tokens', curTokens + earned);
@@ -1021,7 +1042,6 @@
                         {roomState.status === 'QUIZ' && <QuizPhase me={me} roomState={roomState} sendAction={sendAction} />}
                         {roomState.status === 'BETTING' && <BettingPhase roomState={roomState} me={me} sendAction={sendAction} />}
                         
-                        {/* 🌟 레이스 화면에 2x4 전체 응원 UI 적용 */}
                         {roomState.status === 'RACE' && (
                             <div className="w-full h-full relative flex flex-col">
                                 <div className="flex-1 relative overflow-hidden">
@@ -1045,7 +1065,7 @@
             );
         }
 
-        // --- 🌟 플레이어 전용 응원 UI 컴포넌트 (2x4 그리드 전체말) ---
+        // --- 플레이어 전용 응원 UI 컴포넌트 ---
         function PlayerCheerUI({ horses, sendAction }) {
             return (
                 <div className="w-full p-2 pb-4 z-50 bg-slate-900/90 backdrop-blur border-t border-slate-700 shrink-0">
@@ -1068,10 +1088,10 @@
                 
                 sendAction({ type: 'CHEER', horseId: horse.id }); 
                 setOnCd(true);
-                setTimeout(() => setOnCd(false), 800); 
+                // 🌟 응원 쿨타임 1초 적용
+                setTimeout(() => setOnCd(false), 1000); 
             };
 
-            // 케니(ID:12)는 이모지 반전 안함
             const isFlipped = horse.id !== 12 && !horse.img;
 
             return (
@@ -1112,7 +1132,7 @@
                 if(idx === currentQ.ans) { 
                     const newCombo = combo + 1;
                     setCombo(newCombo);
-                    const earned = 1000 + ((newCombo - 1) * 200); // 보상 스케일 상향
+                    const earned = 1000 + ((newCombo - 1) * 200); 
                     
                     if(newCombo > 1) playSound('combo'); else playSound('coin');
                     
@@ -1153,7 +1173,7 @@
 
         // --- 배팅 페이즈 ---
         function BettingPhase({ roomState, me, sendAction }) {
-            const [bets, setBets] = useState({}); const [betAmt, setBetAmt] = useState(1000); const [useItemMode, setUseItemMode] = useState(false); const [usedItemOn, setUsedItemOn] = useState(null);
+            const [bets, setBets] = useState({}); const [betAmt, setBetAmt] = useState(10000); const [useItemMode, setUseItemMode] = useState(false); const [usedItemOn, setUsedItemOn] = useState(null);
             const total = Object.values(bets).reduce((a,b)=>a+b, 0); const avail = me.money - total;
             
             const prevOdds = useRef({});
@@ -1206,9 +1226,8 @@
 
                     <div className="flex justify-between items-end mb-3"><h2 className="text-xl font-black text-yellow-400">말 정보 & 배팅</h2><div className="text-right text-sm font-bold text-slate-400">가용: <span className="text-emerald-400 text-lg">{Math.floor(avail)}💰</span></div></div>
                     
-                    {/* 🌟 배팅액 버튼 상향 반영 */}
                     <div className="flex gap-2 mb-3 bg-slate-800 p-2 rounded-xl overflow-x-auto custom-scrollbar shadow-inner border border-slate-700">
-                        {[1000, 5000, 10000, '올인'].map(a => { const val = a === '올인' ? Math.floor(avail) : a; const sel = betAmt === val && val > 0; return <button key={a} onClick={()=>setBetAmt(val)} className={`px-4 py-2 rounded-lg font-black text-sm transition shrink-0 ${sel ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-700 text-slate-300'}`}>{a}</button>; })}
+                        {[10000, 50000, '올인'].map(a => { const val = a === '올인' ? Math.floor(avail) : a; const sel = betAmt === val && val > 0; return <button key={a} onClick={()=>setBetAmt(val)} className={`px-4 py-2 rounded-lg font-black text-sm transition shrink-0 ${sel ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-700 text-slate-300'}`}>{a}</button>; })}
                     </div>
                     {itemInfo && !usedItemOn && (
                         <div className="mb-3 bg-indigo-900/40 p-3 rounded-xl border border-indigo-500/50 flex justify-between items-center shadow-md">
@@ -1240,7 +1259,6 @@
                             </div>
                         ))}
                     </div>
-                    {/* 🌟 준비완료 버튼 대신 상태창 표시 */}
                     <div className="absolute bottom-0 left-0 w-full bg-slate-800/95 backdrop-blur border-t border-slate-700 p-3 flex justify-between items-center z-20"><div className="font-bold text-slate-300 text-sm">총 배팅: <span className="text-white text-lg font-black">{total}</span> 💰</div><div className="text-yellow-400 font-bold text-sm animate-pulse">방장의 시작 대기중...</div></div>
                 </div>
             );
@@ -1262,8 +1280,7 @@
 
             const playback = useRef({ startMs: null, lastTs: null, currentTick: 0, lastEvtTick: -1, spurt: false, camX: null });
             const leadTracker = useRef({ currentLeaderIdx: -1, lastLeadChangeTick: -999 });
-            const cheerBoosts = useRef([]);
-            const cheerCounts = useRef([]);
+            const cheerEffects = useRef([]); 
 
             const [isSpurtCSS, setIsSpurtCSS] = useState(false);
             const [isDramatic, setIsDramatic] = useState(false); 
@@ -1288,16 +1305,18 @@
 
             useEffect(() => { playSound('start'); }, []);
 
+            // 🌟 응원 효과 리스너 (순수 시각적 효과만)
             useEffect(() => {
-                cheerBoosts.current = horses.map(() => 0); 
-                cheerCounts.current = horses.map(() => 0); 
+                cheerEffects.current = horses.map(() => 0); 
+                const cheerCounts = horses.map(() => 0); 
                 
                 const onCheer = (e) => {
                     const { horseId, playerName } = e.detail;
                     const hIdx = horses.findIndex(h => h.id === horseId);
                     
                     if (hIdx > -1) {
-                        cheerCounts.current[hIdx] += 1;
+                        cheerCounts[hIdx] += 1;
+                        cheerEffects.current[hIdx] = 100; // 글로우 이펙트 발동
                         
                         if (isHost && cheerTickerRef.current && playerName) {
                             const ticker = document.createElement('div');
@@ -1307,10 +1326,8 @@
                             setTimeout(() => ticker.remove(), 2000);
                         }
                         
-                        if (cheerCounts.current[hIdx] >= 5) {
-                            cheerBoosts.current[hIdx] += 150; 
-                            cheerCounts.current[hIdx] = 0;
-                            
+                        if (cheerCounts[hIdx] >= 5) {
+                            cheerCounts[hIdx] = 0;
                             if (particleContainerRef.current) {
                                 const el = document.createElement('div');
                                 el.className = 'cheer-particle';
@@ -1334,7 +1351,6 @@
                                 }
                             }
                         } else {
-                            cheerBoosts.current[hIdx] += 30; 
                             if (isHost && particleContainerRef.current) {
                                 const el = document.createElement('div');
                                 el.className = 'cheer-particle';
@@ -1445,10 +1461,10 @@
                     }
 
                     curPos.forEach((pos, i) => {
-                        cheerBoosts.current[i] *= 0.95; 
-                        if (pos > TRACK_LENGTH * 0.9) cheerBoosts.current[i] *= 0.8; 
+                        cheerEffects.current[i] *= 0.9; 
                         
-                        const visualPos = pos + cheerBoosts.current[i]; 
+                        // 물리엔진 조작을 빼고 순수 시각적 효과만 남김
+                        const visualPos = pos;
                         
                         const lat = lats1[i]*(1-frac) + lats2[i]*frac;
                         const { x, y } = getTrackPos(visualPos, lat);
@@ -1460,8 +1476,14 @@
 
                             const icon = horseRefs.current[i].querySelector('.runner-icon');
                             if(icon) {
-                                if(spds[i] > 10 || cheerBoosts.current[i] > 10) icon.classList.add('active');
+                                if(spds[i] > 10 || cheerEffects.current[i] > 10) icon.classList.add('active');
                                 else icon.classList.remove('active');
+                                
+                                if (cheerEffects.current[i] > 30) {
+                                    icon.style.filter = 'drop-shadow(0 0 20px rgba(250,204,21,1)) brightness(1.2)';
+                                } else {
+                                    icon.style.filter = ''; 
+                                }
                             }
                         }
 
@@ -1545,7 +1567,6 @@
                         <div ref={dustLayerRef} className="absolute inset-0 pointer-events-none z-10"></div>
                         
                         {horses.map((h, i) => {
-                            // 🌟 케니(ID: 12)는 반전 안 함
                             const isFlipped = h.id !== 12 && !h.img;
                             return (
                             <div key={h.id} ref={el=>horseRefs.current[i]=el} className="runner">
