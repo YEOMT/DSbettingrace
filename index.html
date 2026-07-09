@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>이모지무스메 더비 - 영단어 배팅 경마 게임</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- PeerJS -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
@@ -82,7 +88,7 @@
         .pip-dist { color: #94a3b8; font-size: 0.9rem; font-weight: bold; font-family: monospace; }
         @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* Podiums & Avatars */
+        /* Podiums & Avatars (Bronze, Silver, Gold) */
         .podium-1 { background: linear-gradient(to top, #d4af37, #fdf5a9); box-shadow: 0 -10px 20px rgba(212, 175, 55, 0.4); }
         .podium-2 { background: linear-gradient(to top, #94a3b8, #e2e8f0); }
         .podium-3 { background: linear-gradient(to top, #b45309, #fdba74); }
@@ -93,7 +99,7 @@
         .skin-gold::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent); transform: rotate(45deg); animation: holoGleam 2s infinite linear; }
         @keyframes holoGleam { 0% { transform: rotate(45deg) translateX(-100%); } 100% { transform: rotate(45deg) translateX(100%); } }
         
-        /* 배당률 애니메이션 */
+        /* 배당률 변동 애니메이션 */
         @keyframes flashRed { 0% { color: #f87171; } 50% { color: #dc2626; transform: scale(1.1); } 100% { color: #f87171; } }
         @keyframes flashGreen { 0% { color: #34d399; } 50% { color: #10b981; transform: scale(1.1); } 100% { color: #34d399; } }
         .odds-down { animation: flashRed 0.5s; color: #ef4444; }
@@ -103,41 +109,10 @@
 <body>
     <div id="root" class="h-[100dvh] w-full"></div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, onChildAdded, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBtK7NAfw4wDsS4LRacWF78PHT3zls50IQ",
-            authDomain: "dsgames-fecef.firebaseapp.com",
-            projectId: "dsgames-fecef",
-            storageBucket: "dsgames-fecef.firebasestorage.app",
-            messagingSenderId: "723943517090",
-            appId: "1:723943517090:web:3e8596971cedf46cc460fb",
-            // ⚠️ 주의: 데이터베이스 위치가 아시아(싱가포르)일 경우 아래 URL이 다를 수 있습니다. 콘솔에서 꼭 확인하세요!
-            databaseURL: "https://dsgames-fecef-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        window.firebaseDb = getDatabase(app);
-        window.fbRef = ref;
-        window.fbSet = set;
-        window.fbOnValue = onValue;
-        window.fbPush = push;
-        window.fbOnChildAdded = onChildAdded;
-        window.fbRemove = remove;
-        window.fbOnDisconnect = onDisconnect; // 🌟 자동 폭파를 위한 onDisconnect 모듈 추가
-    </script>
-
-    <script type="text/babel">
+    <script type="text/babel" data-type="module">
         const { useState, useEffect, useRef } = React;
 
-        // 🎵 BGM 설정 (여기에 Dropbox 링크를 넣어주세요)
-        const BGM_URLS = {
-            lobby: 'https://www.dropbox.com/scl/fi/lth82bkoad8k6ii8z9etc/DSBR-Betting.mp3?rlkey=ps21uvu4pzvq72cv8g6uledal&st=oa6qchc0&dl=0', 
-            race: 'https://www.dropbox.com/scl/fi/74o0mqfg3fwwhm974a85w/DSBR-Racing.mp3?rlkey=4spedq9tj0gq66jp9un5smw9s&st=v6esczpi&dl=0'   
-        };
-
+        // --- 8-bit 효과음 엔진 ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioContext();
         const play8BitTone = (type, freq, duration, vol = 0.1, slideFreq = null) => {
@@ -164,28 +139,28 @@
         const playSound = (soundKey) => { if (SOUNDS[soundKey]) SOUNDS[soundKey](); };
         const initAudio = () => { if(audioCtx.state === 'suspended') audioCtx.resume(); };
 
-        // --- 캐릭터 로스터 ---
+        // --- 🌟 20종 캐릭터 로스터 확장 및 패치 ---
         const HORSES = [
             { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 45, spurt: 85, stability: 70, luck: 30 }, type: 'late' },
-            { id: 2, emoji: '🦈', name: '트랄랄레오 트랄랄라', desc: '어디로 튈지 모르는 광기의 육지 상어.', stats: { speed: 60, spurt: 60, stability: 10, luck: 100 }, type: 'luck' },
-            { id: 3, emoji: '🏃‍♂️', name: '데이비드 마르티네즈', desc: '산데비스탄 발동! 스타트 라인을 뚫고 나가는 전설.', stats: { speed: 85, spurt: 35, stability: 25, luck: 60 }, type: 'early' },
+            { id: 2, emoji: '🦈', name: '트랄랄레오 트랄랄라', desc: '어디로 튈지 모르는 광기의 육지 상어.', stats: { speed: 50, spurt: 50, stability: 10, luck: 100 }, type: 'luck' },
+            { id: 3, emoji: '🏃‍♂️', name: '데이비드 마르티네즈', desc: '산데비스탄 발동! 스타트 라인을 뚫고 나가는 전설.', stats: { speed: 85, spurt: 20, stability: 40, luck: 50 }, type: 'early' },
             { id: 4, emoji: '🏎️', name: '막스 베르스타펜', desc: 'F1 챔피언의 품격. 컨디션을 무시하는 완벽한 주행.', stats: { speed: 65, spurt: 65, stability: 95, luck: 50 }, type: 'stable' },
             { id: 5, emoji: '🪅', name: '레인보우 피에스타', desc: '극후반에 터집니다. 엄청난 속도거나, 그대로 멈추거나.', stats: { speed: 50, spurt: 80, stability: 20, luck: 80 }, type: 'conditional' },
-            { id: 6, emoji: '🩻', name: '샌즈', desc: '지옥에서 온 스켈레톤. 뼈아픈 속도와 운빨.', stats: { speed: 65, spurt: 70, stability: 15, luck: 90 }, type: 'luck' },
+            { id: 6, emoji: '🩻', name: '샌즈', desc: '지옥에서 온 스켈레톤. 뼈아픈 속도와 운빨.', stats: { speed: 55, spurt: 65, stability: 15, luck: 90 }, type: 'luck' },
             { id: 7, emoji: '🐢', name: '늑대거북이', desc: '등껍질에 부스터 장착. 막판 스퍼트는 압도적.', stats: { speed: 40, spurt: 90, stability: 80, luck: 20 }, type: 'late' },
             { id: 8, emoji: '🦬', name: '버팔로 러시', desc: '주변에 다른 주자가 있으면 몸싸움으로 튕겨내고 가속함.', stats: { speed: 62, spurt: 60, stability: 50, luck: 50 }, type: 'chaser' },
             { id: 9, emoji: '🦑', name: '딥 크라켄', desc: '1등의 등짝이 보이면 심해의 힘으로 미친 듯이 쫓아감.', stats: { speed: 65, spurt: 65, stability: 40, luck: 50 }, type: 'chaser' },
-            { id: 10, emoji: '🌪️', name: '우라칸', desc: '태풍의 눈! 초반에 모든 것을 휩쓸며 날아갑니다.', stats: { speed: 80, spurt: 30, stability: 40, luck: 60 }, type: 'early' },
+            { id: 10, emoji: '🌪️', name: '우라칸', desc: '태풍의 눈! 초반에 모든 것을 휩쓸며 날아갑니다.', stats: { speed: 80, spurt: 25, stability: 40, luck: 60 }, type: 'early' },
             { id: 11, emoji: '🐎', name: '스페셜 먼스', desc: '압도적인 재능은 없지만 절대 멈추지 않는 끈기.', stats: { speed: 65, spurt: 60, stability: 95, luck: 50 }, type: 'stable' },
-            { id: 12, emoji: '👨‍🦽‍➡️', name: '케니 가와구치', desc: '휠체어의 전설. 엄청 빠르지만 가끔 바퀴가 헛돔.', stats: { speed: 75, spurt: 65, stability: 20, luck: 70 }, type: 'luck' },
+            { id: 12, emoji: '👨‍🦽‍➡️', name: '케니 가와구치', desc: '휠체어의 전설. 엄청 빠르지만 가끔 바퀴가 헛돔.', stats: { speed: 70, spurt: 60, stability: 20, luck: 70 }, type: 'luck' },
             { id: 13, emoji: '🦖', name: '프라이멀 렉스', desc: '초반은 느리지만, 보폭이 커서 가속이 붙으면 무서움.', stats: { speed: 50, spurt: 65, stability: 70, luck: 40 }, type: 'normal' },
             { id: 14, emoji: '🕴️', name: '마이클 잭슨', desc: '문워크로 가다가 결승선을 앞두고 팝의 황제로 각성함.', stats: { speed: 45, spurt: 95, stability: 60, luck: 30 }, type: 'late' },
-            { id: 15, emoji: '🛴', name: '씽씽이 마스터', desc: '킥보드계의 혜성. 돌부리에 걸릴지 1등할지 모름.', stats: { speed: 65, spurt: 60, stability: 15, luck: 85 }, type: 'luck' },
+            { id: 15, emoji: '🛴', name: '씽씽이 마스터', desc: '킥보드계의 혜성. 돌부리에 걸릴지 1등할지 모름.', stats: { speed: 55, spurt: 55, stability: 15, luck: 85 }, type: 'luck' },
             { id: 16, emoji: '🐐', name: '소율 더 고트', desc: '물리 엔진을 무시하고 흔들림 없이 정상으로 직진.', stats: { speed: 65, spurt: 60, stability: 100, luck: 50 }, type: 'stable' },
-            { id: 17, emoji: '🏇', name: '죠니 죠스타', desc: '황금장방형의 기적! 터지면 누구도 막을 수 없음.', stats: { speed: 60, spurt: 60, stability: 15, luck: 95 }, type: 'luck' },
-            { id: 18, emoji: '🧘‍♂️', name: '젠야타', desc: '고요함을 유지하다 마지막에 깨달음을 얻고 초월함.', stats: { speed: 45, spurt: 95, stability: 85, luck: 20 }, type: 'late' },
-            { id: 19, emoji: '🐦‍🔥', name: '이터널 피닉스', desc: '죽지 않는 불사조. 후반에 재를 뚫고 폭발적으로 부활함.', stats: { speed: 50, spurt: 90, stability: 70, luck: 30 }, type: 'late' },
-            { id: 20, emoji: '🚚', name: '미스터 쿠팡', desc: '로켓배송! 시작하자마자 엄청난 속도로 배달 출발.', stats: { speed: 90, spurt: 25, stability: 40, luck: 40 }, type: 'early' }
+            { id: 17, emoji: '🏇', name: '죠니 죠스타', desc: '황금장방형의 기적! 터지면 누구도 막을 수 없음.', stats: { speed: 50, spurt: 50, stability: 15, luck: 95 }, type: 'luck' },
+            { id: 18, emoji: '🧘‍♂️', name: '젠야타', desc: '고요함을 유지하다 마지막에 깨달음을 얻고 초월함.', stats: { speed: 40, spurt: 95, stability: 85, luck: 20 }, type: 'late' },
+            { id: 19, emoji: '🐦‍🔥', name: '이터널 피닉스', desc: '죽지 않는 불사조. 후반에 재를 뚫고 폭발적으로 부활함.', stats: { speed: 45, spurt: 90, stability: 70, luck: 30 }, type: 'late' },
+            { id: 20, emoji: '🚚', name: '미스터 쿠팡', desc: '로켓배송! 시작하자마자 엄청난 속도로 배달 출발.', stats: { speed: 90, spurt: 10, stability: 40, luck: 40 }, type: 'early' }
         ];
 
         const TYPE_MATCHUP = {
@@ -260,23 +235,11 @@
 
         // --- 앱 메인 ---
         function App() {
-            const [fbLoaded, setFbLoaded] = useState(false);
             const [view, setView] = useState('HOME');
             const [roomCode, setRoomCode] = useState('');
             const [playerName, setPlayerName] = useState(() => localStorage.getItem('edurace_last_name') || '');
             const [myUid] = useState(() => Math.random().toString(36).substr(2, 9));
             const [myAvatar, setMyAvatar] = useState(() => localStorage.getItem('edurace_avatar') || '');
-
-            // 🌟 파이어베이스 로딩 보장
-            useEffect(() => {
-                const checkFb = setInterval(() => {
-                    if(window.firebaseDb && window.fbRef) {
-                        clearInterval(checkFb);
-                        setFbLoaded(true);
-                    }
-                }, 50);
-                return () => clearInterval(checkFb);
-            }, []);
 
             const handleHostBtn = () => { initAudio(); setView('HOST'); };
             const handleJoinBtn = () => { 
@@ -286,10 +249,6 @@
                     setView('PLAYER');
                 } else alert('방 번호(4자리)와 닉네임을 입력하세요.');
             };
-
-            if (!fbLoaded) {
-                return <div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white font-bold text-xl">🚀 게임 엔진 로딩 중...</div>;
-            }
 
             if (view === 'GACHA') {
                 return <GachaView onExit={() => { setMyAvatar(localStorage.getItem('edurace_avatar') || ''); setView('HOME'); }} />;
@@ -454,42 +413,12 @@
         // HOST VIEW
         // ==========================================
         function HostView({ onExit }) {
-            const { fbRef: ref, fbSet: set, fbOnChildAdded: onChildAdded, fbRemove: remove, fbOnDisconnect: onDisconnect } = window;
-            const db = window.firebaseDb;
-            
             const [roomCode] = useState(generateRoomCode);
             const [setupRounds, setSetupRounds] = useState(3);
             const gameState = useRef({ status: 'LOBBY', round: 0, totalRounds: 3, horses: [], raceData: null, players: [], weather: WEATHERS[0], customWords: [] });
             const [uiState, setUiState] = useState({ ...gameState.current });
-            
-            const audioRef = useRef(null);
-            
-            useEffect(() => {
-                if (!audioRef.current) {
-                    audioRef.current = new Audio();
-                    audioRef.current.loop = true;
-                    audioRef.current.volume = 0.5;
-                }
-                const audio = audioRef.current;
-                const getDirectLink = (url) => url ? url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '') : '';
-                
-                const playBGM = (url) => {
-                    const directUrl = getDirectLink(url);
-                    if (!directUrl) { audio.pause(); return; }
-                    if (audio.src !== directUrl) {
-                        audio.src = directUrl;
-                        audio.play().catch(e => console.log('BGM Play blocked. Host interaction required.', e));
-                    } else if (audio.paused) {
-                        audio.play().catch(e => console.log(e));
-                    }
-                };
-
-                if (['LOBBY', 'QUIZ', 'BETTING', 'RESULT', 'END_HORSE', 'END_PLAYER', 'END_AWARDS'].includes(uiState.status)) {
-                    playBGM(BGM_URLS.lobby);
-                } else if (uiState.status === 'RACE') {
-                    playBGM(BGM_URLS.race);
-                }
-            }, [uiState.status]);
+            const peerRef = useRef(null);
+            const connsRef = useRef({});
 
             const recalcLiveOdds = () => {
                 let realBetTotal = 0;
@@ -513,7 +442,8 @@
 
             const changeStatus = (newStatus) => { 
                 gameState.current.status = newStatus; 
-                set(ref(db, `rooms/${roomCode}/state`), { roomState: gameState.current, players: gameState.current.players });
+                const stateObj = { roomState: { ...gameState.current, players: undefined }, players: gameState.current.players };
+                Object.values(connsRef.current).forEach(conn => { if(conn.open) conn.send({ type: 'SYNC', ...stateObj }); });
                 setUiState({...gameState.current}); 
             };
 
@@ -539,60 +469,44 @@
             };
 
             useEffect(() => {
-                const roomRef = ref(db, `rooms/${roomCode}`);
-                
-                // 🌟 유령 방 방지: 호스트 연결 끊기면 서버에서 해당 방 즉시 자동 폭파
-                onDisconnect(roomRef).remove(); 
-                
-                set(ref(db, `rooms/${roomCode}/state`), { roomState: gameState.current, players: gameState.current.players });
-
-                const actionsRef = ref(db, `rooms/${roomCode}/actions`);
-                const unsubscribeActions = onChildAdded(actionsRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if(data) {
-                        handlePlayerAction(data);
-                        remove(snapshot.ref);
-                    }
-                });
-
-                const syncInterval = setInterval(() => {
+                const interval = setInterval(() => {
                     if (gameState.current.status === 'RACE' || gameState.current.status.startsWith('END')) return;
                     
-                    const now = Date.now();
-                    const state = gameState.current;
-                    const beforeCount = state.players.length;
-                    
-                    // 🌟 빠른 삭제: 8초 동안 Ping 없으면 유령으로 간주하고 삭제
-                    state.players = state.players.filter(p => (now - (p.lastPing || now)) < 8000); 
+                    const activePlayers = [];
+                    gameState.current.players.forEach(p => {
+                        const c = connsRef.current[p.uid];
+                        if (c && c.open) activePlayers.push(p);
+                        else delete connsRef.current[p.uid]; 
+                    });
+                    gameState.current.players = activePlayers;
 
-                    set(ref(db, `rooms/${roomCode}/state`), { roomState: state, players: state.players });
-                    if (state.players.length !== beforeCount) setUiState({ ...state });
-                }, 1000); 
+                    const stateObj = { roomState: { ...gameState.current, players: undefined }, players: gameState.current.players };
+                    Object.values(connsRef.current).forEach(conn => { if(conn.open) conn.send({ type: 'SYNC', ...stateObj }); });
+                    setUiState({ ...gameState.current });
+                }, 300);
+
+                peerRef.current = new Peer('edurace-' + roomCode, { pingInterval: 5000 });
+                peerRef.current.on('error', (err) => {
+                    if (err.type === 'unavailable-id') { alert(`방 번호 [${roomCode}]가 이미 사용 중입니다. 새로고침을 눌러주세요.`); onExit(); }
+                });
+                peerRef.current.on('connection', (conn) => { conn.on('data', (data) => handlePlayerAction(data, conn)); });
+                peerRef.current.on('disconnected', () => peerRef.current.reconnect());
                 
-                return () => { 
-                    clearInterval(syncInterval); 
-                    unsubscribeActions();
-                    remove(ref(db, `rooms/${roomCode}`));
-                    if(audioRef.current) audioRef.current.pause();
-                };
+                return () => { clearInterval(interval); peerRef.current?.destroy(); };
             }, [roomCode]);
 
-            const handlePlayerAction = (data) => {
+            const handlePlayerAction = (data, conn) => {
                 const state = gameState.current;
                 let player = state.players.find(p => p.uid === data.uid);
-                
-                if (data.type === 'JOIN' || data.type === 'PING') {
-                    if (!player && data.type === 'JOIN') {
-                        player = { uid: data.uid, name: data.name, avatar: data.avatar, money: 10000, inventory: null, bets: {}, isReady: false, stats: { quizCnt: 0, betWin: 0, betLoss: 0 }, lastPing: Date.now() };
+                if (data.type === 'JOIN') {
+                    if (!player) {
+                        player = { uid: data.uid, name: data.name, avatar: data.avatar, money: 10000, inventory: null, bets: {}, isReady: false, stats: { quizCnt: 0, betWin: 0, betLoss: 0 } };
                         state.players.push(player);
-                    } else if (player) {
-                        player.name = data.name; 
-                        player.avatar = data.avatar;
-                        player.lastPing = Date.now();
-                    }
+                    } else { player.name = data.name; player.avatar = data.avatar; }
+                    connsRef.current[data.uid] = conn;
+                    conn.send({ type: 'SYNC', roomState: { ...state, players: undefined }, players: state.players });
                 }
                 else if (player) {
-                    player.lastPing = Date.now();
                     if (data.type === 'QUIZ_CORRECT') {
                         player.money += Math.round(data.earned || 1000); 
                         player.stats.quizCnt++;
@@ -601,13 +515,13 @@
                     else if (data.type === 'BET_CHANGE') { 
                         player.bets = data.bets; 
                         player.usedItemOn = data.usedItemOn; 
-                        player.isReady = true;
                         recalcLiveOdds(); 
                     }
                     else if (data.type === 'CHEER') {
                         window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: player.name } }));
-                        const { fbPush } = window;
-                        fbPush(ref(db, `rooms/${roomCode}/cheers`), { horseId: data.horseId, playerName: player.name, ts: Date.now() });
+                        Object.values(connsRef.current).forEach(c => {
+                            if(c.open) c.send({ type: 'CHEER_RELAY', horseId: data.horseId, playerName: player.name });
+                        });
                     }
                 }
             };
@@ -619,7 +533,6 @@
                 if (weatherRand < 0.50) gameState.current.weather = WEATHERS[0]; 
                 else gameState.current.weather = WEATHERS[1 + Math.floor(Math.random() * 3)];
                 
-                // 깊은 복사(Deep Copy)를 통한 스탯 유지
                 const selected = shuffle(HORSES).slice(0, 8).map(h => {
                     const cIdx = Math.floor(Math.random() * CONDITIONS.length);
                     const cond = CONDITIONS[cIdx].multi;
@@ -642,9 +555,6 @@
                 gameState.current.horses = selected;
                 gameState.current.raceData = null;
                 gameState.current.players.forEach(p => { p.isReady = false; p.bets = {}; p.usedItemOn = null; });
-                
-                remove(ref(db, `rooms/${roomCode}/cheers`)); 
-
                 changeStatus('QUIZ');
             };
 
@@ -688,8 +598,7 @@
                 const hasKenny = horses.some(h => h.id === 12);
                 
                 let prevRanks = horses.map((_, i) => i);
-                let triggered = { lastSpurt: false, runaway: false };
-                let runaways = horses.map(() => false);
+                let triggered = { lastSpurt: false };
 
                 for (let t=0; t<=duration; t++) {
                     let tickData = { positions: [], speeds: [], laterals: [], events: [] };
@@ -763,24 +672,6 @@
                             targetSpeed *= spurtFactor;
                             if (h.type === 'late') targetSpeed *= 2.0; 
                             if (weather === 'HEAT' && h.type === 'late') targetSpeed *= 0.8; 
-                            
-                            // 🌟 Early 대도주 로직 🌟
-                            if (h.type === 'early') {
-                                if (curRanks[i] === 0) {
-                                    let distToSecond = positions[i] - curStandings[1].p;
-                                    if (distToSecond > 300 || runaways[i]) {
-                                        runaways[i] = true;
-                                        targetSpeed *= 1.8; // 대도주 폭발적 속도 유지
-                                        if (!triggered.runaway) {
-                                            tickData.events.push({ hIdx: i, msg: '대도주 성공!! 아무도 잡을 수 없습니다!', type: 'lead'});
-                                            triggered.runaway = true;
-                                        }
-                                    }
-                                } else if (!runaways[i]) {
-                                    targetSpeed *= 0.8; // 일반적인 초반형의 후반 패널티
-                                }
-                            }
-
                         } else if (h.type === 'chaser' && curRanks[i] > 0 && distToLeader < 400) targetSpeed *= 1.15;
                         
 
@@ -880,6 +771,7 @@
                         p.inventory = null;
                     }
                     
+                    // 🌟 소수점 오차 방지를 위해 모든 계산에 Math.round 적용
                     win = Math.round(win);
                     cost = Math.round(cost);
                     
@@ -915,37 +807,26 @@
 
                     <div className="flex-1 bg-glass rounded-2xl border border-slate-600 flex flex-col overflow-hidden relative">
                         {uiState.status === 'LOBBY' && (
-                            <div className="m-auto text-center w-full max-w-4xl p-6 overflow-y-auto custom-scrollbar max-h-full">
+                            <div className="m-auto text-center w-full max-w-2xl p-6">
                                 <h2 className="text-3xl font-bold mb-8">학생들의 접속을 대기중입니다...</h2>
                                 
-                                <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch mb-8">
-                                    <div className="bg-slate-800 p-6 rounded-2xl border border-slate-600 shadow-xl flex flex-col items-center justify-center shrink-0">
-                                        <img src={"https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://yeomt.github.io/DSbettingrace/"} className="rounded-xl shadow-md mb-3 bg-white p-2" alt="QR Code" />
-                                        <div className="text-yellow-400 font-black text-lg">스마트폰 스캔 접속!</div>
-                                        <div className="text-slate-400 text-xs mt-1">yeomt.github.io/DSbettingrace/</div>
-                                    </div>
-
-                                    <div className="flex-1 flex flex-col gap-4">
-                                        <div className="bg-slate-800 p-4 rounded-xl border border-slate-600 text-left shadow-inner flex-1 flex flex-col justify-center">
-                                            <h3 className="font-bold text-blue-400 mb-2"><i className="fas fa-file-upload"></i> 커스텀 단어장 업로드 (선택)</h3>
-                                            <p className="text-xs text-slate-400 mb-3">메모장에 <b>'영단어,뜻'</b>(쉼표) 또는 <b>'영단어[탭]뜻'</b> 형식으로 작성한 txt 파일을 올리세요.</p>
-                                            <div className="flex items-center gap-4">
-                                                <input type="file" accept=".txt" onChange={handleFileUpload} className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"/>
-                                                <span className="shrink-0 text-sm font-bold text-emerald-400 border border-emerald-500/50 bg-emerald-900/30 px-3 py-1 rounded-full">
-                                                    현재 단어 수: {uiState.customWords.length > 0 ? uiState.customWords.length : DEFAULT_WORDS.length}(기본)
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex justify-center items-center gap-4 bg-slate-800 py-4 px-6 rounded-2xl border border-slate-600">
-                                            <span className="text-xl font-bold text-slate-300">진행할 라운드:</span>
-                                            <select value={setupRounds} onChange={e=>setSetupRounds(Number(e.target.value))} className="bg-slate-700 text-white font-black text-xl px-4 py-2 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500">
-                                                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} 라운드</option>)}
-                                            </select>
-                                        </div>
+                                <div className="bg-slate-800 p-4 rounded-xl border border-slate-600 mb-6 text-left shadow-inner">
+                                    <h3 className="font-bold text-blue-400 mb-2"><i className="fas fa-file-upload"></i> 커스텀 단어장 업로드 (선택)</h3>
+                                    <p className="text-xs text-slate-400 mb-3">메모장에 <b>'영단어,뜻'</b>(쉼표) 또는 <b>'영단어[탭]뜻'</b> 형식으로 작성한 txt 파일을 올리세요.</p>
+                                    <div className="flex items-center gap-4">
+                                        <input type="file" accept=".txt" onChange={handleFileUpload} className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"/>
+                                        <span className="shrink-0 text-sm font-bold text-emerald-400 border border-emerald-500/50 bg-emerald-900/30 px-3 py-1 rounded-full">
+                                            현재 단어 수: {uiState.customWords.length > 0 ? uiState.customWords.length : DEFAULT_WORDS.length}(기본)
+                                        </span>
                                     </div>
                                 </div>
 
+                                <div className="flex justify-center items-center gap-4 mb-8 bg-slate-800 py-4 px-6 rounded-2xl border border-slate-600">
+                                    <span className="text-xl font-bold text-slate-300">진행할 라운드:</span>
+                                    <select value={setupRounds} onChange={e=>setSetupRounds(Number(e.target.value))} className="bg-slate-700 text-white font-black text-xl px-4 py-2 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500">
+                                        {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} 라운드</option>)}
+                                    </select>
+                                </div>
                                 <div className="flex flex-wrap justify-center gap-3 mb-8 min-h-[100px] content-start">
                                     {uiState.players.map(p => (
                                         <div key={p.uid} className="flex items-center gap-2 bg-indigo-900/50 pr-4 rounded-full border border-indigo-500/50 font-bold shadow-md">
@@ -955,13 +836,13 @@
                                     ))}
                                     {uiState.players.length === 0 && <div className="text-slate-500 font-bold w-full text-center mt-4">참가자가 없습니다.</div>}
                                 </div>
-                                <button onClick={startRound} disabled={uiState.players.length===0} className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-black py-4 px-12 rounded-xl text-xl transition active:scale-95 shadow-lg w-full max-w-lg">게임 시작하기</button>
+                                <button onClick={startRound} disabled={uiState.players.length===0} className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-black py-4 px-12 rounded-xl text-xl transition active:scale-95 shadow-lg w-full">게임 시작하기</button>
                             </div>
                         )}
                         {uiState.status === 'QUIZ' && (
-                            <div className="m-auto text-center w-full p-6 overflow-y-auto custom-scrollbar max-h-full">
+                            <div className="m-auto text-center w-full p-6">
                                 <h2 className="text-3xl font-bold text-blue-400 mb-2">📝 퀴즈 진행 중 (자본금 획득)</h2><p className="text-slate-400 mb-8">학생들이 스마트폰에서 문제를 풀며 투자금을 모으고 있습니다. (연속 정답 시 상금 증가!)</p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8 text-left">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto mb-8 pr-2 custom-scrollbar text-left">
                                     {uiState.players.map(p => (
                                         <div key={p.uid} className="bg-slate-800 p-2 rounded-lg border border-slate-700 shadow-sm flex items-center gap-2">
                                             <AvatarDisplay avatarStr={p.avatar} sizeClasses="w-8 h-8 text-base shrink-0" />
@@ -979,7 +860,8 @@
                                     현재 경기장 날씨: {uiState.weather.name} ({uiState.weather.desc})
                                 </div>
                                 <h2 className="text-3xl font-bold text-yellow-400 mb-2 text-center mt-6 shrink-0">💰 배팅 타임!</h2>
-                                <div className="text-center text-slate-300 font-bold mb-4 shrink-0">(학생들이 실시간 배팅 중 단계를 시작하세요.)</div>
+                                <div className="text-center text-slate-300 font-bold mb-4 shrink-0">(실시간으로 배팅액에 따라 최종 배당률이 변동됩니다!)</div>
+                                <div className="flex justify-between items-center mb-4 shrink-0"><p className="text-slate-400">준비된 학생 비율</p><div className="bg-slate-800 px-4 py-2 rounded-lg font-bold">준비 완료: <span className="text-emerald-400">{uiState.players.filter(p=>p.isReady).length}</span> / {uiState.players.length}</div></div>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 overflow-y-auto custom-scrollbar flex-1 pr-2">
                                     {uiState.horses.map(h => (
@@ -1000,8 +882,9 @@
                             </div>
                         )}
                         {uiState.status === 'RESULT' && (
-                            <div className="m-auto text-center w-full max-w-4xl z-20 p-6 overflow-y-auto custom-scrollbar max-h-full">
-                                <div className="mb-8 flex justify-center sticky top-0 z-30">
+                            <div className="m-auto text-center w-full max-w-4xl z-20 p-6">
+                                {/* 🌟 호스트 컨트롤 버튼 상단 배치 */}
+                                <div className="mb-8 flex justify-center">
                                     {uiState.round < uiState.totalRounds ? 
                                         <button onClick={startRound} className="bg-emerald-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-emerald-500">다음 라운드 준비 ➡️</button>
                                     : 
@@ -1021,8 +904,8 @@
                             </div>
                         )}
                         {uiState.status === 'END_HORSE' && (
-                            <div className="m-auto text-center w-full p-6 overflow-y-auto custom-scrollbar max-h-full">
-                                <div className="mb-8 flex justify-center sticky top-0 z-30">
+                            <div className="m-auto text-center w-full p-6">
+                                <div className="mb-8 flex justify-center">
                                     <button onClick={()=>changeStatus('END_PLAYER')} className="bg-blue-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">최종 부자 랭킹 발표 ➡️</button>
                                 </div>
                                 <h2 className="text-5xl font-black text-slate-100 mb-12 drop-shadow-md">마지막 경주 우승마</h2>
@@ -1030,13 +913,12 @@
                             </div>
                         )}
                         {uiState.status === 'END_PLAYER' && (
-                            <div className="m-auto text-center w-full p-6 max-h-full overflow-y-auto custom-scrollbar relative">
-                                <div className="mb-4 flex justify-center sticky top-0 z-30">
+                            <div className="m-auto text-center w-full p-6 max-h-full overflow-y-auto custom-scrollbar">
+                                <div className="mb-4 flex justify-center">
                                     <button onClick={()=>changeStatus('END_AWARDS')} className="bg-blue-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500">특별 시상식 ➡️</button>
                                 </div>
                                 <h2 className="text-5xl font-black text-yellow-400 mb-12 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] font-display tracking-widest mt-2">🎉 최종 부자 랭킹 포디움 🎉</h2>
                                 <PlayerPodium players={uiState.players} />
-                                
                                 <div className="mt-8 bg-slate-800 p-6 rounded-2xl border border-slate-600 max-w-2xl mx-auto w-full mb-8">
                                     <h3 className="text-2xl font-bold mb-4 text-slate-300 border-b border-slate-700 pb-3">전체 랭킹 보드</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1051,8 +933,8 @@
                             </div>
                         )}
                         {uiState.status === 'END_AWARDS' && (
-                            <div className="m-auto text-center w-full max-w-5xl p-6 overflow-y-auto custom-scrollbar max-h-full">
-                                <div className="mb-12 flex justify-center gap-6 sticky top-0 z-30">
+                            <div className="m-auto text-center w-full max-w-5xl p-6">
+                                <div className="mb-12 flex justify-center gap-6">
                                     <button onClick={handleRematch} className="bg-indigo-600 hover:bg-indigo-500 px-8 py-4 rounded-xl font-black text-xl shadow-lg transition-transform hover:scale-105">같은 멤버로 1라운드 다시 시작</button>
                                     <button onClick={onExit} className="bg-slate-700 hover:bg-slate-600 border border-slate-500 px-8 py-4 rounded-xl font-black text-xl shadow-lg">방 폭파 (처음으로)</button>
                                 </div>
@@ -1068,106 +950,78 @@
         // PLAYER VIEW
         // ==========================================
         function PlayerView({ roomCode, playerName, myUid, myAvatar, onExit }) {
-            const { fbRef: ref, fbOnValue: onValue, fbPush: push, fbOnChildAdded: onChildAdded } = window;
-            const db = window.firebaseDb;
-            
             const [roomState, setRoomState] = useState(null);
             const [me, setMe] = useState(null);
+            const connRef = useRef(null);
             const [errorMsg, setErrorMsg] = useState('');
             
             const awardedRef = useRef(false);
             const [earnedTokenMsg, setEarnedTokenMsg] = useState(null);
 
-            // 접속 상태 추적용 ref
-            const hasJoined = useRef(false);
-
             useEffect(() => {
-                const stateRef = ref(db, `rooms/${roomCode}/state`);
-                const actionsRef = ref(db, `rooms/${roomCode}/actions`);
-                const cheersRef = ref(db, `rooms/${roomCode}/cheers`);
+                const peer = new Peer({ pingInterval: 5000 });
+                let joinTimeout, joinInterval, retryCount = 0, conn = null;
 
-                const unsubscribeState = onValue(stateRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        setRoomState(data.roomState);
-                        const meData = data.players?.find(p => p.uid === myUid);
-                        if(meData) {
-                            hasJoined.current = true;
-                            setMe(meData);
+                const connectToHost = () => {
+                    conn = peer.connect('edurace-' + roomCode); 
+                    conn.on('open', () => {
+                        connRef.current = conn;
+                        const tryJoin = () => { if (conn.open) conn.send({ type: 'JOIN', uid: myUid, name: playerName, avatar: myAvatar }); };
+                        tryJoin();
+                        if(joinInterval) clearInterval(joinInterval); joinInterval = setInterval(tryJoin, 1000); 
+                    });
+                    conn.on('data', (data) => {
+                        if (data.type === 'SYNC') {
+                            setRoomState(data.roomState); setMe(data.players.find(p => p.uid === myUid));
+                            if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval);
                         }
-                    } else {
-                        // 🌟 호스트가 방 폭파 시 플레이어 자동 퇴장
-                        if (hasJoined.current) {
-                            alert('호스트가 게임을 종료했습니다. 메인 화면으로 돌아갑니다.');
-                            onExit();
-                        } else {
-                            setErrorMsg('방이 폭파되었거나 찾을 수 없습니다.');
+                        else if (data.type === 'CHEER_RELAY') {
+                            window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: data.playerName } }));
                         }
-                    }
-                });
-
-                const unsubscribeCheers = onChildAdded(cheersRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if(data) {
-                        window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: data.playerName } }));
-                    }
-                });
-
-                push(actionsRef, { type: 'JOIN', uid: myUid, name: playerName, avatar: myAvatar });
-                
-                // 🌟 8초 타임아웃 방어막 (호스트가 응답 안 하면 에러 출력)
-                const joinTimeout = setTimeout(() => {
-                    if (!hasJoined.current) {
-                        setErrorMsg('호스트가 응답하지 않습니다. 이전 방 번호이거나 선생님의 연결이 끊겼습니다.');
-                    }
-                }, 8000);
-
-                // 🌟 3초마다 Ping 발송
-                const pingInterval = setInterval(() => {
-                    push(actionsRef, { type: 'PING', uid: myUid, name: playerName, avatar: myAvatar });
-                }, 3000);
-
-                return () => {
-                    unsubscribeState();
-                    unsubscribeCheers();
-                    clearInterval(pingInterval);
-                    clearTimeout(joinTimeout);
+                    });
                 };
+                
+                peer.on('open', () => {
+                    connectToHost();
+                    joinTimeout = setTimeout(() => { if (!connRef.current || !connRef.current.open) setErrorMsg('호스트와의 연결이 지연되고 있습니다.'); }, 15000); 
+                });
+                peer.on('error', (err) => {
+                    if (err.type === 'peer-unavailable' && retryCount < 3) { retryCount++; setTimeout(connectToHost, 1500); } 
+                    else { setErrorMsg(`접속 오류가 발생했습니다. 방 번호를 다시 확인해주세요.`); }
+                });
+                peer.on('disconnected', () => peer.reconnect());
+                
+                return () => { if(joinTimeout) clearTimeout(joinTimeout); if(joinInterval) clearInterval(joinInterval); peer.destroy(); };
             }, [roomCode, myUid, playerName, myAvatar]);
 
-            // 🌟 랭킹 보상 토큰 차등 지급 처리
+            // 🌟 END_HORSE 단계에서 즉각 토큰 보상 처리 (이탈 방지)
             useEffect(() => {
                 if (roomState?.status === 'END_HORSE' && !awardedRef.current && me) {
                     awardedRef.current = true;
                     const sorted = [...roomState.players].sort((a,b) => b.money - a.money);
                     const myRank = sorted.findIndex(p => p.uid === myUid) + 1;
                     
-                    let earned = 30; 
-                    if (myRank === 1) earned = 150;
-                    else if (myRank === 2) earned = 100;
-                    else if (myRank === 3) earned = 70;
+                    let earned = 30; // 기본
+                    if (myRank === 1) earned = 100;
+                    else if (myRank === 2) earned = 70;
+                    else if (myRank === 3) earned = 50;
                     
                     const curTokens = parseInt(localStorage.getItem('edurace_tokens') || '30');
                     localStorage.setItem('edurace_tokens', curTokens + earned);
-                    setEarnedTokenMsg(`🎉 랭킹 ${myRank}위 달성! 보상 토큰 ${earned}개 획득! 🎁`);
+                    setEarnedTokenMsg(`🎉 최종 ${myRank}위 달성! 토큰 ${earned}개 획득!`);
                 }
-                
-                // 🌟 호스트가 재시작 누르면 리셋
                 if (roomState?.status === 'LOBBY') {
                     awardedRef.current = false;
                     setEarnedTokenMsg(null);
                 }
             }, [roomState?.status, me, myUid, roomState?.players]);
 
-            const sendAction = (action) => { 
-                const { fbPush: push } = window;
-                push(ref(db, `rooms/${roomCode}/actions`), { uid: myUid, ...action }); 
-            };
+            const sendAction = (action) => { if(connRef.current?.open) connRef.current.send({ uid: myUid, ...action }); };
 
             if (errorMsg) return (
                 <div className="h-full flex flex-col items-center justify-center bg-slate-900 text-white p-6 text-center">
-                    <div className="text-5xl mb-4 text-red-500">⚠️</div><div className="text-xl font-bold mb-2 text-red-400">접속 오류</div><div className="text-slate-300 text-sm break-keep leading-relaxed mb-8">{errorMsg}</div>
-                    <button onClick={onExit} className="px-8 py-4 bg-slate-800 rounded-xl font-bold text-white shadow-lg active:scale-95 transition border border-slate-700">처음으로 돌아가기</button>
+                    <div className="text-5xl mb-4 text-red-500">⚠️</div><div className="text-xl font-bold mb-2 text-red-400">접속 오류</div><div className="text-slate-300 text-sm break-keep leading-relaxed">{errorMsg}</div>
+                    <button onClick={onExit} className="mt-8 px-6 py-3 bg-slate-800 rounded-xl font-bold text-white shadow-lg active:scale-95 transition border border-slate-700">처음으로 돌아가기</button>
                 </div>
             );
             if (!roomState || !me) return (
@@ -1198,44 +1052,12 @@
                         )}
                         
                         {roomState.status === 'RESULT' && <ResultPhase me={me} />}
-                        
-                        {/* 🌟 플레이어 최종 랭킹 화면 */}
                         {roomState.status.startsWith('END') && (
-                            <div className="flex flex-col h-full w-full max-w-2xl mx-auto p-4 overflow-y-auto custom-scrollbar relative">
-                                <div className="text-center mt-6 mb-4">
-                                    <div className="text-5xl mb-2">🏆</div>
-                                    <h2 className="text-2xl font-black text-yellow-400">모든 경주 종료!</h2>
-                                </div>
-
-                                {earnedTokenMsg && (
-                                    <div className="bg-slate-800 border-2 border-yellow-500 px-4 py-3 rounded-xl font-bold text-center shadow-[0_0_15px_rgba(234,179,8,0.3)] animate-rise mb-6">
-                                        <span className="text-yellow-400">{earnedTokenMsg}</span>
-                                    </div>
-                                )}
-
-                                <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-600 mb-6 pb-8">
-                                    <h3 className="text-xl font-bold mb-4 text-center text-slate-200 border-b border-slate-700 pb-2">최종 부자 랭킹</h3>
-                                    
-                                    <div className="scale-75 origin-top mb-[-30px]">
-                                        <PlayerPodium players={roomState.players} />
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-1 gap-2 mt-4">
-                                        {[...roomState.players].sort((a,b)=>b.money-a.money).map((p, i) => (
-                                            <div key={p.uid} className={`flex justify-between items-center px-4 py-3 rounded-lg border ${p.uid === me.uid ? 'bg-indigo-900/50 border-indigo-500 shadow-md' : 'bg-slate-700 border-slate-600'}`}>
-                                                <span className="font-bold flex items-center gap-3 text-base">
-                                                    <AvatarDisplay avatarStr={p.avatar} sizeClasses="w-6 h-6 text-xs"/>
-                                                    {i+1}위. {p.name} {p.uid === me.uid && <span className="text-[10px] bg-indigo-600 px-2 py-0.5 rounded-full ml-1 text-white">나</span>}
-                                                </span>
-                                                <span className="text-emerald-400 font-black text-lg">{Math.floor(p.money)} 💰</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                
-                                <div className="text-center text-slate-500 text-sm font-bold animate-pulse pb-10">
-                                    방장이 다음 동작을 선택 중입니다...
-                                </div>
+                            <div className="flex items-center justify-center h-full flex-col p-6 text-center overflow-y-auto custom-scrollbar">
+                                <div className="text-6xl mb-6 mt-10">🏆</div><h2 className="text-2xl font-black text-yellow-400 mb-4">모든 경주 종료!</h2>
+                                {earnedTokenMsg && <div className="bg-slate-800 border-2 border-yellow-500 px-6 py-3 rounded-xl font-bold text-lg shadow-[0_0_15px_rgba(234,179,8,0.3)] animate-rise">{earnedTokenMsg}</div>}
+                                <p className="mt-8 text-slate-400 font-bold">호스트 화면에서 최종 결과를 확인하세요!</p>
+                                <button onClick={onExit} className="mt-8 border border-slate-600 bg-slate-800 px-6 py-2 rounded-lg text-slate-300 hover:text-white mb-10">나가기</button>
                             </div>
                         )}
                     </div>
@@ -1247,7 +1069,7 @@
         function PlayerCheerUI({ horses, sendAction }) {
             return (
                 <div className="w-full p-2 pb-4 z-50 bg-slate-900/90 backdrop-blur border-t border-slate-700 shrink-0">
-                    <div className="text-center text-xs font-bold text-yellow-400 mb-2">📣 모든 경주마 응원 가능! (이펙트 & 순간 가속)</div>
+                    <div className="text-center text-xs font-bold text-yellow-400 mb-2">📣 모든 경주마 응원 가능! (터치 연타)</div>
                     <div className="grid grid-cols-4 gap-2">
                         {horses.map(h => (
                             <CheerButton key={h.id} horse={h} sendAction={sendAction} />
@@ -1266,6 +1088,7 @@
                 
                 sendAction({ type: 'CHEER', horseId: horse.id }); 
                 setOnCd(true);
+                // 🌟 응원 쿨타임 1초 적용
                 setTimeout(() => setOnCd(false), 1000); 
             };
 
@@ -1452,16 +1275,12 @@
             const hudDistRef = useRef(null);
             const dustLayerRef = useRef(null);
             const evtContainerRef = useRef(null);
-            
             const particleContainerRef = useRef(null);
             const cheerTickerRef = useRef(null); 
 
             const playback = useRef({ startMs: null, lastTs: null, currentTick: 0, lastEvtTick: -1, spurt: false, camX: null });
             const leadTracker = useRef({ currentLeaderIdx: -1, lastLeadChangeTick: -999 });
             const cheerEffects = useRef([]); 
-            
-            // 🌟 시각적 속도 버프(Visual Momentum)를 위한 ref 추가
-            const visualMomentums = useRef([]);
 
             const [isSpurtCSS, setIsSpurtCSS] = useState(false);
             const [isDramatic, setIsDramatic] = useState(false); 
@@ -1486,9 +1305,9 @@
 
             useEffect(() => { playSound('start'); }, []);
 
+            // 🌟 응원 효과 리스너 (순수 시각적 효과만)
             useEffect(() => {
                 cheerEffects.current = horses.map(() => 0); 
-                visualMomentums.current = horses.map(() => 0);
                 const cheerCounts = horses.map(() => 0); 
                 
                 const onCheer = (e) => {
@@ -1497,11 +1316,8 @@
                     
                     if (hIdx > -1) {
                         cheerCounts[hIdx] += 1;
-                        cheerEffects.current[hIdx] = 100; 
+                        cheerEffects.current[hIdx] = 100; // 글로우 이펙트 발동
                         
-                        // 🌟 시각적 가속도 부여 (클라이언트 화면에서만 튀어나가게 보임)
-                        visualMomentums.current[hIdx] += 80;
-
                         if (isHost && cheerTickerRef.current && playerName) {
                             const ticker = document.createElement('div');
                             ticker.className = 'text-sm font-black text-yellow-300 bg-black/60 px-3 py-1 rounded-full mb-1 border border-yellow-500/50 shadow-md animate-slide-in';
@@ -1615,7 +1431,7 @@
                     let leadPos = activeRunners.length > 0 ? Math.max(...activeRunners.map(r => r.pos)) : TRACK_LENGTH + 150;
 
                     const leadData = getTrackPos(leadPos, 0);
-                    playback.current.camX += (leadData.x - playback.current.camX) * 0.15;
+                    playback.current.camX += (leadData.x - playback.current.camX) * 0.1;
                     
                     const cw = containerRef.current.clientWidth;
                     const ch = containerRef.current.clientHeight;
@@ -1643,22 +1459,15 @@
                         leadTracker.current.currentLeaderIdx = newLeaderIdx;
                         leadTracker.current.lastLeadChangeTick = t1;
                     }
-                    
-                    // 🌟 시각적 가속도 서서히 감소 (Decay)
-                    visualMomentums.current.forEach((val, i) => {
-                        visualMomentums.current[i] = val * 0.92;
-                    });
 
                     curPos.forEach((pos, i) => {
                         cheerEffects.current[i] *= 0.9; 
                         
+                        // 물리엔진 조작을 빼고 순수 시각적 효과만 남김
                         const visualPos = pos;
-                        const lat = lats1[i]*(1-frac) + lats2[i]*frac;
-                        const basePos = getTrackPos(visualPos, lat);
                         
-                        // 🌟 베이스 위치에 시각적 관성(x축 오프셋)을 더함
-                        const x = basePos.x + visualMomentums.current[i];
-                        const y = basePos.y;
+                        const lat = lats1[i]*(1-frac) + lats2[i]*frac;
+                        const { x, y } = getTrackPos(visualPos, lat);
                         
                         if(horseRefs.current[i]) {
                             horseRefs.current[i].style.left = `${x}px`;
@@ -1671,7 +1480,7 @@
                                 else icon.classList.remove('active');
                                 
                                 if (cheerEffects.current[i] > 30) {
-                                    icon.style.filter = 'drop-shadow(0 0 40px rgba(250,204,21,1)) brightness(1.3)';
+                                    icon.style.filter = 'drop-shadow(0 0 20px rgba(250,204,21,1)) brightness(1.2)';
                                 } else {
                                     icon.style.filter = ''; 
                                 }
