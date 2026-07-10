@@ -199,7 +199,7 @@
         const EVENT_MSGS = {
             spurt: ['🔥 폼 미쳤다! 폭발적인 가속!', '🚀 영혼까지 끌어모은 스퍼트!', '✨ 안보일 정도로 치고 나갑니다!', '💨 폭주 기관차 발동!', '⚡ 갑자기 기어가 바뀌었습니다!', '🌟 이게 진짜 실력이다!!'],
             slip: ['💦 아차! 돌부리에 걸렸습니다!', '🚨 다리에 쥐가 났나요?!', '📉 갑자기 페이스가 뚝 떨어집니다!', '😰 치명적인 스텝 꼬임!'],
-            lead: ['👑 선두 사수! 버텨라!!', '🔥 1위가 바뀝니다! 과연?!', '⚡ 엄청난 기세로 왕좌 탈환!', '🏆 압도적인 스피드로 1위 등극!'],
+            lead: ['👑 선두 사수! 버텨라!!', '🔥 1위가 바뀝니다! 과연?!', '⚡ 엄청난 기세로 전세 역전!', '🏆 압도적인 스피드로 1위 등극!'],
             overtake: ['🌪️ 폭풍 추월!', '💨 순식간에 앞지릅니다!', '🔥 무서운 뒷심 발휘!', '😱 말도 안 되는 역전극!'],
             neckAndNeck: ['😱 완전 초접전! 한 치의 양보도 없다!', '🎯 나란히 달리는 선두권, 손에 땀을 쥐게 하네요!'],
             lastSpurt: ['⏰ 마지막 100m! 승부의 갈림길!', '🏁 결승선이 코앞! 여기서 갈린다!'],
@@ -253,7 +253,6 @@
             const [roomCode, setRoomCode] = useState('');
             const [playerName, setPlayerName] = useState(() => localStorage.getItem('edurace_last_name') || '');
             
-            // 🔥 수정 1: uid를 localStorage에 영구 저장 (새로고침, 모바일 화면 꺼짐 시 초기화 방지)
             const [myUid] = useState(() => {
                 let savedUid = localStorage.getItem('edurace_uid');
                 if(!savedUid) {
@@ -563,9 +562,6 @@
                     const state = gameState.current;
                     const beforeCount = state.players.length;
                     
-                    // 🔥 수정 2: 모바일 화면 꺼짐 시 자동 강퇴 로직 삭제 (돈 증발 원인 제거)
-                    // 기존코드: state.players = state.players.filter(p => (now - (p.lastPing || now)) < 8000); 
-
                     try {
                         const safeState = JSON.parse(JSON.stringify(state));
                         if(window.fbSet && window.fbRef && window.firebaseDb) {
@@ -593,7 +589,6 @@
                 let player = state.players.find(p => p.uid === data.uid);
                 let needsUiUpdate = false;
                 
-                // 🔥 수정 3: PING이 들어와도 기존 플레이어의 돈을 날리지 않고 정보만 갱신
                 if (data.type === 'JOIN' || data.type === 'PING') {
                     if (!player) {
                         player = { uid: data.uid, name: data.name, avatar: data.avatar, money: 10000, inventory: null, bets: {}, isReady: false, stats: { quizCnt: 0, betWin: 0, betLoss: 0 }, lastPing: Date.now() };
@@ -1112,6 +1107,12 @@
             const [rewardClaimed, setRewardClaimed] = useState(false);
             const [rewardDetails, setRewardDetails] = useState(null);
 
+            // 새롭게 추가된 상태 변수들 (타이머, 제한, 팝업, 아이템 선택 모드)
+            const [quizCount, setQuizCount] = useState(0);
+            const [timeLeft, setTimeLeft] = useState(30);
+            const [quizPopup, setQuizPopup] = useState(null);
+            const [isItemSelecting, setIsItemSelecting] = useState(false);
+
             const pushAction = (actionData) => {
                 if(window.fbPush && window.fbRef && window.firebaseDb) {
                     window.fbPush(window.fbRef(window.firebaseDb, `rooms/${roomCode}/actions`), { ...actionData, uid: myUid });
@@ -1151,22 +1152,40 @@
                 setQuizData({ answer, options });
             };
 
-            // 🔥 수정 4: 라운드 시작 시 이전 라운드의 배팅 기록 초기화 방어
             useEffect(() => {
                 if(roomState?.status === 'QUIZ') {
+                    setQuizCount(0);
+                    setTimeLeft(30);
+                    setQuizPopup(null);
                     if(!quizData) generateQuiz();
                 } else {
                     setQuizData(null);
                     setCombo(0);
                 }
 
-                // 퀴즈, 로비 등으로 갈 때마다 클라이언트 쪽 배팅 내역 확실하게 날려버림
                 if(roomState?.status === 'QUIZ' || roomState?.status === 'LOBBY') {
                     setMyBets({});
                     setUsedItem(null);
+                    setIsItemSelecting(false);
                     setCheerCooldown(false);
                 }
             }, [roomState?.status]);
+
+            // 타이머 로직
+            useEffect(() => {
+                if (roomState?.status === 'QUIZ' && quizData && quizCount < 10 && !quizPopup) {
+                    const timer = setInterval(() => {
+                        setTimeLeft(prev => {
+                            if (prev <= 1) {
+                                handleTimeout();
+                                return 30;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                    return () => clearInterval(timer);
+                }
+            }, [roomState?.status, quizData, quizCount, quizPopup]);
 
             useEffect(() => {
                 if ((roomState?.status === 'END_PLAYER' || roomState?.status === 'END_AWARDS') && !rewardClaimed) {
@@ -1193,17 +1212,36 @@
                 }
             }, [roomState?.status, roomState?.players, myUid, rewardClaimed]);
 
+            // 팝업 표시 및 다음 문제로 넘어가는 함수
+            const showPopupAndNext = (resultType) => {
+                setQuizPopup(resultType);
+                setTimeout(() => {
+                    setQuizPopup(null);
+                    setQuizCount(prev => prev + 1);
+                    setTimeLeft(30);
+                    generateQuiz();
+                }, 1200);
+            };
+
+            const handleTimeout = () => {
+                playSound('wrong');
+                setCombo(0);
+                showPopupAndNext('timeout');
+            };
+
             const handleQuizAnswer = (opt) => {
+                if (quizPopup) return; // 팝업 중복 클릭 방지
+                
                 if(opt.eng === quizData.answer.eng) {
                     playSound('combo');
                     const newCombo = combo + 1;
                     setCombo(newCombo);
                     pushAction({ type: 'QUIZ_CORRECT', earned: 1000 + (newCombo * 200) });
-                    generateQuiz();
+                    showPopupAndNext('correct');
                 } else {
                     playSound('wrong');
                     setCombo(0);
-                    generateQuiz();
+                    showPopupAndNext('wrong');
                 }
             };
 
@@ -1227,8 +1265,39 @@
             };
 
             const handleResetBet = () => {
-                setMyBets({}); setUsedItem(null);
+                setMyBets({}); 
+                setUsedItem(null);
+                setIsItemSelecting(false);
                 pushAction({ type: 'BET_CHANGE', bets: {}, usedItemOn: null });
+            };
+
+            // 아이템 타겟 지정 로직
+            const handleItemBtnClick = () => {
+                const myItem = me.inventory ? ITEMS.find(i => i.id === me.inventory) : null;
+                if (!myItem) return;
+                
+                if (usedItem || isItemSelecting) {
+                    setUsedItem(null);
+                    setIsItemSelecting(false);
+                    pushAction({ type: 'BET_CHANGE', bets: myBets, usedItemOn: null });
+                    return;
+                }
+
+                if (['coin', 'insurance'].includes(myItem.id)) {
+                    const newItemState = { target: 'self', itemId: myItem.id };
+                    setUsedItem(newItemState);
+                    pushAction({ type: 'BET_CHANGE', bets: myBets, usedItemOn: newItemState });
+                } else {
+                    setIsItemSelecting(true);
+                }
+            };
+
+            const handleSelectTargetHorse = (hId) => {
+                if (!isItemSelecting) return;
+                const newItemState = { target: 'horse', horseId: hId, itemId: me.inventory };
+                setUsedItem(newItemState);
+                setIsItemSelecting(false);
+                pushAction({ type: 'BET_CHANGE', bets: myBets, usedItemOn: newItemState });
             };
 
             const handleCheer = (horseId) => {
@@ -1257,24 +1326,53 @@
 
             if (roomState.status === 'QUIZ') {
                 return (
-                    <div className="h-[100dvh] flex flex-col p-4 bg-slate-900 text-white fade-in overflow-hidden">
+                    <div className="h-[100dvh] flex flex-col p-4 bg-slate-900 text-white fade-in overflow-hidden relative">
                         <div className="flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md shrink-0">
                             <div><div className="text-slate-400 text-xs font-bold mb-1">내 자본금</div><div className="text-2xl font-black text-emerald-400">{me.money}💰</div></div>
-                            <div className="text-right"><div className="text-slate-400 text-xs font-bold mb-1">연속 정답 보너스</div><div className="text-xl font-black text-yellow-400">{combo} Combo! 🔥</div></div>
-                        </div>
-                        {quizData && (
-                            <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
-                                <div className="text-center text-3xl sm:text-4xl font-black mb-8 p-6 sm:p-8 bg-slate-800 rounded-2xl border-2 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] break-words w-full">
-                                    {quizData.answer.kor}
-                                </div>
-                                <div className="grid grid-cols-1 gap-4 flex-1 content-start">
-                                    {quizData.options.map(opt => (
-                                        <button key={opt.eng} onClick={()=>handleQuizAnswer(opt)} className="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-black text-xl sm:text-2xl rounded-2xl py-5 sm:py-6 shadow-lg transition-transform active:scale-95 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 w-full">
-                                            {opt.eng}
-                                        </button>
-                                    ))}
-                                </div>
+                            <div className="text-center">
+                                <div className="text-slate-400 text-xs font-bold mb-1">진행도</div>
+                                <div className="text-lg font-black text-white">{quizCount}/10</div>
                             </div>
+                            <div className="text-right"><div className="text-slate-400 text-xs font-bold mb-1">연속 정답</div><div className="text-xl font-black text-yellow-400">{combo} Combo! 🔥</div></div>
+                        </div>
+                        
+                        {quizCount >= 10 ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center">
+                                <div className="text-6xl mb-4">🙌</div>
+                                <h2 className="text-3xl font-black text-white mb-2">모든 문제를 풀었습니다!</h2>
+                                <p className="text-slate-400">선생님이 배팅 타임을 시작할 때까지 잠시 대기해주세요.</p>
+                            </div>
+                        ) : (
+                            quizData && (
+                                <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full relative">
+                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 px-6 py-2 rounded-full border border-slate-600 font-black text-xl flex items-center gap-2">
+                                        <i className="fas fa-clock text-slate-400"></i>
+                                        <span className={timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white'}>{timeLeft}초</span>
+                                    </div>
+                                    
+                                    <div className="text-center text-3xl sm:text-4xl font-black mb-8 p-6 sm:p-8 bg-slate-800 rounded-2xl border-2 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] break-words w-full">
+                                        {quizData.answer.kor}
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4 flex-1 content-start relative">
+                                        {quizData.options.map(opt => (
+                                            <button key={opt.eng} onClick={()=>handleQuizAnswer(opt)} className="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-black text-xl sm:text-2xl rounded-2xl py-5 sm:py-6 shadow-lg transition-transform active:scale-95 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 w-full">
+                                                {opt.eng}
+                                            </button>
+                                        ))}
+                                        
+                                        {quizPopup && (
+                                            <div className={`absolute inset-0 z-50 flex items-center justify-center rounded-2xl backdrop-blur-sm animate-pulse ${
+                                                quizPopup === 'correct' ? 'bg-emerald-500/80' : 
+                                                quizPopup === 'wrong' ? 'bg-red-500/80' : 'bg-orange-500/80'
+                                            }`}>
+                                                <span className="text-6xl drop-shadow-xl font-black">
+                                                    {quizPopup === 'correct' ? '⭕ 정답!' : quizPopup === 'wrong' ? '❌ 오답!' : '⏰ 시간 초과!'}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )
                         )}
                     </div>
                 );
@@ -1302,15 +1400,33 @@
                                 )}
                                 <button onClick={handleResetBet} className="bg-red-900/50 text-red-400 border border-red-500/50 px-4 py-2 rounded-lg font-black text-sm hover:bg-red-900 transition active:scale-95">배팅 초기화</button>
                             </div>
+                            
                             {myItem && (
-                                <button onClick={() => setUsedItem({ target: 'self', itemId: me.inventory })} className={`w-full py-2 rounded-lg font-black text-sm transition active:scale-95 ${usedItem ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
-                                    {usedItem ? '✨ 아이템 사용 준비완료! ✨' : '아이템 사용하기'}
+                                <button onClick={handleItemBtnClick} 
+                                    className={`w-full py-3 rounded-lg font-black text-sm transition active:scale-95 ${
+                                        usedItem ? 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-500' : 
+                                        isItemSelecting ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.5)] animate-pulse' : 
+                                        'bg-purple-600 text-white hover:bg-purple-500'
+                                    }`}>
+                                    {usedItem ? '❌ 아이템 사용 취소' : isItemSelecting ? '👇 아래에서 아이템을 적용할 말을 선택하세요!' : '아이템 사용하기'}
                                 </button>
                             )}
                         </div>
+                        
                         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 pb-6">
                             {roomState.horses.map(h => (
-                                <div key={h.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col gap-3 shadow-md">
+                                <div key={h.id} 
+                                    onClick={() => isItemSelecting ? handleSelectTargetHorse(h.id) : null}
+                                    className={`bg-slate-800 p-4 rounded-xl border flex flex-col gap-3 shadow-md relative transition-all ${
+                                        isItemSelecting ? 'border-yellow-500 cursor-pointer hover:bg-slate-700 animate-pulse' : 'border-slate-700'
+                                    }`}>
+                                    
+                                    {usedItem?.target === 'horse' && usedItem.horseId === h.id && (
+                                        <div className="absolute top-2 right-2 bg-purple-600 border border-purple-400 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg z-10">
+                                            {myItem?.icon} 아이템 적용됨!
+                                        </div>
+                                    )}
+
                                     <div className="flex items-start gap-3">
                                         <div className="text-4xl bg-slate-900 w-14 h-14 rounded-full flex items-center justify-center border border-slate-600 shadow-inner shrink-0 mt-1">{h.emoji}</div>
                                         <div className="min-w-0">
@@ -1324,11 +1440,11 @@
                                         <div className="text-lg font-black text-emerald-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">{(myBets[h.id] || 0)}💰</div>
                                     </div>
 
-                                    <div className="grid grid-cols-5 gap-1 sm:gap-2 mt-1">
+                                    <div className={`grid grid-cols-5 gap-1 sm:gap-2 mt-1 ${isItemSelecting ? 'opacity-30 pointer-events-none' : ''}`}>
                                         {[100, 500, 1000, 5000].map(amt => (
-                                            <button key={amt} onClick={()=>handleBet(h.id, amt)} className="bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 py-2 sm:py-3 rounded-lg font-black text-[11px] sm:text-sm active:scale-95 transition whitespace-nowrap">+{amt}</button>
+                                            <button key={amt} onClick={(e)=>{ e.stopPropagation(); handleBet(h.id, amt); }} className="bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 py-2 sm:py-3 rounded-lg font-black text-[11px] sm:text-sm active:scale-95 transition whitespace-nowrap">+{amt}</button>
                                         ))}
-                                        <button onClick={()=>handleBetAllIn(h.id)} className="bg-red-600/20 hover:bg-red-600/40 border border-red-500/40 text-red-300 py-2 sm:py-3 rounded-lg font-black text-[11px] sm:text-sm active:scale-95 transition whitespace-nowrap">올인</button>
+                                        <button onClick={(e)=>{ e.stopPropagation(); handleBetAllIn(h.id); }} className="bg-red-600/20 hover:bg-red-600/40 border border-red-500/40 text-red-300 py-2 sm:py-3 rounded-lg font-black text-[11px] sm:text-sm active:scale-95 transition whitespace-nowrap">올인</button>
                                     </div>
                                 </div>
                             ))}
