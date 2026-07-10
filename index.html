@@ -152,29 +152,29 @@
         const initAudio = () => { if(audioCtx.state === 'suspended') audioCtx.resume(); };
 
         const HORSES = [
-            { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 50, spurt: 95, stability: 70, luck: 75 }, type: 'late' },
+            { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 50, spurt: 92, stability: 70, luck: 75 }, type: 'late' },
             { id: 2, emoji: '🦈', name: '트랄랄레오 트랄랄라', desc: '어디로 튈지 모르는 광기의 육지 상어.', stats: { speed: 60, spurt: 60, stability: 20, luck: 100 }, type: 'luck' },
-            { id: 3, emoji: '🏃‍♂️', name: '데이비드 마르티네즈', desc: '산데비스탄 발동! 스타트 라인을 뚫고 나가는 전설.', stats: { speed: 85, spurt: 48, stability: 25, luck: 60 }, type: 'early' },
+            { id: 3, emoji: '🏃‍♂️', name: '데이비드 마르티네즈', desc: '산데비스탄 발동! 스타트 라인을 뚫고 나가는 전설.', stats: { speed: 90, spurt: 48, stability: 25, luck: 60 }, type: 'early' },
             { id: 4, emoji: '🏎️', name: '막스 베르스타펜', desc: 'F1 챔피언의 품격. 컨디션을 무시하는 완벽한 주행.', stats: { speed: 60, spurt: 70, stability: 85, luck: 45 }, type: 'stable' },
             { id: 5, emoji: '🪅', name: '레인보우 피에스타', desc: '극후반에 터집니다. 엄청난 속도거나, 그대로 멈추거나.', stats: { speed: 60, spurt: 85, stability: 20, luck: 90 }, type: 'luck' },
             { id: 6, emoji: '🩻', name: '샌즈', desc: '지옥에서 온 스켈레톤. 뼈아픈 속도와 운빨.', stats: { speed: 65, spurt: 75, stability: 15, luck: 95 }, type: 'luck' },
             { id: 7, emoji: '🐢', name: '늑대거북이', desc: '등껍질에 부스터 장착. 막판 스퍼트는 압도적.', stats: { speed: 50, spurt: 87, stability: 80, luck: 30 }, type: 'late' },
-            { id: 8, emoji: '🦬', name: '버팔로 러시', desc: '그는 오직 목표만 바라보고 달립니다.', stats: { speed: 77, spurt: 55, stability: 55, luck: 70 }, type: 'early' },
-            { id: 9, emoji: '🦑', name: '딥 크라켄', desc: '1등의 등짝이 보이면 심해의 힘으로 미친 듯이 쫓아감.', stats: { speed: 65, spurt: 62, stability: 65, luck: 50 }, type: 'chaser' },
-            { id: 10, emoji: '🌪️', name: '우라칸', desc: '태풍의 눈! 초반에 모든 것을 휩쓸며 날아갑니다.', stats: { speed: 85, spurt: 40, stability: 45, luck: 60 }, type: 'early' },
+            { id: 8, emoji: '🦬', name: '버팔로 러시', desc: '그는 오직 목표만 바라보고 달립니다.', stats: { speed: 77, spurt: 57, stability: 55, luck: 70 }, type: 'early' },
+            { id: 9, emoji: '🦑', name: '딥 크라켄', desc: '1등의 등짝이 보이면 심해의 힘으로 미친 듯이 쫓아감.', stats: { speed: 65, spurt: 66, stability: 65, luck: 50 }, type: 'chaser' },
+            { id: 10, emoji: '🌪️', name: '우라칸', desc: '태풍의 눈! 초반에 모든 것을 휩쓸며 날아갑니다.', stats: { speed: 85, spurt: 46, stability: 45, luck: 60 }, type: 'early' },
             { id: 11, emoji: '🐎', name: '스페셜 먼스', desc: '압도적인 재능은 없지만 절대 멈추지 않는 끈기.', stats: { speed: 60, spurt: 60, stability: 85, luck: 45 }, type: 'stable' },
             { id: 12, emoji: '👨‍🦽‍➡️', name: '케니 가와구치', desc: '휠체어의 전설. 엄청 빠르지만 가끔 바퀴가 헛돔.', stats: { speed: 75, spurt: 65, stability: 25, luck: 80 }, type: 'luck' },
-            { id: 13, emoji: '🦖', name: '프라이멀 렉스', desc: '초반은 느리지만, 보폭이 커서 가속이 붙으면 무서움.', stats: { speed: 60, spurt: 75, stability: 70, luck: 45 }, type: 'chaser' },
-            { id: 14, emoji: '🕴️', name: '마이클 잭슨', desc: '문워크로 가다가 결승선을 앞두고 팝의 황제로 각성함.', stats: { speed: 53, spurt: 95, stability: 60, luck: 30 }, type: 'late' },
+            { id: 13, emoji: '🦖', name: '프라이멀 렉스', desc: '초반은 느리지만, 보폭이 커서 가속이 붙으면 무서움.', stats: { speed: 60, spurt: 78, stability: 70, luck: 45 }, type: 'chaser' },
+            { id: 14, emoji: '🕴️', name: '마이클 잭슨', desc: '문워크로 가다가 결승선을 앞두고 팝의 황제로 각성함.', stats: { speed: 53, spurt: 92, stability: 60, luck: 30 }, type: 'late' },
             { id: 15, emoji: '🛴', name: '씽씽이 마에스트로', desc: '킥보드계의 혜성. 돌부리에 걸릴지 1등할지 모름.', stats: { speed: 65, spurt: 62, stability: 15, luck: 85 }, type: 'luck' },
             { id: 16, emoji: '🐐', name: '소율 더 고트', desc: '물리 엔진을 무시하고 흔들림 없이 정상으로 직진.', stats: { speed: 63, spurt: 63, stability: 85, luck: 40 }, type: 'stable' },
             { id: 17, emoji: '🏇', name: '죠니 죠스타', desc: '황금장방형의 기적! 터지면 누구도 막을 수 없음.', stats: { speed: 63, spurt: 67, stability: 45, luck: 95 }, type: 'luck' },
-            { id: 18, emoji: '🧘‍♂️', name: '젠 야타', desc: '고요함을 유지하다 마지막에 깨달음을 얻고 초월함.', stats: { speed: 62, spurt: 95, stability: 85, luck: 30 }, type: 'late' },
+            { id: 18, emoji: '🧘‍♂️', name: '젠 야타', desc: '고요함을 유지하다 마지막에 깨달음을 얻고 초월함.', stats: { speed: 62, spurt: 92, stability: 85, luck: 30 }, type: 'late' },
             { id: 19, emoji: '🐦‍🔥', name: '이터널 피닉스', desc: '죽지 않는 불사조. 후반에 재를 뚫고 폭발적으로 부활함.', stats: { speed: 54, spurt: 92, stability: 75, luck: 40 }, type: 'late' },
-            { id: 20, emoji: '🚚', name: '미스터 쿠팡', desc: '로켓배송! 절대 늦는 법이 없습니다.', stats: { speed: 70, spurt: 50, stability: 80, luck: 40 }, type: 'stable' },
-            { id: 21, emoji: '🚶🏻‍♂️‍➡️', name: '김 민재', desc: '처음엔 조용하지만 뒤를 돌아보면 무시무시한 속도로 당신을 추격하고 있다!', stats: { speed: 52, spurt: 95, stability: 50, luck: 50 }, type: 'chaser' },
-            { id: 22, emoji: '🦛', name: '히포포타무스', desc: '수륙양용 괴물. 비 오는 날 진흙탕에서 더욱 빨라집니다.', stats: { speed: 57, spurt: 74, stability: 60, luck: 30 }, type: 'chaser' },
-            { id: 23, emoji: '🦕', name: '브라키오 카이저', desc: '거대한 목을 휘두르며 걷습니다. 모든 것은 운에 달렸습니다.', stats: { speed: 40, spurt: 50, stability: 30, luck: 98 }, type: 'luck' },
+            { id: 20, emoji: '🚚', name: '미스터 쿠팡', desc: '로켓배송! 절대 늦는 법이 없습니다.', stats: { speed: 70, spurt: 54, stability: 80, luck: 40 }, type: 'stable' },
+            { id: 21, emoji: '🚶🏻‍♂️‍➡️', name: '김 민재', desc: '처음엔 조용하지만 뒤를 돌아보면 무시무시한 속도로 당신을 추격하고 있다!', stats: { speed: 57, spurt: 96, stability: 50, luck: 55 }, type: 'chaser' },
+            { id: 22, emoji: '🦛', name: '히포포타무스', desc: '수륙양용 괴물. 비 오는 날 진흙탕에서 더욱 빨라집니다.', stats: { speed: 59, spurt: 77, stability: 62, luck: 30 }, type: 'chaser' },
+            { id: 23, emoji: '🦕', name: '브라키오 카이저', desc: '거대한 목을 휘두르며 걷습니다. 모든 것은 운에 달렸습니다.', stats: { speed: 54, spurt: 60, stability: 30, luck: 98 }, type: 'luck' },
             { id: 24, emoji: '🦅', name: '데저트 이글', desc: '사막의 독수리! 초반부터 맹렬하게 날아오릅니다.', stats: { speed: 82, spurt: 40, stability: 65, luck: 40 }, type: 'early' }
         ];
 
@@ -191,9 +191,9 @@
 
         const WEATHERS = [
             { id: 'SUNNY', name: '맑음 ☀️', desc: '경기하기 딱 좋은 날씨입니다.', color: 'text-yellow-300' },
-            { id: 'RAIN', name: '우천 🌧️', desc: '진흙탕! 몸싸움이 힘들어져 추격마가 불리해집니다.', color: 'text-blue-300' },
-            { id: 'HEAT', name: '폭염 🔥', desc: '지칩니다! 추입마의 후반 스퍼트가 약해집니다.', color: 'text-red-300' },
-            { id: 'WIND', name: '강풍 🌬️', desc: '초반 러시마의 운명이 엇갈립니다!', color: 'text-teal-300' }
+            { id: 'RAIN', name: '우천 🌧️', desc: '진흙탕! 변수가 더 많아집니다.', color: 'text-blue-300' },
+            { id: 'HEAT', name: '폭염 🔥', desc: '지칩니다! 후반 스퍼트가 약해집니다.', color: 'text-red-300' },
+            { id: 'WIND', name: '강풍 🌬️', desc: '초반에 누가 바람의 흐름을 탈까요?', color: 'text-teal-300' }
         ];
 
         const EVENT_MSGS = {
@@ -441,6 +441,8 @@
         function HostView({ onExit }) {
             const [roomCode] = useState(generateRoomCode);
             const [setupRounds, setSetupRounds] = useState(3);
+            const [quizTimeLeft, setQuizTimeLeft] = useState(30); // 🌟 전체 30초 타이머 호스트 측 관리
+            
             const gameState = useRef({ status: 'LOBBY', round: 0, totalRounds: 3, horses: [], raceData: null, players: [], weather: WEATHERS[0], customWords: [] });
             const [uiState, setUiState] = useState({ ...gameState.current });
             
@@ -470,6 +472,24 @@
                     playBGM(BGM_URLS.lobby);
                 } else if (uiState.status === 'RACE') {
                     playBGM(BGM_URLS.race);
+                }
+            }, [uiState.status]);
+
+            // 🌟 호스트가 시작하는 30초 타이머 로직 (30초 뒤 배팅 강제 이동)
+            useEffect(() => {
+                if (uiState.status === 'QUIZ') {
+                    setQuizTimeLeft(30);
+                    const timer = setInterval(() => {
+                        setQuizTimeLeft(prev => {
+                            if (prev <= 1) {
+                                clearInterval(timer);
+                                changeStatus('BETTING'); // 30초 땡 하면 자동으로 배팅 단계로!
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                    return () => clearInterval(timer);
                 }
             }, [uiState.status]);
 
@@ -992,7 +1012,11 @@
                         )}
                         {uiState.status === 'QUIZ' && (
                             <div className="m-auto text-center w-full p-6 overflow-y-auto custom-scrollbar max-h-full">
-                                <h2 className="text-3xl font-bold text-blue-400 mb-2">📝 퀴즈 진행 중 (자본금 획득)</h2><p className="text-slate-400 mb-8">학생들이 스마트폰에서 문제를 풀며 투자금을 모으고 있습니다. (연속 정답 시 상금 증가!)</p>
+                                <h2 className="text-3xl font-bold text-blue-400 mb-2">📝 퀴즈 진행 중 (자본금 획득)</h2>
+                                {/* 🌟 호스트 화면에도 30초 카운트다운 타이머 크게 표시! */}
+                                <div className="text-5xl font-black text-red-400 mb-2 animate-pulse">{quizTimeLeft}초 남음!</div>
+                                <p className="text-slate-400 mb-8">학생들이 스마트폰에서 문제를 풀며 투자금을 모으고 있습니다. (연속 정답 시 상금 증가!)</p>
+                                
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8 text-left">
                                     {uiState.players.map(p => (
                                         <div key={p.uid} className="bg-slate-800 p-2 rounded-lg border border-slate-700 shadow-sm flex items-center gap-2">
@@ -1002,7 +1026,7 @@
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={()=>changeStatus('BETTING')} className="bg-yellow-600 hover:bg-yellow-500 text-white font-black py-3 px-8 rounded-xl transition shadow-lg">배팅 단계로 강제 이동</button>
+                                <button onClick={()=>changeStatus('BETTING')} className="bg-yellow-600 hover:bg-yellow-500 text-white font-black py-3 px-8 rounded-xl transition shadow-lg mt-4">배팅 단계로 강제 이동</button>
                             </div>
                         )}
                         {uiState.status === 'BETTING' && (
@@ -1107,9 +1131,7 @@
             const [rewardClaimed, setRewardClaimed] = useState(false);
             const [rewardDetails, setRewardDetails] = useState(null);
 
-            // 새롭게 추가된 상태 변수들 (타이머, 제한, 팝업, 아이템 선택 모드)
-            const [quizCount, setQuizCount] = useState(0);
-            const [timeLeft, setTimeLeft] = useState(30);
+            const [timeLeft, setTimeLeft] = useState(30); // 🌟 플레이어용 30초 동기화 타이머
             const [quizPopup, setQuizPopup] = useState(null);
             const [isItemSelecting, setIsItemSelecting] = useState(false);
 
@@ -1154,8 +1176,6 @@
 
             useEffect(() => {
                 if(roomState?.status === 'QUIZ') {
-                    setQuizCount(0);
-                    setTimeLeft(30);
                     setQuizPopup(null);
                     if(!quizData) generateQuiz();
                 } else {
@@ -1171,21 +1191,16 @@
                 }
             }, [roomState?.status]);
 
-            // 타이머 로직
+            // 🌟 클라이언트 측 시각용 30초 타이머
             useEffect(() => {
-                if (roomState?.status === 'QUIZ' && quizData && quizCount < 10 && !quizPopup) {
+                if (roomState?.status === 'QUIZ') {
+                    setTimeLeft(30);
                     const timer = setInterval(() => {
-                        setTimeLeft(prev => {
-                            if (prev <= 1) {
-                                handleTimeout();
-                                return 30;
-                            }
-                            return prev - 1;
-                        });
+                        setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
                     }, 1000);
                     return () => clearInterval(timer);
                 }
-            }, [roomState?.status, quizData, quizCount, quizPopup]);
+            }, [roomState?.status]);
 
             useEffect(() => {
                 if ((roomState?.status === 'END_PLAYER' || roomState?.status === 'END_AWARDS') && !rewardClaimed) {
@@ -1212,25 +1227,21 @@
                 }
             }, [roomState?.status, roomState?.players, myUid, rewardClaimed]);
 
-            // 팝업 표시 및 다음 문제로 넘어가는 함수
             const showPopupAndNext = (resultType) => {
-                setQuizPopup(resultType);
-                setTimeout(() => {
-                    setQuizPopup(null);
-                    setQuizCount(prev => prev + 1);
-                    setTimeLeft(30);
-                    generateQuiz();
-                }, 1200);
-            };
+                  setQuizPopup(resultType);
+    
+                 // 정답('correct')일 때는 0.6초(600ms), 
+                 // 오답('wrong') 등 그 외의 경우에는 1.5초(1500ms) 동안 팝업 유지
+                 const delayTime = resultType === 'correct' ? 600 : 1500; 
 
-            const handleTimeout = () => {
-                playSound('wrong');
-                setCombo(0);
-                showPopupAndNext('timeout');
+                 setTimeout(() => {
+                     setQuizPopup(null);
+                     generateQuiz();
+                 }, delayTime);
             };
 
             const handleQuizAnswer = (opt) => {
-                if (quizPopup) return; // 팝업 중복 클릭 방지
+                if (quizPopup || timeLeft === 0) return; // 팝업 중이거나 시간 종료 시 클릭 방지
                 
                 if(opt.eng === quizData.answer.eng) {
                     playSound('combo');
@@ -1271,7 +1282,6 @@
                 pushAction({ type: 'BET_CHANGE', bets: {}, usedItemOn: null });
             };
 
-            // 아이템 타겟 지정 로직
             const handleItemBtnClick = () => {
                 const myItem = me.inventory ? ITEMS.find(i => i.id === me.inventory) : null;
                 if (!myItem) return;
@@ -1330,49 +1340,44 @@
                         <div className="flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md shrink-0">
                             <div><div className="text-slate-400 text-xs font-bold mb-1">내 자본금</div><div className="text-2xl font-black text-emerald-400">{me.money}💰</div></div>
                             <div className="text-center">
-                                <div className="text-slate-400 text-xs font-bold mb-1">진행도</div>
-                                <div className="text-lg font-black text-white">{quizCount}/10</div>
+                                <div className="text-slate-400 text-xs font-bold mb-1">남은 시간</div>
+                                <div className={`text-xl font-black ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white'}`}>{timeLeft}초</div>
                             </div>
                             <div className="text-right"><div className="text-slate-400 text-xs font-bold mb-1">연속 정답</div><div className="text-xl font-black text-yellow-400">{combo} Combo! 🔥</div></div>
                         </div>
                         
-                        {quizCount >= 10 ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center">
-                                <div className="text-6xl mb-4">🙌</div>
-                                <h2 className="text-3xl font-black text-white mb-2">모든 문제를 풀었습니다!</h2>
-                                <p className="text-slate-400">선생님이 배팅 타임을 시작할 때까지 잠시 대기해주세요.</p>
-                            </div>
-                        ) : (
-                            quizData && (
-                                <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full relative">
-                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 px-6 py-2 rounded-full border border-slate-600 font-black text-xl flex items-center gap-2">
-                                        <i className="fas fa-clock text-slate-400"></i>
-                                        <span className={timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white'}>{timeLeft}초</span>
+                        {quizData && (
+                            <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full relative">
+                                {/* 🌟 호스트가 상태를 변경하기 직전 네트워크 딜레이를 가려주는 0초 도달 오버레이 */}
+                                {timeLeft === 0 && (
+                                    <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur-sm rounded-2xl">
+                                        <span className="text-5xl mb-4 animate-bounce">⏳</span>
+                                        <span className="text-3xl font-black text-white">시간 종료!</span>
+                                        <span className="text-slate-300 mt-2 font-bold text-sm">배팅 단계로 이동 중...</span>
                                     </div>
-                                    
-                                    <div className="text-center text-3xl sm:text-4xl font-black mb-8 p-6 sm:p-8 bg-slate-800 rounded-2xl border-2 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] break-words w-full">
-                                        {quizData.answer.kor}
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-4 flex-1 content-start relative">
-                                        {quizData.options.map(opt => (
-                                            <button key={opt.eng} onClick={()=>handleQuizAnswer(opt)} className="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-black text-xl sm:text-2xl rounded-2xl py-5 sm:py-6 shadow-lg transition-transform active:scale-95 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 w-full">
-                                                {opt.eng}
-                                            </button>
-                                        ))}
-                                        
-                                        {quizPopup && (
-                                            <div className={`absolute inset-0 z-50 flex items-center justify-center rounded-2xl backdrop-blur-sm animate-pulse ${
-                                                quizPopup === 'correct' ? 'bg-emerald-500/80' : 
-                                                quizPopup === 'wrong' ? 'bg-red-500/80' : 'bg-orange-500/80'
-                                            }`}>
-                                                <span className="text-6xl drop-shadow-xl font-black">
-                                                    {quizPopup === 'correct' ? '⭕ 정답!' : quizPopup === 'wrong' ? '❌ 오답!' : '⏰ 시간 초과!'}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
+                                )}
+                                
+                                <div className="text-center text-3xl sm:text-4xl font-black mb-8 p-6 sm:p-8 bg-slate-800 rounded-2xl border-2 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] break-words w-full">
+                                    {quizData.answer.kor}
                                 </div>
-                            )
+                                <div className="grid grid-cols-1 gap-4 flex-1 content-start relative">
+                                    {quizData.options.map(opt => (
+                                        <button key={opt.eng} onClick={()=>handleQuizAnswer(opt)} className="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-black text-xl sm:text-2xl rounded-2xl py-5 sm:py-6 shadow-lg transition-transform active:scale-95 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 w-full">
+                                            {opt.eng}
+                                        </button>
+                                    ))}
+                                    
+                                    {quizPopup && (
+                                        <div className={`absolute inset-0 z-50 flex items-center justify-center rounded-2xl backdrop-blur-sm animate-pulse ${
+                                            quizPopup === 'correct' ? 'bg-emerald-500/80' : 'bg-red-500/80'
+                                        }`}>
+                                            <span className="text-6xl drop-shadow-xl font-black">
+                                                {quizPopup === 'correct' ? '⭕ 정답!' : '❌ 오답!'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         )}
                     </div>
                 );
@@ -1921,7 +1926,7 @@
             return (
                 <div className="flex flex-col md:flex-row justify-center max-w-4xl mx-auto w-full px-2">
                     <Card icon="🧠" title="지식의 탐구자" desc="퀴즈 최다 정답" name={a1?.name} avatarStr={a1?.avatar} val={`${a1?.stats.quizCnt||0}개`} cBorder="border-blue-500" cText="text-blue-400"/>
-                    <Card icon="🃏" title="전설의 타짜" desc="배팅 순수익 1위" name={a2?.name} avatarStr={a2?.avatar} val={`+${a2?.stats.betWin||0}💰`} cBorder="border-red-500" cText="text-red-400"/>
+                    <Card icon="🃏" title="경마장의 전설" desc="배팅 순수익 1위" name={a2?.name} avatarStr={a2?.avatar} val={`+${a2?.stats.betWin||0}💰`} cBorder="border-red-500" cText="text-red-400"/>
                     <Card icon="💸" title="기부 천사" desc="배팅 손실액 1위" name={a3?.name} avatarStr={a3?.avatar} val={`-${a3?.stats.betLoss||0}💰`} cBorder="border-slate-500" cText="text-slate-400"/>
                 </div>
             );
