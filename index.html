@@ -804,12 +804,13 @@
 
                             if (h.type === 'early' && progress > 0.5 && progress <= 0.85) targetSpeed *= 0.98; 
 
-                            const spurtStart = h.type === 'late' ? 0.80 : 0.85;
-                            
                             // 🌟 초반(진행률 30% 이하)에 도주마에게 무조건적인 부스터를 부여!
                             if (h.type === 'early' && progress < 0.3) {
                                 targetSpeed *= 1.35; 
                             }
+                            
+                            
+                            const spurtStart = h.type === 'late' ? 0.80 : 0.85;
                             
                             if (progress > spurtStart) {
                                 const spurtFactor = (h.stats.spurt / 100) * 2.8; 
