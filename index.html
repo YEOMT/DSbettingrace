@@ -883,8 +883,9 @@
                             const speedCap =
                             h.type === 'late' ? 170 :
                             h.type === 'chaser' ? 170 :
-                            h.type === 'luck' ? 180 :
-                            160;
+                            h.type === 'early' ? 165
+                            h.type === 'luck' ? 185 :
+                            155;
 
                             finalSpeed = Math.max(15, Math.min(finalSpeed, speedCap)); 
 
