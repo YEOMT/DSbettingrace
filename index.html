@@ -785,14 +785,20 @@
                             });
 
                             if (h.type === 'stable') {
-                                const floorSpeed = avgFieldSpeed * (0.90 + (cond - 1) * 0.5);
+                                 // 기본 체급(최저 보장 속도) 자체를 평균의 90%에서 105%로 상향
+                                const floorSpeed = avgFieldSpeed * (1.05 + (cond - 1) * 0.5);
                                 targetSpeed = Math.max(targetSpeed, floorSpeed * (1 + (Math.random()*0.04 - 0.02)));
+    
+                                // 후반부(80% 이상 진행) 진입 시, 현재 순위가 상위권(1~3등)이라면 '버티기' 모드 발동
+                                if (progress > 0.8 && curRanks[i] <= 2) {
+                                    targetSpeed *= 1.35; 
+                                }
                             }
                             else if (h.type === 'luck') {
                                 const luckyRoll = Math.random();
                                 if (luckyRoll < 0.15) targetSpeed *= 3.0; 
-                                else if (luckyRoll < 0.30) targetSpeed *= 1.8;
-                                else if (luckyRoll < 0.70) targetSpeed *= 0.95; 
+                                else if (luckyRoll < 0.30) targetSpeed *= 1.85;
+                                else if (luckyRoll < 0.70) targetSpeed *= 0.90; 
                                 else targetSpeed *= 0.45; 
                             }
 
@@ -821,11 +827,27 @@
                                         targetSpeed *= 0.8; 
                                     }
                                 }
-                            } else if (h.type === 'chaser' && curRanks[i] > 0 && distToLeader < 600) targetSpeed *= 1.25;
+                            } else if (h.type === 'chaser' && curRanks[i] > 0) {
+                                // 사거리를 1000m로 늘리고, 범위 내에 들어오면 1.45배 속도로 맹추격 (기존 600m / 1.25배)
+                                if (distToLeader < 1000) {
+                                    targetSpeed *= 1.45;
+                                } 
+                                // 사정거리 밖에 있어도 포기하지 않고 1.25배의 기본 추격 속도 부여
+                                else {
+                                    targetSpeed *= 1.25; 
+                                }
+                            }
                             
 
-                            let catchUp = (distToLeader / distance) * 2.5; 
-                            if (distToLeader > 400) catchUp += (distToLeader - 400) / 300; 
+                            // 1. 기본 추격 계수 상향 (2.5 -> 3.5)
+                            let catchUp = (distToLeader / distance) * 3.5; 
+
+                            // 2. 400m 이상 벌어졌을 때의 가속도 상향 (300 -> 200으로 나누어 더 큰 값 부여)
+                            if (distToLeader > 400) catchUp += (distToLeader - 400) / 200; 
+
+                            // 3. 🌟 (새로 추가) 경기가 60% 이상 진행됐을 때 끈을 더 강하게 당깁니다!
+                            if (progress > 0.6) catchUp *= 1.5; 
+
                             if (h.type === 'late' && progress > 0.5) catchUp *= 1.8;
                             targetSpeed *= (1 + catchUp);
 
@@ -852,10 +874,10 @@
                             let finalSpeed = curSpeeds[i] + momentums[i];
 
                             const speedCap =
-                            h.type === 'late' ? 155 :
-                            h.type === 'chaser' ? 145 :
-                            h.type === 'luck' ? 150 :
-                            140;
+                            h.type === 'late' ? 165 :
+                            h.type === 'chaser' ? 170 :
+                            h.type === 'luck' ? 165 :
+                            150;
 
                             finalSpeed = Math.max(15, Math.min(finalSpeed, speedCap)); 
 
