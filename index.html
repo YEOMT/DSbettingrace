@@ -786,12 +786,12 @@
 
                             if (h.type === 'stable') {
                                  // 기본 체급(최저 보장 속도) 자체를 평균의 90%에서 105%로 상향
-                                const floorSpeed = avgFieldSpeed * (1.05 + (cond - 1) * 0.5);
+                                const floorSpeed = avgFieldSpeed * (0.95 + (cond - 1) * 0.5);
                                 targetSpeed = Math.max(targetSpeed, floorSpeed * (1 + (Math.random()*0.04 - 0.02)));
     
                                 // 후반부(80% 이상 진행) 진입 시, 현재 순위가 상위권(1~3등)이라면 '버티기' 모드 발동
-                                if (progress > 0.8 && curRanks[i] <= 2) {
-                                    targetSpeed *= 1.35; 
+                                if (progress > 0.85 && curRanks[i] <= 2) {
+                                    targetSpeed *= 1.12; 
                                 }
                             }
                             else if (h.type === 'luck') {
