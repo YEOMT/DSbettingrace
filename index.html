@@ -787,28 +787,28 @@
                             });
 
                             if (h.type === 'stable') {
-                                 // 기본 체급(최저 보장 속도) 자체를 평균의 90%에서 105%로 상향
-                                const floorSpeed = avgFieldSpeed * (0.95 + (cond - 1) * 0.5);
+                                
+                                const floorSpeed = avgFieldSpeed * (0.9 + (cond - 1) * 0.5);
                                 targetSpeed = Math.max(targetSpeed, floorSpeed * (1 + (Math.random()*0.04 - 0.02)));
     
                                 // 후반부(80% 이상 진행) 진입 시, 현재 순위가 상위권(1~3등)이라면 '버티기' 모드 발동
                                 if (progress > 0.85 && curRanks[i] <= 2) {
-                                    targetSpeed *= 1.12; 
+                                    targetSpeed *= 1.1; 
                                 }
                             }
                             else if (h.type === 'luck') {
                                 const luckyRoll = Math.random();
                                 if (luckyRoll < 0.15) targetSpeed *= 4.5; 
-                                else if (luckyRoll < 0.30) targetSpeed *= 2.2;
-                                else if (luckyRoll < 0.70) targetSpeed *= 0.9; 
-                                else targetSpeed *= 0.4; 
+                                else if (luckyRoll < 0.30) targetSpeed *= 2.1;
+                                else if (luckyRoll < 0.70) targetSpeed *= 0.8; 
+                                else targetSpeed *= 0.3; 
                             }
 
                             if (h.type === 'early' && progress > 0.5 && progress <= 0.85) targetSpeed *= 0.98; 
 
                             // 🌟 초반(진행률 30% 이하)에 도주마에게 무조건적인 부스터를 부여!
                             if (h.type === 'early' && progress < 0.3) {
-                                targetSpeed *= 1.35; 
+                                targetSpeed *= 1.4; 
                             }
                             
                             
@@ -825,26 +825,26 @@
                                         let distToSecond = positions[i] - curStandings[1].p;
                                         if (distToSecond > 150 || runaways[i]) { // 조건 완화: 300m -> 200m
                                             runaways[i] = true;
-                                            targetSpeed *= 1.7; // 
+                                            targetSpeed *= 1.8; // 
                                             if (!triggered.runaway) {
                                                 tickData.events.push({ hIdx: i, msg: '대도주 성공!! 아무도 잡을 수 없습니다!', type: 'lead'});
                                                 triggered.runaway = true;
                                             }
                                         } else {
-                                            targetSpeed *= 1.25; // 🌟 추가: 1등이지만 대도주가 아닐 때도 살짝 버티는 힘 부여
+                                            targetSpeed *= 1.3; // 🌟 추가: 1등이지만 대도주가 아닐 때도 살짝 버티는 힘 부여
                                         }
                                     } else if (!runaways[i]) {
                                         targetSpeed *= 0.95; // 🌟 핵심 수정: 선두 뺏겼다고 확 죽어버리지 않게 0.8 -> 0.95로 완화
                                     }
                                 }
                             } else if (h.type === 'chaser' && curRanks[i] > 0) {
-                                // 사거리를 1000m로 늘리고, 범위 내에 들어오면 1.45배 속도로 맹추격 (기존 600m / 1.25배)
-                                if (distToLeader < 1000) {
-                                    targetSpeed *= 1.45;
+                                // 사거리를 1000m로 늘리고, 범위 내에 들어오면 1.45배 속도로 맹추격
+                                if (distToLeader < 1400) {
+                                    targetSpeed *= 1.5;
                                 } 
                                 // 사정거리 밖에 있어도 포기하지 않고 1.25배의 기본 추격 속도 부여
                                 else {
-                                    targetSpeed *= 1.25; 
+                                    targetSpeed *= 1.35; 
                                 }
                             }
                             
@@ -885,8 +885,8 @@
 
                             const speedCap =
                             h.type === 'late' ? 170 :
-                            h.type === 'chaser' ? 170 :
-                            h.type === 'early' ? 165 :
+                            h.type === 'chaser' ? 175 :
+                            h.type === 'early' ? 170 :
                             h.type === 'luck' ? 185 :
                             155;
 
