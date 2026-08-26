@@ -231,10 +231,37 @@
             { id: 'insurance', icon: '📜', name: '보험증', desc: '배팅 실패 시 25% 환급' }
         ];
 
-        const DEFAULT_WORDS = [
-            { eng: 'Apple', kor: '사과' }, { eng: 'Dog', kor: '개' }, { eng: 'Water', kor: '물' }, { eng: 'Sky', kor: '하늘' },
-            { eng: 'Friend', kor: '친구' }, { eng: 'Love', kor: '사랑' }, { eng: 'Time', kor: '시간' }, { eng: 'Money', kor: '돈' }
-        ];
+        // 기본 단어장
+    const DEFAULT_WORDS = [
+        {word: 'bakery', meaning: 'n. 빵집'},
+        {word: 'code', meaning: 'n. 암호'},
+        {word: 'crime', meaning: 'n. 범죄'},
+        {word: 'criminal', meaning: 'n. 범죄자'},
+        {word: 'damage', meaning: 'v. 손상을 입히다'},
+        {word: 'expensive', meaning: 'a. 비싼'},
+        {word: 'explain', meaning: 'v. 설명하다'},
+        {word: 'eyewitness', meaning: 'n. 목격자'},
+        {word: 'fall off', meaning: '떨어지다'},
+        {word: 'feed', meaning: 'v. 먹이를 주다'},
+        {word: 'flash', meaning: 'n. 플래시 (촬영)'},
+        {word: 'guard', meaning: 'n. 경비원'},
+        {word: 'height', meaning: 'n. 키'},
+        {word: 'janitor', meaning: 'n. 청소부, 관리인'},
+        {word: 'language', meaning: 'n. 언어'},
+        {word: 'owner', meaning: 'n. 주인'},
+        {word: 'pet', meaning: 'n. 반려동물'},
+        {word: 'reason', meaning: 'n. 근거'},
+        {word: 'rule', meaning: 'n. 규칙'},
+        {word: 'run away', meaning: '도망치다'},
+        {word: 'scene', meaning: 'n. 현장, 장면'},
+        {word: 'secret', meaning: 'a. 비밀의'},
+        {word: 'statement', meaning: 'n. 진술'},
+        {word: 'steal', meaning: 'v. 훔치다'},
+        {word: 'sunflower', meaning: 'n. 해바라기'},
+        {word: 'suspect', meaning: 'n. 용의자'},
+        {word: 'wheelchair', meaning: 'n. 휠체어'},
+        {word: 'wig', meaning: 'n. 가발'}
+    ];
 
         const generateRoomCode = () => Math.floor(1000 + Math.random() * 9000).toString();
         const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
