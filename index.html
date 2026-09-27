@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>이모지무스메 더비 - 영단어 경마왕</title>
-    <!-- Stability patch 2026-09-27: audit sections 1, 2, 4 only. -->
+    <!-- Game Feel A/B/D/E · 2026-09-27 · based on racing_fixed.html; existing stability fixes retained. -->
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -88,6 +88,92 @@
         .skin-gold { border: 3px solid #fbbf24; box-shadow: 0 0 20px #fbbf24, inset 0 0 10px #fbbf24; background: linear-gradient(135deg, #b45309, #fde047); position: relative; overflow: hidden; }
         .skin-gold::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent); transform: rotate(45deg); animation: holoGleam 2s infinite linear; }
         @keyframes holoGleam { 0% { transform: rotate(45deg) translateX(-100%); } 100% { transform: rotate(45deg) translateX(100%); } }
+        /* A/B/D/E: presentation-only additions; simulation and payout rules are unchanged. */
+        .race-host-shell { height:100dvh; min-height:0; overflow:hidden; }
+        .race-host-body { min-height:0; }
+        .weather-card { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; width:100%; min-width:0; padding:12px 16px; border:1px solid #64748b; border-radius:14px; background:#182b3d; line-height:1.5; flex-shrink:0; }
+        .weather-card strong { white-space:nowrap; }
+        .weather-card p { flex:1 1 260px; margin:0; color:#cbd5e1; font-size:13px; overflow-wrap:anywhere; word-break:keep-all; }
+        .horse-intel { min-width:0; text-align:left; }
+        .intel-tags { display:flex; flex-wrap:wrap; gap:5px; }
+        .intel-tag { display:inline-flex; align-items:center; border:1px solid #475569; border-radius:7px; padding:3px 7px; font-size:11px; font-weight:900; line-height:1.5; background:#0f2232; }
+        .intel-tag.favorable { color:#86efac; border-color:#166534; }
+        .intel-tag.caution { color:#fda4af; border-color:#9f1239; }
+        .intel-tag.variable { color:#fde68a; border-color:#a16207; }
+        .intel-note { margin:7px 0 0; font-size:11px; line-height:1.6; color:#cbd5e1; word-break:keep-all; overflow-wrap:anywhere; }
+        .intel-details { font-size:11px; color:#94a3b8; margin-top:6px; }
+        .intel-details summary { cursor:pointer; padding:3px 0; }
+        .intel-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; margin:7px 0; text-align:center; }
+        .intel-stats span { background:#0f172a; border-radius:6px; padding:5px 2px; }
+        .intel-stats b { display:block; color:#f8fafc; font-size:14px; }
+        .betting-host-scroll { flex:1; min-height:0; overflow-y:auto; padding-right:4px; }
+        .ready-panel { border:1px solid #475569; border-radius:12px; padding:10px 12px; background:#0f172a99; }
+        .ready-counts { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; font-size:13px; font-weight:800; }
+        .ready-roster { display:flex; flex-wrap:wrap; gap:5px; max-height:92px; overflow-y:auto; margin-top:8px; }
+        .ready-person { padding:3px 7px; border:1px solid #475569; border-radius:6px; font-size:11px; color:#cbd5e1; }
+        .ready-person.ready { color:#a7f3d0; background:#064e3b88; border-color:#059669; }
+        .ready-person.offline { color:#fcd34d; border-style:dashed; }
+        .bet-close-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid #f59e0b; border-radius:12px; padding:9px 13px; background:#78350f; color:#fef3c7; }
+        .bet-close-number { font:900 32px/1 monospace; min-width:42px; text-align:center; color:#fde68a; }
+        .bet-ready-footer { flex-shrink:0; background:#102e32; padding:9px 0 max(9px,env(safe-area-inset-bottom)); }
+        .bet-ready-button { width:100%; padding:12px; border-radius:12px; font-weight:900; background:#059669; color:white; border:1px solid #34d399; }
+        .bet-ready-button.is-ready { background:#123b35; color:#a7f3d0; }
+        .bet-ready-button:disabled { opacity:.55; cursor:not-allowed; }
+        .student-bet-summary { padding:12px; margin-bottom:8px; }
+        .student-bet-scroll { min-height:0; }
+        .cheer-student-shell { overflow-y:auto; justify-content:flex-start; }
+        .cheer-student-shell > .cheer-student-card { margin:auto 0; padding:18px; }
+        .cheer-meter { height:7px; background:#0f172a; border-radius:99px; overflow:hidden; border:1px solid #475569; }
+        .cheer-meter > span { display:block; height:100%; background:linear-gradient(90deg,#34d399,#facc15,#fb7185); transition:width .3s ease; }
+        .cheer-mini { width:100%; margin-top:10px; }
+        .cheer-mini-label { display:flex; justify-content:space-between; gap:6px; font-size:10px; color:#fde68a; margin-bottom:5px; font-weight:800; }
+        .cheer-sponsor-small { font-size:10px; color:#cbd5e1; margin-top:8px; line-height:1.5; overflow-wrap:anywhere; }
+        .cheer-banner-slot { position:absolute; right:18px; bottom:22px; width:min(400px,calc(100% - 36px)); z-index:58; pointer-events:none; }
+        .cheer-banner { color:#f8fafc; border:2px solid #facc15; border-radius:16px; padding:13px 16px; background:linear-gradient(120deg,#102c36f5,#31215cf5); box-shadow:0 8px 30px #0008,0 0 20px #facc1530; animation:bannerArrive .25s ease-out; }
+        .cheer-banner .banner-title { color:#fde68a; font-size:12px; font-weight:900; letter-spacing:.08em; }
+        .cheer-banner .banner-horse { font-size:23px; font-weight:900; margin:4px 0; overflow-wrap:anywhere; line-height:1.3; }
+        .cheer-banner .banner-names { display:flex; gap:5px; flex-wrap:wrap; margin-top:7px; }
+        .cheer-banner .banner-names span { background:#0005; border:1px solid #64748b; padding:4px 7px; border-radius:6px; font-size:12px; font-weight:800; overflow-wrap:anywhere; }
+        .cheer-burst-ring { position:absolute; left:50%; top:55%; width:160px; height:160px; margin:-80px; border:5px solid #fde047; border-radius:50%; animation:cheerRing .9s ease-out forwards; pointer-events:none; }
+        .cheer-confetti { position:absolute; left:50%; top:50%; font-size:28px; animation:cheerConfetti 1.15s ease-out forwards; pointer-events:none; }
+        @keyframes bannerArrive { from { transform:translateY(12px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        @keyframes cheerRing { from { transform:scale(.45); opacity:.95; } to { transform:scale(2.7); opacity:0; } }
+        @keyframes cheerConfetti { from { transform:translate(0,0) rotate(0); opacity:1; } to { transform:translate(var(--dx),var(--dy)) rotate(110deg); opacity:0; } }
+        .runner.cheer-level-2 .runner-name-tag { border-color:#facc15; }
+        .runner.cheer-level-3 .runner-name-tag { border-color:#f9a8d4; box-shadow:0 0 15px #c026d166; }
+        .finish-mode .race-distance-hud { opacity:0; pointer-events:none; }
+        .finish-mode .weather-layer { opacity:.22; }
+        .finish-mode #pip-container, .finish-mode .race-commentary, .finish-mode .race-cheer-ticker, .finish-mode .cheer-banner-slot { opacity:0; }
+        .finish-mode .runner-icon { animation-duration:.65s; }
+        .finish-rail { position:absolute; left:0; right:0; height:42px; background:#020617e8; z-index:60; pointer-events:none; }
+        .finish-rail.top { top:0; display:flex; align-items:center; justify-content:center; gap:12px; color:#fde68a; font-weight:900; font-size:13px; letter-spacing:.12em; }
+        .finish-rail.bottom { bottom:0; height:20px; }
+        .finish-flash { position:absolute; inset:0; background:#e0f2fe; pointer-events:none; z-index:72; animation:finishFlash .5s ease-out forwards; }
+        @keyframes finishFlash { from { opacity:.6; } to { opacity:0; } }
+        .finish-panel { color:#f8fafc; position:absolute; inset:0; z-index:70; display:flex; flex-direction:column; padding:clamp(14px,2.2vw,30px); background:linear-gradient(135deg,#020617fa,#102c3df7); overflow-y:auto; }
+        .finish-panel-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+        .finish-panel-kicker { color:#67e8f9; font-size:12px; letter-spacing:.18em; font-weight:900; }
+        .finish-panel-title { font-family:'Black Han Sans',sans-serif; font-size:clamp(24px,3.5vw,42px); color:#f8fafc; line-height:1.2; margin-top:5px; }
+        .finish-badge { border:1px solid #facc15; border-radius:7px; color:#fde047; font-size:12px; padding:6px 10px; font-weight:900; white-space:nowrap; }
+        .finish-film { flex:1; min-height:180px; max-height:380px; position:relative; overflow:hidden; border:1px solid #475569; border-radius:15px; background:repeating-linear-gradient(90deg,#0f2531 0,#0f2531 38px,#132e3b 39px,#132e3b 40px); }
+        .finish-film-line { position:absolute; left:68%; top:0; bottom:0; width:3px; background:#fde047; z-index:9; box-shadow:0 0 12px #facc1570; }
+        .finish-film-line span { position:absolute; top:6px; left:9px; color:#fef08a; font:900 10px monospace; white-space:nowrap; }
+        .finish-film-lane { position:absolute; left:0; right:0; border-bottom:1px solid #64748b55; }
+        .finish-film-runner { position:absolute; top:50%; left:0; width:0; height:0; will-change:transform; z-index:5; }
+        .finish-film-emoji { position:absolute; font-size:clamp(42px,6vw,72px); width:90px; height:90px; left:-45px; top:-53px; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 7px 6px #0008); }
+        .finish-reference { position:absolute; left:-5px; top:22px; width:10px; height:10px; background:#e0f2fe; border:2px solid #020617; transform:rotate(45deg); z-index:10; }
+        .finish-film-runner.winner .finish-reference { background:#fde047; box-shadow:0 0 12px #facc15; }
+        .finish-film-name { position:absolute; left:10px; bottom:7px; font-size:clamp(11px,1.5vw,16px); font-weight:900; padding:3px 7px; background:#020617c9; border-radius:5px; max-width:53%; overflow-wrap:anywhere; z-index:10; }
+        .finish-film-rank { position:absolute; right:12px; bottom:7px; color:#fde047; font-size:14px; font-weight:900; z-index:10; }
+        .finish-caption { display:flex; justify-content:space-between; flex-wrap:wrap; gap:5px 16px; color:#94a3b8; font-size:11px; line-height:1.6; margin:9px 0; }
+        .finish-verdict { padding:12px 16px; border:1px solid #ca8a04; border-radius:13px; background:linear-gradient(100deg,#713f1255,#0004); min-height:62px; display:flex; gap:12px; align-items:center; }
+        .finish-verdict strong { color:#fef08a; font-size:clamp(18px,2.4vw,30px); font-weight:900; overflow-wrap:anywhere; }
+        .finish-verdict small { display:block; color:#cbd5e1; margin-top:4px; line-height:1.4; }
+        .finish-capture-label { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%); z-index:69; background:#020617df; border:1px solid #facc15; padding:18px 30px; border-radius:12px; color:#fde047; font-weight:900; font-size:clamp(20px,3vw,36px); white-space:nowrap; }
+        .finish-summary { border:1px solid #64748b; border-radius:12px; padding:12px 16px; margin:0 auto 20px; background:#0f172ab3; max-width:580px; text-align:center; }
+        @media(max-width:640px) { .weather-card { padding:9px 12px; } .weather-card p { flex-basis:100%; font-size:11px; } .student-bet-summary { padding:10px; } .finish-panel { padding:12px; } .finish-film { min-height:200px; } .cheer-banner-slot { bottom:22px; } }
+        @media(max-height:650px) { .race-host-shell { padding:8px; } .race-host-shell > div:first-child { padding:8px 14px; margin-bottom:8px; } .finish-film { min-height:140px; } .finish-panel-title { font-size:24px; } .finish-verdict { padding:8px 12px; } }
+        @media(prefers-reduced-motion:reduce) { .cheer-banner,.cheer-burst-ring,.cheer-confetti,.finish-flash { animation-duration:.01ms!important; } .cheer-meter > span { transition:none; } }
     </style>
 </head>
 <body>
@@ -272,9 +358,9 @@
 
         const generateRoomCode = () => Math.floor(1000 + Math.random() * 9000).toString();
         // 안정화 보조 함수: 기존 경기 규칙/보상 수치는 유지한다.
-        const ROOM_SCHEMA = 'edurace-v2';
+        const ROOM_SCHEMA = 'edurace-v3';
         const ROOM_TTL = 6 * 60 * 60 * 1000;
-        const HOST_SESSION_KEY = 'edurace_host_v2:' + location.pathname;
+        const HOST_SESSION_KEY = 'edurace_host_v3:' + location.pathname;
         const newId = () => (window.crypto?.randomUUID?.() || `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`);
         const serverNow = () => Date.now() + (window.eduraceServerOffset || 0);
         const readJSON = (store, key, fallback) => { try { const v = JSON.parse(store.getItem(key)); return v == null ? fallback : v; } catch (_) { return fallback; } };
@@ -352,7 +438,7 @@
             }
             return { bets, usedItemOn };
         };
-        const initialGame = () => ({ status: 'LOBBY', matchId: newId(), roundId: '', round: 0, totalRounds: 3, horses: [], raceData: null, players: [], weather: WEATHERS[0], customWords: [], wordVersion: newId(), quizEndsAt: 0, settledRoundId: '', finalPlayers: [] });
+        const initialGame = () => ({ status: 'LOBBY', matchId: newId(), roundId: '', round: 0, totalRounds: 3, horses: [], raceData: null, players: [], weather: WEATHERS[0], customWords: [], wordVersion: newId(), quizEndsAt: 0, bettingEndsAt: 0, cheerBoard: null, racePresentation: 'LIVE', settledRoundId: '', finalPlayers: [] });
         const readWallet = () => {
             const saved = readJSON(localStorage, 'edurace_wallet_v2', null);
             if (saved && Number.isSafeInteger(saved.balance) && saved.balance >= 0 && saved.claims && typeof saved.claims === 'object') return saved;
@@ -376,6 +462,129 @@
             writeWallet(wallet);
             return details;
         });
+
+        // Presentation data is derived from the existing engine; never generates an outcome.
+        const BET_CLOSE_MS = 5000;
+        const BASE_RACE_MS = 18000;
+        const PHOTO_GAP_MS = 140;
+        const CHEER_THRESHOLDS = [5, 12, 24];
+        const RACE_TYPES = {
+            early: { name:'도주형', note:'초반 가속에 강함 · 선두 격차를 벌리면 대도주' },
+            late: { name:'후반형', note:'마지막 20%부터 강력한 후반 스퍼트' },
+            stable: { name:'안정형', note:'무리 속 페이스 유지 · 후반 상위권 버티기' },
+            chaser: { name:'추격형', note:'중반에 앞선 주자를 추격 · 거리에 따라 추격 보정' },
+            luck: { name:'운형', note:'폭발적인 가속과 감속이 반복되는 고배당 유형' }
+        };
+        const weatherIntel = (horse, weather) => {
+            const id = weather?.id || 'SUNNY';
+            if (id === 'RAIN') {
+                if (horse.id === 22) return { label:'우천 전용 보정', tone:'variable', note:'추격형 우천 보정(×0.85) 뒤 기본 목표 속도 +15가 적용됩니다.' };
+                if (horse.type === 'stable') return { label:'우천 유리', tone:'favorable', note:'우천에서 기본 목표 속도 ×1.10. 최종 속도·순위는 다른 보정에도 영향을 받습니다.' };
+                if (['early','chaser'].includes(horse.type)) return { label:'우천 불리', tone:'caution', note:'우천에서 기본 목표 속도 ×0.85가 적용됩니다.' };
+                return { label:'우천 직접 보정 없음', tone:'', note:'이 유형에 직접 적용되는 우천 속도 보정은 없습니다.' };
+            }
+            if (id === 'HEAT' && horse.type === 'late') return { label:'폭염 스퍼트 약화', tone:'caution', note:'후반형의 막판 스퍼트 배율에 ×0.90이 적용됩니다.' };
+            if (id === 'WIND' && horse.type === 'early') return { label:'강풍 복불복', tone:'variable', note:'경주 계산 시 도주형의 기본 목표 속도에 ×0.60 또는 ×1.40이 적용됩니다. 어느 쪽인지는 사전에 공개하지 않습니다.' };
+            return { label:id === 'SUNNY' ? '날씨 보정 없음' : '직접 날씨 보정 없음', tone:'', note:'이 유형에 직접 적용되는 날씨 속도 보정은 없습니다.' };
+        };
+        const weatherBrief = weather => ({ SUNNY:'날씨에 따른 속도 보정 없음. 컨디션과 주행 유형을 함께 확인하세요.', RAIN:'안정형은 유리, 도주형·추격형은 감속. 히포포타무스는 별도의 우천 보정이 있습니다.', HEAT:'후반형의 막판 스퍼트가 조금 약해집니다. 다른 유형에는 직접 폭염 보정이 없습니다.', WIND:'도주형의 기본 목표 속도가 크게 오르거나 내려갑니다. 다른 유형에는 직접 강풍 보정이 없습니다.' }[weather?.id] || weather?.desc || '');
+        function WeatherCard({ weather }) {
+            return <div className="weather-card" data-testid="weather-card"><strong className={weather?.color || 'text-yellow-300'}>경기장 날씨 · {weather?.name || '맑음 ☀️'}</strong><p>{weatherBrief(weather)}</p></div>;
+        }
+        function HorseIntel({ horse, weather }) {
+            const type = RACE_TYPES[horse.type] || { name:horse.type, note:'' }, cond = CONDITIONS[horse.conditionIdx] || CONDITIONS[2], info = weatherIntel(horse, weather);
+            return <div className="horse-intel" data-horse-intel={horse.id}>
+                <div className="intel-tags"><span className="intel-tag text-cyan-200">{type.name}</span><span className={`intel-tag ${cond.color}`}>컨디션 {cond.label}</span><span className={`intel-tag ${info.tone}`} title={info.note}>{info.label}</span></div>
+                <p className="intel-note">{type.note}</p>
+                <details className="intel-details" onClick={e=>e.stopPropagation()}><summary>기본 능력 · 날씨 영향 자세히</summary>
+                    <div className="intel-stats">{[['speed','속도'],['spurt','스퍼트'],['stability','안정성'],['luck','운']].map(([key,label])=><span key={key}>{label}<b>{horse.stats?.[key] ?? '–'}</b></span>)}</div>
+                    <p>{info.note}</p><p className="mt-1">기본 능력치입니다. 아이템·컨디션·상성·주행 상황에 따라 달라집니다. 운 수치는 기복에 소폭 반영되며 우승 확률이 아닙니다.</p>
+                </details>
+            </div>;
+        }
+        const betIsOpen = (state, now = serverNow()) => state?.status === 'BETTING' && (!state.bettingEndsAt || now < state.bettingEndsAt);
+        function CountdownBar({ endsAt, onCancel }) {
+            const [left, setLeft] = useState(() => Math.max(0, Math.ceil((endsAt - serverNow()) / 1000)));
+            useEffect(() => { const update=()=>setLeft(Math.max(0,Math.ceil((endsAt-serverNow())/1000))); update(); const timer=setInterval(update,100); return ()=>clearInterval(timer); }, [endsAt]);
+            return <div className="bet-close-bar" role="status" data-testid="bet-countdown"><div><b>{left ? '잠시 후 배팅 마감!' : '배팅 마감 · 경주 준비 중'}</b><div className="text-[11px] mt-1">마감 전에 호스트가 승인한 내역으로 출발합니다.</div></div><span className="bet-close-number">{left || '🏁'}</span>{onCancel && left > 0 && <button onClick={onCancel} className="text-xs underline whitespace-nowrap">마감 취소</button>}</div>;
+        }
+        function BettingReadiness({ players }) {
+            const online=players.filter(p=>p.connected), ready=online.filter(p=>p.isReady), waiting=online.filter(p=>!p.isReady), noBet=waiting.filter(p=>!Object.values(p.bets||{}).some(v=>v>0));
+            return <div className="ready-panel" data-testid="ready-panel"><div className="ready-counts"><span className="text-emerald-300">접속자 준비 완료 {ready.length}/{online.length}명</span><span>준비 중 {waiting.length}명</span><span className="text-slate-400">미배팅·미완료 {noBet.length}명</span><span className="text-amber-300">연결 끊김 {players.length-online.length}명</span></div><details className="mt-1 text-xs text-slate-400"><summary className="cursor-pointer">학생별 현황 보기 · 배팅 수정 시 완료가 해제됩니다</summary><div className="ready-roster custom-scrollbar">{players.map(p=><span key={p.uid} className={`ready-person ${!p.connected?'offline':p.isReady?'ready':''}`}>{p.name} · {!p.connected?'연결 끊김':p.isReady?(Object.values(p.bets||{}).some(v=>v>0)?'완료':'관전 완료'):Object.values(p.bets||{}).some(v=>v>0)?'배팅 중':'미배팅'}</span>)}</div></details></div>;
+        }
+        const getSponsorLeaders = (horses, players) => Object.fromEntries(horses.map(h=>[h.id,players.map((p,index)=>({uid:p.uid,name:p.name,amount:Number(p.bets?.[h.id])||0,index})).filter(p=>p.amount>0).sort((a,b)=>b.amount-a.amount || a.index-b.index).slice(0,3).map(({uid,name,amount})=>({uid,name,amount}))]));
+        const cheerLevel = count => CHEER_THRESHOLDS.filter(n=>count>=n).length;
+        const cheerProgress = count => { const level=cheerLevel(count), low=level?CHEER_THRESHOLDS[level-1]:0, target=CHEER_THRESHOLDS[level]; return { level, target, percent:target?Math.min(100,(count-low)/(target-low)*100):100, label:['응원 모으기','응원 점화','열광의 응원','최고조!'][level] }; };
+        function CheerMini({ count=0, sponsors=[] }) { const c=cheerProgress(count); return <div className="cheer-mini"><div className="cheer-mini-label"><span>{c.label}</span><span>{count}{c.target?` / ${c.target}`:''}회</span></div><div className="cheer-meter"><span style={{width:`${c.percent}%`}} /></div>{sponsors.length>0 && <div className="cheer-sponsor-small">최대 주주 · {sponsors.map(p=>p.name).join(' · ')}</div>}</div>; }
+        // exactFinishTimes uses t + fraction; timeline[t] is the END of tick t.
+        // Subtract one to sample the same finish instant from rendered timeline frames.
+        const sampleRaceFrame = (race, tick) => {
+            const frames=race.timeline||[], end=frames.length-1;
+            const at=Math.max(0,Math.min(end,Number.isFinite(tick)?tick:0)), a=Math.floor(at), b=Math.min(end,a+1), mix=at-a;
+            const one=frames[a]||{positions:[],laterals:[],speeds:[]}, two=frames[b]||one;
+            return { positions:(one.positions||[]).map((x,i)=>x+(Number(two.positions?.[i]??x)-x)*mix), laterals:(one.positions||[]).map((_,i)=>(one.laterals?.[i]||0)+((two.laterals?.[i]??one.laterals?.[i]??0)-(one.laterals?.[i]||0))*mix) };
+        };
+        const finishPresentation = race => {
+            if (!race?.timeline?.length || !race?.ranks?.length) return null;
+            const frames=race.timeline, ticks=Math.max(1,frames.length-1), msPerTick=BASE_RACE_MS/ticks;
+            const times=(race.exactFinishTimes||[]).length===race.ranks.length?race.exactFinishTimes.slice():race.ranks.map((_,i)=>{
+                const t=frames.findIndex(f=>f.positions?.[i]>=race.distance); if(t<0)return 99999;
+                const prev=t?frames[t-1].positions[i]:0, curr=frames[t].positions[i]; return t+(race.distance-prev)/Math.max(.000001,curr-prev);
+            });
+            const first=race.ranks[0], second=race.ranks[1], gap=second==null?Infinity:Math.max(0,(times[second]-times[first])*msPerTick);
+            const finishTick=Math.max(0,Math.min(ticks,times[first]-1));
+            const close=Number.isFinite(gap)&&gap<=PHOTO_GAP_MS&&times[first]<99999&&times[second]<99999;
+            const contenders=race.ranks.slice(0,3).filter((i,r)=>r<2||(times[i]-times[first])*msPerTick<=PHOTO_GAP_MS*1.5);
+            // Lane display order must not reveal the eventual ranking before the verdict.
+            const displayOrder=[...contenders].sort((a,b)=>a-b);
+            return {close,gapMs:gap,first,second,times,finishTick,contenders,displayOrder,msPerTick,replayStart:Math.max(0,finishTick-850/msPerTick),replayEnd:Math.min(ticks,Math.max(...contenders.map(i=>times[i]-1))+160/msPerTick)};
+        };
+        const finishGapLabel = ms => ms<.000001?'동시 통과':ms<1?'0.001초 미만 차':`${(ms/1000).toFixed(3)}초 차`;
+        let lastCrowdSound=0;
+        const raceAccent = (kind, level=1) => {
+            try {
+                if (audioCtx.state !== 'running') return;
+                const now=audioCtx.currentTime;
+                if (kind==='crowd') {
+                    if (now-lastCrowdSound<1.8) return; lastCrowdSound=now;
+                    const source=audioCtx.createBufferSource(), buffer=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*.75),audioCtx.sampleRate), values=buffer.getChannelData(0);
+                    for(let i=0;i<values.length;i++) values[i]=Math.random()*2-1;
+                    source.buffer=buffer;
+                    const filter=audioCtx.createBiquadFilter(); filter.type='bandpass'; filter.frequency.value=900; filter.Q.value=.7;
+                    const gain=audioCtx.createGain(); gain.gain.setValueAtTime(.001,now); gain.gain.linearRampToValueAtTime(.045+level*.012,now+.14); gain.gain.exponentialRampToValueAtTime(.001,now+.75);
+                    source.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); source.start(); source.stop(now+.76); source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+                } else {
+                    const notes=kind==='verdict'?[659,831,988]:[1100,450];
+                    notes.forEach((freq,i)=>{const osc=audioCtx.createOscillator(), gain=audioCtx.createGain(), start=now+i*(kind==='verdict'?.12:.04); osc.type='sine'; osc.frequency.value=freq; gain.gain.setValueAtTime(.05,start); gain.gain.exponentialRampToValueAtTime(.001,start+.2); osc.connect(gain);gain.connect(audioCtx.destination);osc.start(start);osc.stop(start+.21);osc.onended=()=>{osc.disconnect();gain.disconnect();};});
+                }
+            } catch(_) {}
+        };
+        function PhotoFinishPanel({ race, horses, plan, mode }) {
+            const filmRef=useRef(null), markerRefs=useRef({});
+            useEffect(()=>{
+                let id=null, last=null, elapsed=0, disposed=false;
+                const paint=tick=>{
+                    const frame=sampleRaceFrame(race,tick), width=filmRef.current?.clientWidth||600;
+                    // One shared distance scale for every lane; positions are never adjusted to fake closeness.
+                    const start=sampleRaceFrame(race,plan.replayStart), back=Math.max(130,...plan.contenders.map(i=>race.distance-start.positions[i]));
+                    const frozen=sampleRaceFrame(race,plan.finishTick), closeSpan=Math.max(6,...plan.contenders.map(i=>Math.abs(race.distance-frozen.positions[i])))*1.35;
+                    const scale=mode==='REPLAY'?(width*.56)/back:(width*.46)/closeSpan;
+                    plan.displayOrder.forEach(i=>{const el=markerRefs.current[i]; if(el) el.style.transform=`translateX(${width*.68+(frame.positions[i]-race.distance)*scale}px)`;});
+                };
+                const step=ts=>{if(disposed)return; if(last===null)last=ts;elapsed+=Math.min(100,Math.max(0,ts-last));last=ts; const fraction=Math.min(1,elapsed/1900);paint(mode==='REPLAY'?plan.replayStart+(plan.replayEnd-plan.replayStart)*fraction:plan.finishTick);if(mode==='REPLAY'&&fraction<1)id=requestAnimationFrame(step);};
+                paint(mode==='REPLAY'?plan.replayStart:plan.finishTick); id=requestAnimationFrame(step);
+                const resize=()=>paint(mode==='REPLAY'?plan.replayStart+(plan.replayEnd-plan.replayStart)*Math.min(1,elapsed/1900):plan.finishTick);
+                window.addEventListener('resize',resize); return()=>{disposed=true;cancelAnimationFrame(id);window.removeEventListener('resize',resize);};
+            },[race,plan,mode]);
+            const verdict=mode==='VERDICT';
+            return <div className="finish-panel" data-testid="photo-panel" data-mode={mode}>
+                <div className="finish-panel-head"><div><div className="finish-panel-kicker">{mode==='REPLAY'?'SLOW REPLAY · 실제 경주 기록':'PHOTO FINISH · 결승점 확대 판정'}</div><div className="finish-panel-title">{verdict?'승부가 갈렸습니다!':mode==='REPLAY'?'마지막 순간을 다시 봅니다':'누가 먼저 통과했을까요?'}</div></div><span className="finish-badge">{verdict?'판정 확정':mode==='REPLAY'?'슬로모션':'결승 순간 정지'}</span></div>
+                <div className="finish-film" ref={filmRef}><div className="finish-film-line"><span>FINISH</span></div>{plan.displayOrder.map((idx,row)=>{const h=horses[idx], rank=race.ranks.indexOf(idx)+1; return <div key={h.id} className="finish-film-lane" style={{top:`${row*100/plan.displayOrder.length}%`,height:`${100/plan.displayOrder.length}%`}}><div className={`finish-film-runner ${verdict&&idx===plan.first?'winner':''}`} ref={el=>markerRefs.current[idx]=el} data-runner-index={idx}><span className="finish-film-emoji">{h.img?<img src={h.img} alt=""/>:<span style={{display:'inline-block',transform:h.id!==12&&h.id!==21?'scaleX(-1)':''}}>{h.emoji}</span>}</span><span className="finish-reference"/></div><div className="finish-film-name">{h.emoji} {h.name}</div>{verdict&&<div className="finish-film-rank">{rank}위</div>}</div>;})}</div>
+                <div className="finish-caption"><span>◆ 아래의 기준점이 결승선을 통과한 순서로 판정합니다.</span><span>이모지 그림 크기는 판정과 무관 · 동일한 기록 재생</span></div>
+                <div className="finish-verdict" aria-live="polite">{verdict?<><span className="text-4xl">🏆</span><div><strong>{horses[plan.first]?.name} 우승!</strong><small>{finishGapLabel(plan.gapMs)} · 기본 재생 속도로 환산한 시간차{plan.gapMs<.000001?' · 동시 통과는 기존 판정 순서 적용':''}</small></div></>:<div className="font-bold text-slate-300">{mode==='REPLAY'?'같은 결승 구간을 확대 재생하고 있습니다.':'첫 주자의 기준점이 결승선에 닿은 정확한 순간입니다.'}<small>확정 순위와 당첨금은 기존 경주 기록을 그대로 사용합니다.</small></div>}</div>
+            </div>;
+        }
+        function FinishSummary({ race, horses }) { const p=finishPresentation(race); if(!p?.close)return null; return <div className="finish-summary"><b className="text-yellow-300">📸 사진 판정 · {horses[p.first]?.name} 우승</b><div className="text-xs text-slate-300 mt-1">{finishGapLabel(p.gapMs)} · 기본 재생 환산 · 기존 결승 통과 기록 기준</div></div>; }
 
         function AvatarDisplay({ avatarStr, sizeClasses }) {
             if(!avatarStr) return <div className={`flex items-center justify-center bg-slate-700 rounded-full ${sizeClasses}`}>👤</div>;
@@ -605,8 +814,11 @@
                 if (!t.ready || !t.connected || t.closing || t.lost || t.inFlight || !t.dirty) return;
                 clearTimeout(t.timer); t.timer = null; t.dirty = false; t.inFlight = true;
                 const state = gameState.current;
-                const { players, customWords, raceData, finalPlayers, ...publicState } = state;
+                const { players, customWords, raceData, finalPlayers, cheerBoard, ...publicState } = state;
                 const pieces = { state: publicState, words: { version: state.wordVersion, items: customWords }, 'recovery/race': raceData, standings: finalPlayers };
+                // The small shared cheer board is sent at most 2.5 times/sec, not with a full race timeline.
+                if (state.status !== 'RACE' || t.cheerRound !== state.roundId || serverNow() - (t.lastCheerWrite || 0) >= 400) pieces.cheerBoard = cheerBoard;
+                else if (t.last.cheerBoard !== JSON.stringify(cheerBoard)) t.dirty = true;
                 players.forEach(p => { pieces[`players/${p.uid}`] = p; });
                 const patch = {}, sent = {};
                 Object.entries(pieces).forEach(([path, value]) => {
@@ -617,6 +829,7 @@
                 try {
                     if (Object.keys(patch).length) await window.fbUpdate(window.fbRef(window.firebaseDb, `rooms/${t.code}`), patch);
                     Object.assign(t.last, sent);
+                    if (Object.hasOwn(sent, 'cheerBoard')) { t.lastCheerWrite = serverNow(); t.cheerRound = cheerBoard?.roundId || ''; }
                     // 결과/승인 기록이 저장된 뒤에만 처리한 요청을 지운다.
                     await Promise.all(actions.map(ref => window.fbRemove(ref).catch(() => {})));
                     if (!t.closing && !t.lost) setNetMessage('');
@@ -626,7 +839,7 @@
                     console.warn('Room sync:', error);
                 } finally {
                     t.inFlight = false;
-                    if (t.dirty && t.ready && !t.closing && !t.lost) t.timer = setTimeout(flushState, failed ? 1000 : 50);
+                    if (t.dirty && t.ready && !t.closing && !t.lost) t.timer = setTimeout(flushState, failed ? 1000 : 100);
                 }
             };
             const publishState = (immediate = false) => {
@@ -657,7 +870,7 @@
                 if (!allowed[state.status]?.includes(newStatus)) return;
                 if (newStatus === 'END_HORSE') state.finalPlayers = cloneData(state.players.filter(p => p.hasParticipated));
                 state.status = newStatus;
-                if (newStatus === 'BETTING') recalcLiveOdds();
+                if (newStatus === 'BETTING') { state.bettingEndsAt = 0; recalcLiveOdds(); }
                 publishState(true);
             };
             const handleFileUpload = e => {
@@ -676,7 +889,7 @@
             };
             const resetQuizFor = p => {
                 p.quizSeed = newId(); p.quizIndex = 0; p.quizCombo = 0; p.quizAvailableAt = 0; p.quizAck = null;
-                p.betAck = null; p.lastBetSeq = 0; p.lastQuizSeq = 0; p.roundId = gameState.current.roundId;
+                p.betAck = null; p.lastBetSeq = 0; p.lastQuizSeq = 0; p.lastCheerSeq = 0; p.roundId = gameState.current.roundId;
             };
             const handlePlayerAction = data => {
                 const t = transport.current, state = gameState.current, now = serverNow();
@@ -692,7 +905,7 @@
                         player = { uid: data.uid, name, avatar, money: 10000, inventory: null, bets: {}, usedItemOn: null, isReady: false, hasParticipated: ['QUIZ', 'BETTING'].includes(state.status), stats: { quizCnt: 0, betWin: 0, betLoss: 0, totalBet: 0 }, lastCost: 0, lastGrossWin: 0, lastWin: 0 };
                         state.players.push(player); resetQuizFor(player);
                     }
-                    if (player.sessionId !== data.sessionId) { player.lastBetSeq = 0; player.lastQuizSeq = 0; player.betAck = null; player.quizAck = null; }
+                    if (player.sessionId !== data.sessionId) { player.lastBetSeq = 0; player.lastQuizSeq = 0; player.lastCheerSeq = 0; player.betAck = null; player.quizAck = null; }
                     Object.assign(player, { name, avatar, sessionId: data.sessionId, sessionStartedAt: data.sentAt, lastPing: now, connected: true });
                     publishState(); return;
                 }
@@ -705,10 +918,10 @@
                 if (data.type === 'BET_CHANGE') {
                     if (data.seq <= (player.lastBetSeq || 0)) return;
                     player.lastBetSeq = data.seq;
-                    if (state.status !== 'BETTING') { acknowledge('betAck', false, '배팅이 마감되어 마지막 승인 내역으로 진행합니다.'); return; }
+                    if (!betIsOpen(state, now)) { acknowledge('betAck', false, '배팅이 마감되어 마지막 승인 내역으로 진행합니다.'); return; }
                     const checked = validateBet(data, player, state.horses);
                     if (checked.error) { acknowledge('betAck', false, checked.error); return; }
-                    player.bets = checked.bets; player.usedItemOn = checked.usedItemOn; player.hasParticipated = true;
+                    player.bets = checked.bets; player.usedItemOn = checked.usedItemOn; player.isReady = data.isReady === true; player.hasParticipated = true;
                     recalcLiveOdds(); acknowledge('betAck', true); return;
                 }
                 if (data.type === 'QUIZ_ANSWER') {
@@ -728,10 +941,17 @@
                     player.hasParticipated = true; player.quizIndex++; player.quizAvailableAt = now + (correct ? 600 : 1500);
                     acknowledge('quizAck', true); return;
                 }
-                if (data.type === 'CHEER' && state.status === 'RACE' && (player.bets?.[data.horseId] || 0) > 0 && state.horses.some(h => h.id === data.horseId)) {
-                    if (now - (player.lastCheerAt || 0) < 900) return;
+                if (data.type === 'CHEER' && state.status === 'RACE' && state.racePresentation === 'LIVE' && (player.bets?.[data.horseId] || 0) > 0 && state.horses.some(h => h.id === data.horseId)) {
+                    if (data.seq <= (player.lastCheerSeq || 0)) return;
+                    player.lastCheerSeq = data.seq;
+                    if (!Number.isFinite(data.sentAt) || now-data.sentAt > 6000 || data.sentAt-now > 1000 || now - (player.lastCheerAt || 0) < 900) return;
                     player.lastCheerAt = now;
-                    window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: player.name } }));
+                    if (!state.cheerBoard || state.cheerBoard.roundId !== state.roundId) return;
+                    state.cheerBoard.horses = state.cheerBoard.horses || {};
+                    const entry = state.cheerBoard.horses[data.horseId] || { count:0 };
+                    entry.count++; state.cheerBoard.horses[data.horseId] = entry;
+                    window.dispatchEvent(new CustomEvent('HORSE_CHEER', { detail: { horseId: data.horseId, playerName: player.name, count:entry.count, roundId:state.roundId } }));
+                    // No simulation state or payout changes: these are presentation-only cheers.
                 }
             };
             const closeRoom = async () => {
@@ -777,11 +997,16 @@
                         }
                         if (disposed) return;
                         if (root.state?.matchId) {
-                            gameState.current = { ...initialGame(), ...root.state, horses: asArray(root.state.horses), players: asArray(root.players), customWords: asArray(root.words?.items), raceData: root.recovery?.race || null, finalPlayers: asArray(root.standings) };
+                            gameState.current = { ...initialGame(), ...root.state, horses: asArray(root.state.horses), players: asArray(root.players), customWords: asArray(root.words?.items), raceData: root.recovery?.race || null, finalPlayers: asArray(root.standings), cheerBoard: root.cheerBoard || null };
                             gameState.current.players.forEach(p => { p.bets = readBets(p.bets); p.lastPing = 0; p.connected = false; });
                             setSetupRounds(gameState.current.totalRounds);
                             // 저장된 결과가 없는 미완성 계산은 배팅 상태로 되돌린다.
-                            if (gameState.current.status === 'RACE' && !gameState.current.raceData?.timeline?.length) gameState.current.status = 'BETTING';
+                            if (gameState.current.status === 'RACE' && !gameState.current.raceData?.timeline?.length) { gameState.current.status = 'BETTING'; gameState.current.bettingEndsAt = 0; }
+                            if (gameState.current.status === 'RACE') {
+                                const state = gameState.current; state.racePresentation = 'LIVE';
+                                if (!state.cheerBoard || state.cheerBoard.roundId !== state.roundId) state.cheerBoard = { roundId: state.roundId, horses: {}, sponsors: state.raceData?.sponsorLeaders || {} };
+                                else state.cheerBoard.horses = state.cheerBoard.horses || {};
+                            }
                         }
                         storeJSON(sessionStorage, HOST_SESSION_KEY, { code: t.code, instanceId: t.instanceId, hostId: t.hostId });
                         t.ready = true; setRoomCode(t.code); publishState();
@@ -864,7 +1089,7 @@
                 if (state.round === 0) state.totalRounds = setupRounds;
                 state.weather = Math.random() < 0.5 ? WEATHERS[0] : WEATHERS[1 + Math.floor(Math.random() * 3)];
                 state.horses = shuffle(HORSES).slice(0, 8).map(h => ({ ...h, stats: { ...h.stats }, conditionIdx: Math.floor(Math.random() * CONDITIONS.length), odds: '1.1' }));
-                state.round++; state.roundId = newId(); state.raceData = null; state.settledRoundId = ''; state.quizEndsAt = serverNow() + 30000;
+                state.round++; state.roundId = newId(); state.raceData = null; state.settledRoundId = ''; state.quizEndsAt = serverNow() + 30000; state.bettingEndsAt = 0; state.cheerBoard = null; state.racePresentation = 'LIVE';
                 state.players.forEach(p => {
                     p.isReady = false; p.bets = {}; p.usedItemOn = null; p.lastCost = 0; p.lastGrossWin = 0; p.lastWin = 0; p.lastCheerAt = 0;
                     if (p.connected) p.hasParticipated = true;
@@ -901,10 +1126,32 @@
             }, [uiState.status]);
 
 
+            const beginBettingCountdown = () => {
+                const state = gameState.current;
+                if (!canOperate() || state.status !== 'BETTING' || state.bettingEndsAt || !state.horses.length) return;
+                state.bettingEndsAt = serverNow() + BET_CLOSE_MS; publishState(true);
+            };
+            const cancelBettingCountdown = () => {
+                const state = gameState.current;
+                if (!canOperate() || state.status !== 'BETTING' || !state.bettingEndsAt || serverNow() >= state.bettingEndsAt) return;
+                state.bettingEndsAt = 0; publishState(true);
+            };
+            useEffect(() => {
+                if (uiState.status !== 'BETTING' || !uiState.bettingEndsAt) return;
+                const tick = () => { const state = gameState.current, t = transport.current;
+                    if (state.status === 'BETTING' && state.bettingEndsAt && serverNow() >= state.bettingEndsAt && t.ready && t.connected && !t.lost && !t.closing) calculateRace();
+                };
+                tick(); const timer = setInterval(tick, 100); return () => clearInterval(timer);
+            }, [uiState.status, uiState.roundId, uiState.bettingEndsAt]);
+            const reportRacePresentation = (phase, roundId) => {
+                const state = gameState.current;
+                if (state.status !== 'RACE' || state.roundId !== roundId || transport.current.lost || !['LIVE','FINISH'].includes(phase) || state.racePresentation === phase) return;
+                state.racePresentation = phase; publishState(true);
+            };
             const calculateRace = () => {
                 try {
                     const state = gameState.current;
-                    if (!canOperate() || state.status !== 'BETTING' || !state.horses.length) return;
+                    if (!canOperate() || state.status !== 'BETTING' || !state.horses.length || !state.bettingEndsAt || serverNow() < state.bettingEndsAt) return;
                     recalcLiveOdds();
                     const horses = state.horses.map(h => ({ ...h, stats: { ...h.stats } }));
                     // Freeze accepted wagers, odds and self-item luck before playback.
@@ -912,6 +1159,7 @@
                     const weather = state.weather.id;
                     const distance = 6000;
 
+                    const sponsorLeaders = getSponsorLeaders(horses, state.players);
                     const sponsors = {};
                     horses.forEach(h => {
                         let maxBet = 0; let topBettor = null;
@@ -1158,15 +1406,17 @@
 
                     const finalRanks = horses.map((_, i) => i).sort((a, b) => exactFinishTimes[a] - exactFinishTimes[b]);
                     
-                    state.raceData = { timeline, ranks: finalRanks, exactFinishTimes, distance, sponsors, weather: state.weather, matchId: state.matchId, roundId: state.roundId,
+                    state.raceData = { timeline, ranks: finalRanks, exactFinishTimes, distance, sponsors, sponsorLeaders, weather: state.weather, matchId: state.matchId, roundId: state.roundId,
                         settlement: { players: lockedPlayers, horses: horses.map(h => ({ id: h.id, odds: h.odds })) } };
                     lockedPlayers.forEach(locked => {
                         const p = state.players.find(p => p.uid === locked.uid);
                         if (p && locked.usedItemOn?.target === 'horse') p.inventory = null;
                     });
+                    state.cheerBoard = { roundId: state.roundId, horses: {}, sponsors: sponsorLeaders }; state.racePresentation = 'LIVE';
                     changeStatus('RACE');
                     
                 } catch (e) {
+                    gameState.current.bettingEndsAt = 0; publishState(true);
                     alert("레이스 계산 중 오류 발생: " + e.message);
                     console.error(e);
                 }
@@ -1213,7 +1463,7 @@
             };
 
             return (
-                <div className="min-h-screen bg-teal-900 text-white p-4 flex flex-col fade-in relative">
+                <div className="race-host-shell bg-teal-900 text-white p-4 flex flex-col fade-in relative">
                     <div className="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-lg mb-4 shrink-0 relative z-50">
                         <div><div className="text-slate-400 text-sm font-bold">호스트 룸코드</div><div className="text-4xl font-black tracking-widest text-emerald-400">{roomCode || '…'}</div></div>
                         {uiState.status === 'RACE' && (
@@ -1225,7 +1475,7 @@
                     </div>
 
                     {netMessage && <div className="bg-amber-900/80 text-yellow-100 text-sm font-bold p-2 rounded-lg mb-2 text-center">{netMessage}{!roomCode && <button onClick={()=>location.reload()} className="ml-3 underline">다시 불러오기</button>}</div>}
-                    <div className="flex-1 bg-glass rounded-2xl border border-slate-600 flex flex-col overflow-hidden relative">
+                    <div className="race-host-body flex-1 bg-glass rounded-2xl border border-slate-600 flex flex-col overflow-hidden relative">
                         {uiState.status === 'LOBBY' && (
                             <div className="m-auto text-center w-full max-w-4xl p-6 overflow-y-auto custom-scrollbar max-h-full">
                                 <h2 className="text-3xl font-bold mb-8">학생들의 접속을 대기중입니다...</h2>
@@ -1290,29 +1540,20 @@
                             </div>
                         )}
                         {uiState.status === 'BETTING' && (
-                            <div className="flex flex-col h-full w-full max-w-5xl mx-auto relative p-6">
-                                <div className={`absolute -top-1 left-1/2 -translate-x-1/2 px-6 py-2 rounded-b-xl font-black text-lg border-x border-b border-slate-600 bg-slate-800 shadow-lg z-10 ${uiState.weather.color}`}>
-                                    현재 경기장 날씨: {uiState.weather.name} ({uiState.weather.desc})
+                            <div className="flex flex-col h-full min-h-0 w-full max-w-6xl mx-auto p-3 md:p-4 gap-3">
+                                <WeatherCard weather={uiState.weather}/>
+                                <div className="flex items-center justify-between gap-3 shrink-0"><h2 className="text-2xl font-black text-yellow-400">💰 배팅 타임!</h2><span className="text-xs text-slate-300 text-right">모두 준비되어도 자동 출발하지 않습니다.<br/>선생님이 마감을 시작해 주세요.</span></div>
+                                <div className="betting-host-scroll custom-scrollbar"><BettingReadiness players={uiState.players}/>
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-3 pb-2">
+                                        {uiState.horses.map(h=><div key={h.id} className="bg-slate-800 border border-slate-700 p-3 rounded-xl shadow-md min-w-0"><div className="flex items-center gap-2 mb-2"><span className="text-4xl shrink-0">{h.emoji}</span><div className="min-w-0"><div className="font-black text-base leading-tight break-words">{h.name}</div><div className="font-black text-red-400">{h.odds}배 <span className="text-xs text-slate-400">(예상)</span></div></div></div><HorseIntel horse={h} weather={uiState.weather}/></div>)}
+                                    </div>
                                 </div>
-                                <h2 className="text-3xl font-bold text-yellow-400 mb-2 text-center mt-6 shrink-0">💰 배팅 타임!</h2>
-                                <div className="text-center text-slate-300 font-bold mb-4 shrink-0">(학생들이 실시간 배팅 중입니다. 원할 때 경주를 시작하세요.)</div>
-                                
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 overflow-y-auto custom-scrollbar flex-1 pr-2">
-                                    {uiState.horses.map(h => (
-                                        <div key={h.id} className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center shadow-md flex flex-col justify-center relative overflow-hidden">
-                                            <div className="text-5xl mb-2">{h.emoji}</div>
-                                            <div className="font-black text-lg sm:text-xl mb-1 leading-tight break-keep">{h.name}</div>
-                                            <div className={`text-sm font-bold ${CONDITIONS[h.conditionIdx].color} mb-2`}>컨디션: {CONDITIONS[h.conditionIdx].label}</div>
-                                            <div className="text-2xl font-black text-red-400">{h.odds}x <span className="text-sm text-slate-500">(예상)</span></div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="text-center shrink-0"><button onClick={calculateRace} className="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-12 rounded-xl text-2xl transition shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-pulse">경주 시작! 🏁</button></div>
+                                <div className="shrink-0">{uiState.bettingEndsAt?<CountdownBar endsAt={uiState.bettingEndsAt} onCancel={cancelBettingCountdown}/>:<button onClick={beginBettingCountdown} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded-xl text-xl shadow-lg active:scale-95 transition" data-testid="begin-countdown">5초 후 배팅 마감 · 경주 시작 🏁</button>}</div>
                             </div>
                         )}
                         {uiState.status === 'RACE' && (
                             <div className="absolute inset-0 z-10 bg-teal-900 rounded-2xl overflow-hidden border-4 border-slate-600 shadow-2xl">
-                                <RacePhase raceData={uiState.raceData} horses={uiState.horses} isHost={true} onFinish={processResults} />
+                                <RacePhase raceData={uiState.raceData} horses={uiState.horses} cheerBoard={uiState.cheerBoard} isHost={true} onFinish={processResults} onPresentation={reportRacePresentation} />
                             </div>
                         )}
                         {uiState.status === 'RESULT' && (
@@ -1324,7 +1565,8 @@
                                         <button onClick={()=>changeStatus('END_HORSE')} className="bg-red-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-red-500">게임 종료 (최종 랭킹 보기) ➡️</button>
                                     }
                                 </div>
-                                <h2 className="text-4xl font-black text-purple-400 mb-8">🏆 {uiState.round}라운드 결과</h2>
+                                <h2 className="text-4xl font-black text-purple-400 mb-5">🏆 {uiState.round}라운드 결과</h2>
+                                <FinishSummary race={uiState.raceData} horses={uiState.horses}/>
                                 <HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} />
                                 <div className="bg-slate-800 rounded-xl p-4 mb-8 border border-slate-700 shadow-md">
                                     <h3 className="text-xl font-bold mb-4 border-b border-slate-600 pb-2">현재 재산 순위</h3>
@@ -1397,9 +1639,12 @@
             const [finalPlayers, setFinalPlayers] = useState([]);
             const [netMessage, setNetMessage] = useState('');
             const [betNotice, setBetNotice] = useState('');
+            const [myReady, setMyReady] = useState(false);
+            const [bettingClosed, setBettingClosed] = useState(false);
+            const [cheerBoard, setCheerBoard] = useState(null);
             const [quizNotice, setQuizNotice] = useState('');
             const client = useRef(null);
-            if (!client.current) client.current = { sessionId: newId(), seq: 0, instanceId: '', meta: null, state: null, me: null, words: null, connected: false, hostOnline: false, joinedAt: 0, draftBets: {}, draftItem: null, pendingBet: null, pendingQuiz: null, quizTimer: null, cheerTimer: null, betTimer: null, disposed: false };
+            if (!client.current) client.current = { sessionId: newId(), seq: 0, instanceId: '', meta: null, state: null, me: null, words: null, connected: false, hostOnline: false, joinedAt: 0, draftBets: {}, draftItem: null, draftReady: false, pendingBet: null, pendingQuiz: null, quizTimer: null, cheerTimer: null, betTimer: null, disposed: false };
 
             const syncDraft = () => {
                 const c = client.current, p = c.me, state = c.state;
@@ -1407,17 +1652,17 @@
                 const ack = p.betAck;
                 const caughtUp = ack?.sessionId === c.sessionId && ack.seq >= (c.pendingBet?.seq || Infinity);
                 if (!c.pendingBet || caughtUp || state.status !== 'BETTING') {
-                    c.draftBets = { ...(p.bets || {}) }; c.draftItem = p.usedItemOn || null;
+                    c.draftBets = { ...(p.bets || {}) }; c.draftItem = p.usedItemOn || null; c.draftReady = p.isReady === true; setMyReady(c.draftReady);
                     setMyBets(c.draftBets); setUsedItem(c.draftItem);
                     if (c.pendingBet) {
-                        setBetNotice(caughtUp ? (ack.ok ? '배팅 반영 완료' : ack.reason) : '배팅 마감: 호스트가 승인한 내역으로 확정되었습니다.');
+                        setBetNotice(caughtUp ? (ack.ok ? (p.isReady ? '준비 완료가 반영되었습니다.' : '배팅 반영 완료') : ack.reason) : '배팅 마감: 호스트가 승인한 내역으로 확정되었습니다.');
                         c.pendingBet = null; clearTimeout(c.betTimer);
                     }
                 }
             };
             const canAct = status => {
                 const c = client.current;
-                return !c.disposed && c.connected && c.hostOnline && c.me?.sessionId === c.sessionId && c.state?.status === status && c.me?.roundId === c.state?.roundId;
+                return !c.disposed && c.connected && c.hostOnline && c.me?.sessionId === c.sessionId && c.state?.status === status && c.me?.roundId === c.state?.roundId && (status !== 'BETTING' || betIsOpen(c.state)) && (status !== 'RACE' || c.state.racePresentation !== 'FINISH');
             };
             const pushAction = async action => {
                 const c = client.current;
@@ -1478,6 +1723,18 @@
                 };
             }, [roomCode]);
 
+            useEffect(() => {
+                const tick = () => setBettingClosed(roomState?.status === 'BETTING' && !!roomState.bettingEndsAt && serverNow() >= roomState.bettingEndsAt);
+                tick(); if (roomState?.status !== 'BETTING' || !roomState.bettingEndsAt) return;
+                const timer = setInterval(tick, 100); return () => clearInterval(timer);
+            }, [roomState?.status, roomState?.bettingEndsAt, roomState?.roundId]);
+            useEffect(() => {
+                setCheerBoard(null);
+                if (roomState?.status !== 'RACE') return;
+                return window.fbOnValue(window.fbRef(window.firebaseDb, `rooms/${roomCode}/cheerBoard`), snap => {
+                    const board=snap.val(); if (board?.roundId === client.current.state?.roundId) setCheerBoard(board);
+                }, () => {});
+            }, [roomCode, roomState?.roundId, roomState?.status]);
             const generateQuiz = () => {
                 const c = client.current;
                 if (c.state?.status !== 'QUIZ' || c.me?.roundId !== c.state.roundId || c.me?.sessionId !== c.sessionId || c.words?.version !== c.state.wordVersion) { setQuizData(null); return; }
@@ -1532,16 +1789,21 @@
                     if (!ok && c.pendingQuiz?.seq === seq && !c.disposed) { clearTimeout(c.quizTimer); c.pendingQuiz = null; setQuizPopup(null); setQuizNotice('전송되지 않았습니다. 다시 선택해 주세요.'); generateQuiz(); }
                 });
             };
-            const sendBet = (bets, item) => {
+            const sendBet = (bets, item, ready = false) => {
                 const c = client.current;
                 if (!canAct('BETTING')) return;
-                const seq = ++c.seq; c.pendingBet = { seq }; c.draftBets = { ...bets }; c.draftItem = item;
+                const seq = ++c.seq; c.pendingBet = { seq }; c.draftBets = { ...bets }; c.draftItem = item; c.draftReady = ready; setMyReady(ready);
                 setMyBets(c.draftBets); setUsedItem(item); setBetNotice('배팅 전송 중...');
                 clearTimeout(c.betTimer);
                 c.betTimer = setTimeout(() => { if (c.pendingBet?.seq === seq && !c.disposed) setBetNotice('호스트 승인 대기 중입니다. 마감 시 승인된 내역만 적용됩니다.'); }, 5000);
-                pushAction({ type: 'BET_CHANGE', seq, bets, usedItemOn: item }).then(ok => {
+                pushAction({ type: 'BET_CHANGE', seq, bets, usedItemOn: item, isReady: ready }).then(ok => {
                     if (!ok && c.pendingBet?.seq === seq && !c.disposed) { c.pendingBet = null; syncDraft(); setBetNotice('전송 실패: 마지막 승인 내역으로 복원했습니다.'); }
                 });
+            };
+            const handleReady = () => {
+                const c = client.current;
+                if (!canAct('BETTING') || isItemSelecting) return;
+                sendBet(c.draftBets, c.draftItem, !c.draftReady);
             };
             const handleBet = (hId, amt) => {
                 const c = client.current;
@@ -1648,10 +1910,10 @@
                 const myItem = me.inventory ? ITEMS.find(i => i.id === me.inventory) : null;
                 
                 return (
-                    <div className="h-[100dvh] flex flex-col p-4 bg-teal-900 text-white fade-in overflow-hidden">
+                    <div className="h-[100dvh] flex flex-col p-3 bg-teal-900 text-white fade-in overflow-hidden">
                         {connectionBanner}
-                        <div className="bg-slate-800 p-4 rounded-xl mb-4 border border-slate-700 sticky top-0 z-10 shadow-lg shrink-0">
-                            <div className="flex justify-between items-end mb-3">
+                        <div className="student-bet-summary bg-slate-800 rounded-xl border border-slate-700 z-10 shadow-lg shrink-0">
+                            <div className="flex justify-between items-end mb-2">
                                 <div><div className="text-xs text-slate-400 font-bold mb-1">남은 금액</div><div className="text-xl font-bold">{me.money - totalBet} 💰</div></div>
                                 <div className="text-right"><div className="text-xs text-slate-400 font-bold mb-1">총 배팅액</div><div className="text-2xl font-black text-yellow-400">{totalBet} 💰</div></div>
                             </div>
@@ -1669,12 +1931,12 @@
                                 ) : (
                                     <span className="text-xs font-bold text-slate-500 px-2">보유한 아이템이 없습니다.</span>
                                 )}
-                                <button onClick={handleResetBet} className="bg-red-900/50 text-red-400 border border-red-500/50 px-4 py-2 rounded-lg font-black text-sm hover:bg-red-900 transition active:scale-95">배팅 초기화</button>
+                                <button onClick={handleResetBet} disabled={bettingClosed} className="bg-red-900/50 text-red-400 border border-red-500/50 px-4 py-2 rounded-lg font-black text-sm hover:bg-red-900 transition active:scale-95">배팅 초기화</button>
                             </div>
                             
                             <div className="text-[11px] text-center font-bold text-slate-300 min-h-[16px]" aria-live="polite">{betNotice}</div>
                             {myItem && (
-                                <button onClick={handleItemBtnClick} 
+                                <button onClick={handleItemBtnClick} disabled={bettingClosed} 
                                     className={`w-full py-3 rounded-lg font-black text-sm transition active:scale-95 ${
                                         usedItem ? 'bg-slate-700 text-slate-300 hover:bg-slate-600 border border-slate-500' : 
                                         isItemSelecting ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.5)] animate-pulse' : 
@@ -1685,7 +1947,8 @@
                             )}
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 pb-6">
+                        <div className="student-bet-scroll flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 pb-3">
+                            <WeatherCard weather={roomState.weather}/>
                             {roomState.horses.map(h => (
                                 <div key={h.id} 
                                     onClick={() => isItemSelecting ? handleSelectTargetHorse(h.id) : null}
@@ -1708,18 +1971,24 @@
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center justify-end -mt-4 mb-2">
+                                    <HorseIntel horse={h} weather={roomState.weather}/>
+                                    <div className="flex items-center justify-end">
                                         <div className="text-lg font-black text-emerald-400 bg-teal-900 px-3 py-1 rounded-lg border border-slate-700">{(myBets[h.id] || 0)}💰</div>
                                     </div>
 
-                                    <div className={`grid grid-cols-5 gap-1 sm:gap-2 mt-1 ${isItemSelecting ? 'opacity-30 pointer-events-none' : ''}`}>
+                                    <div className={`grid grid-cols-5 gap-1 sm:gap-2 mt-1 ${isItemSelecting || bettingClosed ? 'opacity-30 pointer-events-none' : ''}`}>
                                         {[100, 500, 1000, 5000].map(amt => (
-                                            <button key={amt} onClick={(e)=>{ e.stopPropagation(); handleBet(h.id, amt); }} className="bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 py-2 sm:py-3 rounded-lg font-black text-[11px] sm:text-sm active:scale-95 transition whitespace-nowrap">+{amt}</button>
+                                            <button key={amt} disabled={bettingClosed} onClick={(e)=>{ e.stopPropagation(); handleBet(h.id, amt); }} className="bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 py-2 sm:py-3 rounded-lg font-black text-[11px] sm:text-sm active:scale-95 transition whitespace-nowrap">+{amt}</button>
                                         ))}
-                                        <button onClick={(e)=>{ e.stopPropagation(); handleBetAllIn(h.id); }} className="bg-red-600/20 hover:bg-red-600/40 border border-red-500/40 text-red-300 py-2 sm:py-3 rounded-lg font-black text-[11px] sm:text-sm active:scale-95 transition whitespace-nowrap">올인</button>
+                                        <button disabled={bettingClosed} onClick={(e)=>{ e.stopPropagation(); handleBetAllIn(h.id); }} className="bg-red-600/20 hover:bg-red-600/40 border border-red-500/40 text-red-300 py-2 sm:py-3 rounded-lg font-black text-[11px] sm:text-sm active:scale-95 transition whitespace-nowrap">올인</button>
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                        <div className="bet-ready-footer">
+                            {!!roomState.bettingEndsAt && <div className="mb-2"><CountdownBar endsAt={roomState.bettingEndsAt}/></div>}
+                            <button onClick={handleReady} disabled={bettingClosed || isItemSelecting || !canAct('BETTING')} className={`bet-ready-button ${myReady?'is-ready':''}`} data-testid="student-ready">{bettingClosed?'배팅 마감 · 승인된 내역으로 출발합니다':myReady?'✓ 준비 완료 · 눌러서 해제':totalBet>0?'배팅 완료! 준비됐어요':'이번 판은 관전 · 준비 완료'}</button>
+                            <div className="text-[10px] text-slate-300 text-center mt-1">{myReady?'배팅·아이템을 수정하면 준비 완료가 자동 해제됩니다.':'배팅을 마쳤으면 눌러 주세요. 출발은 선생님이 결정합니다.'}</div>
                         </div>
                     </div>
                 );
@@ -1727,20 +1996,21 @@
 
             if (roomState.status === 'RACE') {
                 return (
-                    <div className="h-[100dvh] flex flex-col p-4 bg-teal-900 text-white items-center justify-center overflow-hidden fade-in">
+                    <div className="cheer-student-shell h-[100dvh] flex flex-col p-4 bg-teal-900 text-white items-center fade-in">
                         {connectionBanner}
-                        <div className="text-center w-full max-w-md bg-slate-800 p-6 rounded-3xl border-2 border-slate-600 shadow-2xl flex flex-col items-center">
-                            <h2 className="text-3xl font-black mb-2 text-yellow-400 animate-pulse font-display tracking-wide">🏁 경주 진행 중!</h2>
-                            <p className="text-slate-400 mb-8 font-bold text-sm">배팅한 말을 응원하세요! (1초 쿨타임)</p>
+                        <div className="cheer-student-card text-center w-full max-w-md bg-slate-800 rounded-3xl border-2 border-slate-600 shadow-2xl flex flex-col items-center">
+                            <h2 className="text-3xl font-black mb-2 text-yellow-400 animate-pulse font-display tracking-wide">{roomState.racePresentation==='FINISH'?'📸 결승 사진 판정 중!':'🏁 경주 진행 중!'}</h2>
+                            <p className="text-slate-400 mb-4 font-bold text-sm">{roomState.racePresentation==='FINISH'?'선생님 화면에서 마지막 승부를 확인하세요!':'함께 응원하면 더 화려하게! (1초 쿨타임)'}</p><p className="text-[10px] text-slate-400 mb-4">응원은 연출만 강화하며 속도·순위·배당은 바꾸지 않습니다.</p>
                             <div className="grid grid-cols-2 gap-4 w-full">
                                 {roomState.horses.map(h => {
                                     if(!myBets[h.id]) return null;
                                     return (
-                                        <button key={h.id} onClick={()=>handleCheer(h.id)} disabled={cheerCooldown} className={`relative bg-slate-700 border-2 border-yellow-500/50 py-8 px-2 rounded-2xl flex flex-col items-center shadow-lg w-full overflow-hidden transition-all ${cheerCooldown ? 'opacity-60 cursor-not-allowed grayscale-[30%]' : 'active:scale-90 active:bg-slate-600'}`}>
-                                            <div className="text-6xl mb-3 drop-shadow-md">{h.emoji}</div>
+                                        <button key={h.id} onClick={()=>handleCheer(h.id)} disabled={cheerCooldown || roomState.racePresentation==='FINISH'} className={`relative bg-slate-700 border-2 border-yellow-500/50 py-4 px-2 rounded-2xl flex flex-col items-center shadow-lg w-full overflow-hidden transition-all ${cheerCooldown ? 'opacity-60 cursor-not-allowed grayscale-[30%]' : 'active:scale-90 active:bg-slate-600'}`}>
+                                            <div className="text-5xl mb-2 drop-shadow-md">{h.emoji}</div>
                                             <div className="font-black text-sm text-slate-100 truncate w-full px-2">{h.name}</div>
                                             <div className="text-xs font-bold text-emerald-400 mt-2 bg-teal-900 px-3 py-1 rounded-full">{myBets[h.id]}💰</div>
                                             
+                                            <CheerMini count={cheerBoard?.horses?.[h.id]?.count || 0} sponsors={asArray(cheerBoard?.sponsors?.[h.id])}/>
                                             {cheerCooldown && (
                                                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-[1px]">
                                                     <div className="text-white font-black text-xl flex items-center gap-2"><i className="fas fa-hourglass-half animate-spin"></i> 쿨타임</div>
@@ -1805,283 +2075,183 @@
             return null;
         }
 
-        function RacePhase({ raceData, horses, isHost, onFinish }) {
+        function RacePhase({ raceData, horses, isHost, onFinish, cheerBoard, onPresentation }) {
             const finishCallback = useRef(onFinish); finishCallback.current = onFinish;
+            const presentationCallback = useRef(onPresentation); presentationCallback.current = onPresentation;
+            const finishPlan = React.useMemo(() => finishPresentation(raceData), [raceData]);
+            const reducedMotion = React.useMemo(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false, []);
+            const [finishStage, setFinishStage] = useState('LIVE');
+            const stageRef = useRef('LIVE');
             const effectTimers = useRef(new Set());
             const pipElements = useRef(new Map());
             const scheduleEffect = (fn, delay) => { const id = setTimeout(() => { effectTimers.current.delete(id); fn(); }, delay); effectTimers.current.add(id); return id; };
             useEffect(() => () => { effectTimers.current.forEach(clearTimeout); effectTimers.current.clear(); }, []);
-            const containerRef = useRef(null);
-            const worldRef = useRef(null);
-            const horseRefs = useRef([]);
-            const pipRef = useRef(null);
-            const hudDistRef = useRef(null);
-            const dustLayerRef = useRef(null);
-            const evtContainerRef = useRef(null);
-            const particleContainerRef = useRef(null);
-            const cheerTickerRef = useRef(null); 
-
-            const playback = useRef({ startMs: null, lastTs: null, currentTick: 0, lastEvtTick: -1, spurt: false, camX: null });
-            const leadTracker = useRef({ currentLeaderIdx: -1, lastLeadChangeTick: -999 });
-            const cheerEffects = useRef([]); 
-
-            const [isSpurtCSS, setIsSpurtCSS] = useState(false);
-            const [isDramatic, setIsDramatic] = useState(false); 
-
-            const TRACK_LENGTH = raceData ? raceData.distance : 6000;
-            const VISUAL_SCALE = 15; 
-            const START_OFFSET = 1000; 
-            const TRACK_CY = 4000;
-            const ZOOM_SCALE = isHost ? 0.48 : 0.3;
-
-            const getTrackPos = (pos, lateral) => { return { x: START_OFFSET + (pos * VISUAL_SCALE), y: TRACK_CY + lateral }; };
-
-            const createDust = (x, y) => {
-                if(!dustLayerRef.current) return;
-                const el = document.createElement('div');
-                el.className = 'dust';
-                el.style.left = `${x - (Math.random()-0.5)*40 - 60}px`; 
-                el.style.top = `${y + (Math.random()-0.5)*40}px`;
-                dustLayerRef.current.appendChild(el);
-                scheduleEffect(() => el.remove(), 700);
+            const containerRef = useRef(null), worldRef = useRef(null), horseRefs = useRef([]);
+            const pipRef = useRef(null), hudDistRef = useRef(null), dustLayerRef = useRef(null);
+            const evtContainerRef = useRef(null), particleContainerRef = useRef(null), cheerTickerRef = useRef(null), cheerBannerRef = useRef(null);
+            const initialBoard = useRef(cheerBoard); initialBoard.current = cheerBoard;
+            const playback = useRef({ lastTs:null, currentTick:0, lastEvtTick:-1, spurt:false, camX:null });
+            const leadTracker = useRef({ currentLeaderIdx:-1, lastLeadChangeTick:-999 });
+            const cheerEffects = useRef([]);
+            const [isSpurtCSS, setIsSpurtCSS] = useState(false), [isDramatic, setIsDramatic] = useState(false);
+            const TRACK_LENGTH = raceData?.distance || 6000, VISUAL_SCALE = 15, START_OFFSET = 1000, TRACK_CY = 4000, ZOOM_SCALE = isHost ? .48 : .3;
+            const getTrackPos = (pos, lateral) => ({ x:START_OFFSET+pos*VISUAL_SCALE, y:TRACK_CY+lateral });
+            const createDust = (x,y) => {
+                if (!dustLayerRef.current || dustLayerRef.current.childElementCount >= 24 || reducedMotion) return;
+                const el=document.createElement('div'); el.className='dust'; el.style.left=`${x-(Math.random()-.5)*40-60}px`; el.style.top=`${y+(Math.random()-.5)*40}px`;
+                dustLayerRef.current.appendChild(el); scheduleEffect(()=>el.remove(),700);
             };
-
             useEffect(() => { playSound('start'); }, []);
 
+            // The host's accepted count is authoritative. This effect does not read/write race positions.
             useEffect(() => {
-                cheerEffects.current = horses.map(() => 0); 
-                const cheerCounts = horses.map(() => 0); 
-                
-                const onCheer = (e) => {
-                    const { horseId, playerName } = e.detail;
-                    const hIdx = horses.findIndex(h => h.id === horseId);
-                    
-                    if (hIdx > -1) {
-                        cheerCounts[hIdx] += 1;
-                        cheerEffects.current[hIdx] = 100; 
-                        
-                        if (isHost && cheerTickerRef.current && playerName) {
-                            const ticker = document.createElement('div');
-                            ticker.className = 'text-sm font-black text-yellow-300 bg-black/60 px-3 py-1 rounded-full mb-1 border border-yellow-500/50 shadow-md animate-slide-in';
-                            ticker.textContent = `${playerName}님이 ${horses[hIdx].name} 응원 중! 🔥`;
-                            cheerTickerRef.current.appendChild(ticker);
-                            scheduleEffect(() => ticker.remove(), 2000);
-                        }
-                        
-                        if (cheerCounts[hIdx] >= 5) {
-                            cheerCounts[hIdx] = 0;
-                            if (particleContainerRef.current) {
-                                const el = document.createElement('div');
-                                el.className = 'cheer-particle';
-                                el.innerHTML = `<span style="display:inline-block; transform:scaleX(-1); filter:hue-rotate(50deg) saturate(2);">${horses[hIdx].emoji}</span>`;
-                                el.style.left = `${10 + Math.random() * 80}%`;
-                                particleContainerRef.current.appendChild(el);
-                                scheduleEffect(() => el.remove(), 1200);
-
-                                if(horseRefs.current[hIdx]) {
-                                    const burst = document.createElement('div');
-                                    burst.className = 'absolute z-50 text-6xl drop-shadow-[0_0_20px_rgba(255,255,255,1)]';
-                                    burst.style.animation = 'cheerExplode 0.8s ease-out forwards';
-                                    burst.innerHTML = `✨💥✨`;
-                                    horseRefs.current[hIdx].appendChild(burst);
-                                    
-                                    horseRefs.current[hIdx].classList.add('flash-horse');
-                                    scheduleEffect(() => {
-                                        burst.remove();
-                                        horseRefs.current[hIdx]?.classList.remove('flash-horse');
-                                    }, 800);
-                                }
-                            }
-                        } else {
-                            if (isHost && particleContainerRef.current) {
-                                const el = document.createElement('div');
-                                el.className = 'cheer-particle';
-                                el.innerHTML = `<span style="display:inline-block; transform:scaleX(-1);">${horses[hIdx].emoji}</span>`;
-                                el.style.left = `${10 + Math.random() * 80}%`;
-                                particleContainerRef.current.appendChild(el);
-                                scheduleEffect(() => el.remove(), 1200);
-                            }
+                cheerEffects.current=horses.map(()=>0);
+                const counts=horses.map(h=>initialBoard.current?.roundId===raceData?.roundId ? Number(initialBoard.current.horses?.[h.id]?.count)||0 : 0);
+                const lastBursts=horses.map(()=>0), queue=[];
+                let showing=false, disposed=false, lastTicker=0;
+                const paintLevel=i=>{ const el=horseRefs.current[i], level=cheerLevel(counts[i]); if(el){el.classList.toggle('cheer-level-2',level===2);el.classList.toggle('cheer-level-3',level>=3);} };
+                horses.forEach((_,i)=>paintLevel(i));
+                const makeText=(tag,cls,text)=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
+                const showNext=()=>{
+                    if(disposed||showing||!queue.length||stageRef.current!=='LIVE'||!cheerBannerRef.current)return;
+                    const {i,count}=queue.shift(), h=horses[i], level=cheerLevel(count);
+                    const el=document.createElement('div');el.className='cheer-banner';el.dataset.horseId=h.id;
+                    el.append(makeText('div','banner-title',`📣 ${['','응원 점화','관중석 대폭발','응원 최고조!'][level] || '뜨거운 응원'} · ${count}회`));
+                    el.append(makeText('div','banner-horse',`${h.emoji} ${h.name}`));
+                    const sponsors=asArray(raceData?.sponsorLeaders?.[h.id]);
+                    el.append(makeText('div','text-xs text-slate-300',sponsors.length ? '함께 달리는 최대 주주' : '함께 응원하는 관중 여러분!'));
+                    const names=document.createElement('div');names.className='banner-names';
+                    sponsors.slice(0,3).forEach((p,rank)=>names.append(makeText('span','',`${['👑','🥈','🥉'][rank]} ${p.name}`)));
+                    el.append(names);cheerBannerRef.current.replaceChildren(el);showing=true;
+                    scheduleEffect(()=>{el.remove();showing=false;showNext();},2600);
+                };
+                const addBanner=(i,count)=>{
+                    const existing=queue.find(v=>v.i===i);if(existing)existing.count=count;else{if(queue.length>=8)queue.shift();queue.push({i,count});}showNext();
+                };
+                const onCheer=e=>{
+                    const {horseId,playerName,count,roundId}=e.detail||{};
+                    if(disposed||roundId!==raceData?.roundId||stageRef.current!=='LIVE')return;
+                    const i=horses.findIndex(h=>h.id===Number(horseId)); if(i<0||!Number.isSafeInteger(count)||count<=counts[i])return;
+                    const oldLevel=cheerLevel(counts[i]), level=cheerLevel(count);counts[i]=count;cheerEffects.current[i]=100;paintLevel(i);
+                    const now=performance.now();
+                    if(cheerTickerRef.current&&playerName&&now-lastTicker>260){
+                        lastTicker=now; const el=makeText('div','text-sm font-black text-yellow-300 bg-black/70 px-3 py-1 rounded-full mb-1 border border-yellow-500/50 shadow-md animate-slide-in',`${playerName} → ${horses[i].name} 📣 ${count}`);
+                        while(cheerTickerRef.current.childElementCount>=3)cheerTickerRef.current.firstChild.remove();
+                        cheerTickerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),2100);
+                    }
+                    const milestone=level>oldLevel || (level>=3&&count%12===0);
+                    if(milestone){addBanner(i,count);raceAccent('crowd',level);}
+                    if(reducedMotion||!particleContainerRef.current)return;
+                    // A classroom's simultaneous tapping cannot grow unbounded particle nodes/timers.
+                    if(particleContainerRef.current.childElementCount<24){
+                        const particle=makeText('div','cheer-particle',level>=2?'✨':horses[i].emoji);
+                        particle.style.left=`${12+Math.random()*76}%`;particleContainerRef.current.appendChild(particle);scheduleEffect(()=>particle.remove(),1200);
+                    }
+                    if(milestone&&horseRefs.current[i]&&now-lastBursts[i]>800){
+                        lastBursts[i]=now;const runner=horseRefs.current[i];
+                        const ring=document.createElement('div');ring.className='cheer-burst-ring';runner.appendChild(ring);scheduleEffect(()=>ring.remove(),950);
+                        const parts=Math.min(10,3+level*2);
+                        for(let n=0;n<parts;n++){
+                            const el=makeText('span','cheer-confetti',n%2?'✦':'✨'), angle=2*Math.PI*n/parts;
+                            el.style.setProperty('--dx',`${Math.cos(angle)*(110+level*40)}px`);el.style.setProperty('--dy',`${Math.sin(angle)*(100+level*30)-80}px`);
+                            runner.appendChild(el);scheduleEffect(()=>el.remove(),1200);
                         }
                     }
                 };
-
-                window.addEventListener('HORSE_CHEER', onCheer);
-                return () => window.removeEventListener('HORSE_CHEER', onCheer);
-            }, [horses, isHost]);
+                window.addEventListener('HORSE_CHEER',onCheer);
+                return()=>{disposed=true;queue.length=0;window.removeEventListener('HORSE_CHEER',onCheer);};
+            },[raceData, isHost]);
 
             useEffect(() => {
-                if(!raceData || !worldRef.current || !containerRef.current) return;
-                
-                playback.current = { startMs: null, lastTs: null, currentTick: 0, lastEvtTick: -1, spurt: false, camX: START_OFFSET };
-                leadTracker.current = { currentLeaderIdx: -1, lastLeadChangeTick: -999 };
-                
-                const totalMs = 18000;
-                const ticks = raceData.timeline.length - 1;
-                const msPerTick = totalMs / ticks;
-                let animId, finishTimer = null, disposed = false;
-                pipElements.current.clear(); if (pipRef.current) pipRef.current.replaceChildren();
-
-                const step = (ts) => {
-                    if(!playback.current.startMs) { playback.current.startMs = ts; playback.current.lastTs = ts; }
-                    
-                    const dt = ts - playback.current.lastTs;
-                    playback.current.lastTs = ts;
-                    let tickDelta = dt / msPerTick;
-                    
-                    const safeTimelineIndex = Math.min(Math.floor(playback.current.currentTick), ticks);
-                    const currentTimelineData = raceData.timeline[safeTimelineIndex] || {};
-                    const pMaxPos = Math.max(...(currentTimelineData.positions || [0]));
-                    const pProgress = pMaxPos / TRACK_LENGTH;
-
-                    if(pProgress > 0.8 && !playback.current.spurt) {
-                        playback.current.spurt = true; 
-                        setIsSpurtCSS(true); 
-                        playSound('dash'); 
-                    }
-
-                    if (pProgress > 0.85 && pProgress < 0.98) {
-                        const cPos = currentTimelineData.positions || [];
-                        const sortedPos = [...cPos].sort((a,b)=>b-a);
-                        const gap1st2nd = sortedPos[0] - (sortedPos[1] || 0);
-                        
-                        if (gap1st2nd < 150) {
-                            tickDelta *= 0.3; 
-                            setIsDramatic(true);
-                        } else {
-                            setIsDramatic(false);
-                        }
-                    } else {
-                        setIsDramatic(false);
-                    }
-
-                    playback.current.currentTick += tickDelta;
-                    let exTick = playback.current.currentTick;
-
-                    if (exTick >= ticks) {
-                        exTick = ticks; cancelAnimationFrame(animId);
-                        if (isHost && !finishTimer) finishTimer = scheduleEffect(() => { if (!disposed) finishCallback.current?.(raceData.roundId); }, 3000);
-                    } else {
-                        animId = requestAnimationFrame(step);
-                    }
-
-                    const t1 = Math.floor(exTick), t2 = Math.min(t1+1, ticks), frac = exTick - t1;
-                    const frame1 = raceData.timeline[t1] || {};
-                    const frame2 = raceData.timeline[t2] || frame1;
-                    
-                    const p1 = frame1.positions?.length ? frame1.positions : horses.map(()=>0);
-                    const p2 = frame2.positions?.length ? frame2.positions : p1;
-                    const spds = frame1.speeds?.length ? frame1.speeds : horses.map(()=>0);
-                    const lats1 = frame1.laterals?.length ? frame1.laterals : horses.map((_,i) => (i - 3.5)*120);
-                    const lats2 = frame2.laterals?.length ? frame2.laterals : lats1;
-                    
-                    const curPos = p1.map((p,i) => p*(1-frac) + p2[i]*frac);
-                    
-                    const activeRunners = curPos.map((pos, i) => ({pos, i})).filter(r => r.pos < TRACK_LENGTH + 50);
-                    const hasFinisher = curPos.some(pos => pos >= TRACK_LENGTH);
-                    let leadPos = hasFinisher ? TRACK_LENGTH + 60 : (activeRunners.length > 0 ? Math.max(...activeRunners.map(r => r.pos)) : TRACK_LENGTH + 60);
-
-                    const leadData = getTrackPos(leadPos, 0);
-                    playback.current.camX += (leadData.x - playback.current.camX) * 0.15;
-                    
-                    const cw = containerRef.current.clientWidth;
-                    const ch = containerRef.current.clientHeight;
-                    const tx = (cw * 0.35) - (playback.current.camX * ZOOM_SCALE);
-                    const ty = (ch / 2) - (TRACK_CY * ZOOM_SCALE);
-                    worldRef.current.style.transform = `translate(${tx}px, ${ty}px) scale(${ZOOM_SCALE})`;
-
-                    const wantedPips = new Set(); 
-
-                    const curRanks = new Array(horses.length);
-                    const curStandings = curPos.map((p,i)=>({i,p})).sort((a,b)=> {
-                        const af = a.p >= TRACK_LENGTH, bf = b.p >= TRACK_LENGTH;
-                        if (af && bf) return raceData.ranks.indexOf(a.i) - raceData.ranks.indexOf(b.i);
-                        if (af !== bf) return af ? -1 : 1;
-                        return b.p - a.p;
-                    });
-                    curStandings.forEach((s, r) => curRanks[s.i] = r);
-                    
-                    let newLeaderIdx = curStandings[0].i;
-                    let progress = leadPos / TRACK_LENGTH;
-
-                    if (!hasFinisher && progress > 0.1 && newLeaderIdx !== leadTracker.current.currentLeaderIdx && (t1 - leadTracker.current.lastLeadChangeTick) > 25) {
-                        if (leadTracker.current.currentLeaderIdx !== -1 && evtContainerRef.current) {
-                            const el = document.createElement('div');
-                            el.className = `p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES.lead}`;
-                            el.innerText = `${horses[newLeaderIdx].name}: ${getMsg(EVENT_MSGS.lead)}`;
-                            evtContainerRef.current.appendChild(el);
-                            scheduleEffect(() => el.remove(), 3000);
-                        }
-                        leadTracker.current.currentLeaderIdx = newLeaderIdx;
-                        leadTracker.current.lastLeadChangeTick = t1;
-                    }
-
-                    curPos.forEach((pos, i) => {
-                        cheerEffects.current[i] *= 0.9; 
-                        const visualPos = pos;
-                        const lat = lats1[i]*(1-frac) + lats2[i]*frac;
-                        const { x, y } = getTrackPos(visualPos, lat);
-                        
-                        if(horseRefs.current[i]) {
-                            horseRefs.current[i].style.left = `${x}px`;
-                            horseRefs.current[i].style.top = `${y}px`;
-                            horseRefs.current[i].style.zIndex = Math.floor(y + 100);
-
-                            const finishLabel = horseRefs.current[i].querySelector('.runner-finish-rank');
-                            if (finishLabel) { const finished = pos >= TRACK_LENGTH; finishLabel.hidden = !finished; if (finished) finishLabel.textContent = `${raceData.ranks.indexOf(i) + 1}위 골인`; }
-                            const icon = horseRefs.current[i].querySelector('.runner-icon');
-                            if(icon) {
-                                if(spds[i] > 10 || cheerEffects.current[i] > 10) icon.classList.add('active');
-                                else icon.classList.remove('active');
-                                
-                                if (cheerEffects.current[i] > 30) {
-                                    icon.style.filter = 'drop-shadow(0 0 40px rgba(250,204,21,1)) brightness(1.3)';
-                                } else {
-                                    icon.style.filter = ''; 
-                                }
-                            }
-                        }
-
-                        const screenX = tx + (x * ZOOM_SCALE);
-                        if (screenX < -150) { 
-                            wantedPips.add(i);
-                            if (pipRef.current) {
-                                let entry = pipElements.current.get(i);
-                                if (!entry) {
-                                    const el = document.createElement('div'); el.className = 'pip-item'; el.dataset.horseId = horses[i].id;
-                                    const emoji = document.createElement('div'); emoji.className = 'pip-emoji'; emoji.textContent = horses[i].emoji;
-                                    const info = document.createElement('div'); info.className = 'pip-info';
-                                    const name = document.createElement('div'); name.className = 'pip-name'; name.textContent = horses[i].name;
-                                    const distance = document.createElement('div'); distance.className = 'pip-dist';
-                                    info.append(name, distance); el.append(emoji, info); pipRef.current.appendChild(el);
-                                    entry = { el, distance }; pipElements.current.set(i, entry);
-                                }
-                                const label = pos >= TRACK_LENGTH ? `${raceData.ranks.indexOf(i) + 1}위 골인` : `${Math.floor(visualPos)}m`;
-                                if (entry.distance.textContent !== label) entry.distance.textContent = label;
-                            }
-                        }
-                        if(spds[i] > 60 && Math.random() < 0.1 && !isDramatic) createDust(x, y); 
-                    });
-
-                    if(hudDistRef.current) hudDistRef.current.innerText = `${Math.min(Math.floor(Math.max(...curPos)), TRACK_LENGTH)}m`;
-                    pipElements.current.forEach((entry, key) => { if (!wantedPips.has(key)) { entry.el.remove(); pipElements.current.delete(key); } });
-
-                    const evs = frame1.events || [];
-                    if (t1 !== playback.current.lastEvtTick && evs.length > 0) {
-                        evs.forEach(e => {
-                            if(evtContainerRef.current) {
-                                const el = document.createElement('div');
-                                el.className = `p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES[e.type] || EVENT_STYLES.normal}`;
-                                el.innerText = `${horses[e.hIdx].name}: ${e.msg}`;
-                                evtContainerRef.current.appendChild(el);
-                                scheduleEffect(() => el.remove(), 2500);
-                            }
-                        });
-                        playback.current.lastEvtTick = t1;
-                    }
+                if(!raceData?.timeline?.length||!worldRef.current||!containerRef.current)return;
+                playback.current={lastTs:null,currentTick:0,lastEvtTick:-1,spurt:false,camX:START_OFFSET};
+                leadTracker.current={currentLeaderIdx:-1,lastLeadChangeTick:-999}; stageRef.current='LIVE';setFinishStage('LIVE');setIsSpurtCSS(false);setIsDramatic(false);
+                const ticks=raceData.timeline.length-1, msPerTick=BASE_RACE_MS/Math.max(1,ticks), plan=finishPlan;
+                let animId=null, finishTimer=null, disposed=false, settled=false, stageElapsed=0;
+                const setStage=stage=>{stageRef.current=stage;stageElapsed=0;setFinishStage(stage);};
+                const finish=()=>{if(disposed||settled)return;settled=true;if(isHost)finishCallback.current?.(raceData.roundId);};
+                const beginCapture=()=>{
+                    setStage('CAPTURE');setIsDramatic(false);raceAccent('photo');
+                    evtContainerRef.current?.replaceChildren();cheerTickerRef.current?.replaceChildren();cheerBannerRef.current?.replaceChildren();particleContainerRef.current?.replaceChildren();
+                    if(isHost)presentationCallback.current?.('FINISH',raceData.roundId);
                 };
-                animId = requestAnimationFrame(step);
-                return () => { disposed = true; cancelAnimationFrame(animId); clearTimeout(finishTimer); pipElements.current.clear(); };
-            }, [raceData, isHost]);
+                pipElements.current.clear();pipRef.current?.replaceChildren();
+                const step=ts=>{
+                    if(disposed||settled)return;
+                    const p=playback.current, dt=p.lastTs===null?0:Math.min(100,Math.max(0,ts-p.lastTs));p.lastTs=ts;
+                    const stage=stageRef.current;
+                    if(['CAPTURE','REPLAY','PHOTO','VERDICT'].includes(stage)){
+                        stageElapsed+=dt;
+                        if(stage==='CAPTURE'&&stageElapsed>=550)setStage(reducedMotion?'PHOTO':'REPLAY');
+                        else if(stage==='REPLAY'&&stageElapsed>=2150)setStage('PHOTO');
+                        else if(stage==='PHOTO'&&stageElapsed>=1050){setStage('VERDICT');raceAccent('verdict');}
+                        else if(stage==='VERDICT'&&stageElapsed>=2200){finish();return;}
+                        animId=requestAnimationFrame(step);return;
+                    }
+                    let tickDelta=dt/msPerTick;
+                    const before=sampleRaceFrame(raceData,p.currentTick), pMaxPos=Math.max(...before.positions,0), progress=pMaxPos/TRACK_LENGTH;
+                    const cw=containerRef.current.clientWidth, ch=containerRef.current.clientHeight;
+                    const finishZoom=Math.min(ZOOM_SCALE,Math.max(.20,(ch-115)/1080));
+                    const cameraRange=Math.min(180,cw*.52/(VISUAL_SCALE*finishZoom));
+                    if(plan?.close&&stageRef.current==='LIVE'&&pMaxPos>=TRACK_LENGTH-cameraRange&&p.currentTick<plan.finishTick){setStage('APPROACH');setIsDramatic(false);}
+                    if(progress>.8&&!p.spurt){p.spurt=true;setIsSpurtCSS(true);playSound('dash');}
+                    const approach=stageRef.current==='APPROACH';
+                    if(approach)tickDelta*=reducedMotion?1:.32;
+                    else if(!plan?.close&&progress>.85&&progress<.98){
+                        const sorted=[...before.positions].sort((a,b)=>b-a), close=(sorted[0]-(sorted[1]||0))<150;
+                        if(close&&!reducedMotion)tickDelta*=.3;setIsDramatic(close&&!reducedMotion);
+                    }else setIsDramatic(false);
+                    let exTick=Math.min(ticks,p.currentTick+tickDelta), capture=!!(plan?.close&&exTick>=plan.finishTick);
+                    if(capture)exTick=plan.finishTick;
+                    p.currentTick=exTick;
+                    const t1=Math.floor(exTick), frame=raceData.timeline[t1]||{}, cur=sampleRaceFrame(raceData,exTick), curPos=cur.positions, spds=frame.speeds||horses.map(()=>0);
+                    const hasFinisher=curPos.some(pos=>pos>=TRACK_LENGTH), leadPos=hasFinisher?TRACK_LENGTH+60:Math.max(...curPos,0);
+                    const leadData=getTrackPos(leadPos,0);
+                    p.camX+=(leadData.x-p.camX)*(1-Math.pow(.85,dt/16.667));
+                    const zoom=approach||capture?finishZoom:ZOOM_SCALE;
+                    const tx=approach||capture?cw*.72-(START_OFFSET+TRACK_LENGTH*VISUAL_SCALE)*zoom:cw*.35-p.camX*zoom;
+                    const ty=ch/2-TRACK_CY*zoom;
+                    worldRef.current.style.transform=`translate(${tx}px, ${ty}px) scale(${zoom})`;
+                    const standings=curPos.map((pos,i)=>({pos,i})).sort((a,b)=>{
+                        const af=a.pos>=TRACK_LENGTH,bf=b.pos>=TRACK_LENGTH;
+                        return af&&bf?raceData.ranks.indexOf(a.i)-raceData.ranks.indexOf(b.i):af!==bf?(af?-1:1):b.pos-a.pos;
+                    });
+                    const newLeader=standings[0]?.i;
+                    if(!capture&&!hasFinisher&&!approach&&progress>.1&&newLeader!==leadTracker.current.currentLeaderIdx&&t1-leadTracker.current.lastLeadChangeTick>25){
+                        if(leadTracker.current.currentLeaderIdx!==-1&&evtContainerRef.current){const el=document.createElement('div');el.className=`p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES.lead}`;el.textContent=`${horses[newLeader].name}: ${getMsg(EVENT_MSGS.lead)}`;evtContainerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),3000);}
+                        leadTracker.current={currentLeaderIdx:newLeader,lastLeadChangeTick:t1};
+                    }
+                    const wanted=new Set();
+                    curPos.forEach((pos,i)=>{
+                        cheerEffects.current[i]=(cheerEffects.current[i]||0)*Math.pow(.9,dt/16.667);
+                        const {x,y}=getTrackPos(pos,cur.laterals[i]||0), runner=horseRefs.current[i];
+                        if(runner){
+                            runner.style.left=`${x}px`;runner.style.top=`${y}px`;runner.style.zIndex=Math.floor(y+100);
+                            const label=runner.querySelector('.runner-finish-rank');
+                            if(label){const finished=pos>=TRACK_LENGTH&&!plan?.close;label.hidden=!finished;if(finished)label.textContent=`${raceData.ranks.indexOf(i)+1}위 골인`;}
+                            const icon=runner.querySelector('.runner-icon');if(icon){icon.classList.toggle('active',!capture&&(spds[i]>10||cheerEffects.current[i]>10));icon.style.filter=cheerEffects.current[i]>30&&!approach&&!capture?'drop-shadow(0 0 35px rgba(250,204,21,.85)) brightness(1.2)':'';}
+                        }
+                        if(tx+x*zoom< -150&&!approach&&!capture){
+                            wanted.add(i);if(pipRef.current){
+                                let entry=pipElements.current.get(i);
+                                if(!entry){const el=document.createElement('div');el.className='pip-item';el.dataset.horseId=horses[i].id;const emoji=document.createElement('div');emoji.className='pip-emoji';emoji.textContent=horses[i].emoji;const info=document.createElement('div');info.className='pip-info';const name=document.createElement('div');name.className='pip-name';name.textContent=horses[i].name;const distance=document.createElement('div');distance.className='pip-dist';info.append(name,distance);el.append(emoji,info);pipRef.current.appendChild(el);entry={el,distance};pipElements.current.set(i,entry);}
+                                const text=pos>=TRACK_LENGTH?`${raceData.ranks.indexOf(i)+1}위 골인`:`${Math.floor(pos)}m`;if(entry.distance.textContent!==text)entry.distance.textContent=text;
+                            }
+                        }
+                        if(spds[i]>60&&Math.random()<.1&&!approach&&!capture)createDust(x,y);
+                    });
+                    if(hudDistRef.current)hudDistRef.current.textContent=`${Math.min(Math.floor(Math.max(...curPos,0)),TRACK_LENGTH)}m`;
+                    pipElements.current.forEach((entry,key)=>{if(!wanted.has(key)){entry.el.remove();pipElements.current.delete(key);}});
+                    if(!approach&&!capture&&t1!==p.lastEvtTick&&(frame.events||[]).length){
+                        (frame.events||[]).forEach(e=>{if(evtContainerRef.current&&horses[e.hIdx]){while(evtContainerRef.current.childElementCount>=4)evtContainerRef.current.firstChild.remove();const el=document.createElement('div');el.className=`p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES[e.type]||EVENT_STYLES.normal}`;el.textContent=`${horses[e.hIdx].name}: ${e.msg}`;evtContainerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),2500);}});p.lastEvtTick=t1;
+                    }
+                    if(capture){beginCapture();animId=requestAnimationFrame(step);}
+                    else if(exTick>=ticks){if(!finishTimer)finishTimer=scheduleEffect(finish,3000);}
+                    else animId=requestAnimationFrame(step);
+                };
+                animId=requestAnimationFrame(step);
+                return()=>{disposed=true;cancelAnimationFrame(animId);if(finishTimer){clearTimeout(finishTimer);effectTimers.current.delete(finishTimer);}pipElements.current.clear();};
+            },[raceData,isHost,finishPlan,reducedMotion]);
 
             if(!raceData) return <div className="h-full flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-white"></div></div>;
 
@@ -2093,11 +2263,11 @@
             const trackColorClass = `track-${raceData.weather.id}`;
 
             return (
-                <div id="race-track-container" ref={containerRef} className={`${isSpurtCSS ? 'camera-shake slow-motion' : ''} ${isDramatic ? 'is-dramatic' : ''}`}>
+                <div id="race-track-container" ref={containerRef} data-finish-stage={finishStage} className={`${isSpurtCSS ? 'camera-shake slow-motion' : ''} ${isDramatic ? 'is-dramatic' : ''} ${finishStage !== 'LIVE' ? 'finish-mode' : ''}`}>
                     {weatherClass && <div className={`weather-layer ${weatherClass}`}></div>}
                     <div className="dramatic-overlay"></div>
 
-                    <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
+                    <div className="race-distance-hud absolute top-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
                         <div className="bg-black/80 px-10 py-3 rounded-2xl border-2 border-yellow-500 shadow-2xl text-center transition-all duration-500">
                             <div className="text-yellow-400 font-bold text-lg tracking-widest mb-[-8px]">🏁 GOAL: {TRACK_LENGTH}m</div>
                             <div ref={hudDistRef} className="text-white font-black text-6xl font-display drop-shadow-md">0m</div>
@@ -2110,8 +2280,12 @@
                         {isDramatic && <div className="mt-4 text-red-500 font-black text-2xl animate-pulse font-display drop-shadow-md">🔥 숨 막히는 초접전! 🔥</div>}
                     </div>
 
-                    {isHost && <div ref={cheerTickerRef} className="absolute top-8 right-8 z-40 flex flex-col items-end pointer-events-none"></div>}
+                    {isHost && <div ref={cheerTickerRef} className="race-cheer-ticker absolute top-8 right-8 z-40 flex flex-col items-end pointer-events-none"></div>}
 
+                    {finishStage !== 'LIVE' && <><div className="finish-rail top">🏁 FINAL DUEL · 결승선 고정 카메라</div><div className="finish-rail bottom"/></>}
+                    {finishStage === 'CAPTURE' && <><div className="finish-capture-label">📸 PHOTO FINISH</div>{!reducedMotion && <div className="finish-flash"/>}</>}
+                    {['REPLAY','PHOTO','VERDICT'].includes(finishStage) && finishPlan && <PhotoFinishPanel race={raceData} horses={horses} plan={finishPlan} mode={finishStage}/>}
+                    <div ref={cheerBannerRef} className="cheer-banner-slot" aria-live="polite"/>
                     <div id="pip-container" ref={pipRef}></div>
                     {isSpurtCSS && !isDramatic && <div id="slow-mo-overlay"></div>}
 
@@ -2153,7 +2327,7 @@
                         })}
                     </div>
 
-                    <div ref={evtContainerRef} className="absolute bottom-10 left-6 z-40 pointer-events-none flex flex-col items-start w-[600px] overflow-hidden font-display tracking-wide"></div>
+                    <div ref={evtContainerRef} className="race-commentary absolute bottom-10 left-6 z-40 pointer-events-none flex flex-col items-start w-[600px] overflow-hidden font-display tracking-wide"></div>
                     
                     <div ref={particleContainerRef} className="absolute inset-0 pointer-events-none z-50 overflow-hidden"></div>
                 </div>
