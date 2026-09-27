@@ -141,39 +141,45 @@
         @keyframes cheerConfetti { from { transform:translate(0,0) rotate(0); opacity:1; } to { transform:translate(var(--dx),var(--dy)) rotate(110deg); opacity:0; } }
         .runner.cheer-level-2 .runner-name-tag { border-color:#facc15; }
         .runner.cheer-level-3 .runner-name-tag { border-color:#f9a8d4; box-shadow:0 0 15px #c026d166; }
-        .finish-mode .race-distance-hud { opacity:0; pointer-events:none; }
-        .finish-mode .weather-layer { opacity:.22; }
-        .finish-mode #pip-container, .finish-mode .race-commentary, .finish-mode .race-cheer-ticker, .finish-mode .cheer-banner-slot { opacity:0; }
-        .finish-mode .runner-icon { animation-duration:.65s; }
-        .finish-rail { position:absolute; left:0; right:0; height:42px; background:#020617e8; z-index:60; pointer-events:none; }
-        .finish-rail.top { top:0; display:flex; align-items:center; justify-content:center; gap:12px; color:#fde68a; font-weight:900; font-size:13px; letter-spacing:.12em; }
-        .finish-rail.bottom { bottom:0; height:20px; }
-        .finish-flash { position:absolute; inset:0; background:#e0f2fe; pointer-events:none; z-index:72; animation:finishFlash .5s ease-out forwards; }
-        @keyframes finishFlash { from { opacity:.6; } to { opacity:0; } }
-        .finish-panel { color:#f8fafc; position:absolute; inset:0; z-index:70; display:flex; flex-direction:column; padding:clamp(14px,2.2vw,30px); background:linear-gradient(135deg,#020617fa,#102c3df7); overflow-y:auto; }
-        .finish-panel-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-        .finish-panel-kicker { color:#67e8f9; font-size:12px; letter-spacing:.18em; font-weight:900; }
-        .finish-panel-title { font-family:'Black Han Sans',sans-serif; font-size:clamp(24px,3.5vw,42px); color:#f8fafc; line-height:1.2; margin-top:5px; }
-        .finish-badge { border:1px solid #facc15; border-radius:7px; color:#fde047; font-size:12px; padding:6px 10px; font-weight:900; white-space:nowrap; }
-        .finish-film { flex:1; min-height:180px; max-height:380px; position:relative; overflow:hidden; border:1px solid #475569; border-radius:15px; background:repeating-linear-gradient(90deg,#0f2531 0,#0f2531 38px,#132e3b 39px,#132e3b 40px); }
-        .finish-film-line { position:absolute; left:68%; top:0; bottom:0; width:3px; background:#fde047; z-index:9; box-shadow:0 0 12px #facc1570; }
-        .finish-film-line span { position:absolute; top:6px; left:9px; color:#fef08a; font:900 10px monospace; white-space:nowrap; }
-        .finish-film-lane { position:absolute; left:0; right:0; border-bottom:1px solid #64748b55; }
-        .finish-film-runner { position:absolute; top:50%; left:0; width:0; height:0; will-change:transform; z-index:5; }
-        .finish-film-emoji { position:absolute; font-size:clamp(42px,6vw,72px); width:90px; height:90px; left:-45px; top:-53px; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 7px 6px #0008); }
-        .finish-reference { position:absolute; left:-5px; top:22px; width:10px; height:10px; background:#e0f2fe; border:2px solid #020617; transform:rotate(45deg); z-index:10; }
-        .finish-film-runner.winner .finish-reference { background:#fde047; box-shadow:0 0 12px #facc15; }
-        .finish-film-name { position:absolute; left:10px; bottom:7px; font-size:clamp(11px,1.5vw,16px); font-weight:900; padding:3px 7px; background:#020617c9; border-radius:5px; max-width:53%; overflow-wrap:anywhere; z-index:10; }
-        .finish-film-rank { position:absolute; right:12px; bottom:7px; color:#fde047; font-size:14px; font-weight:900; z-index:10; }
-        .finish-caption { display:flex; justify-content:space-between; flex-wrap:wrap; gap:5px 16px; color:#94a3b8; font-size:11px; line-height:1.6; margin:9px 0; }
-        .finish-verdict { padding:12px 16px; border:1px solid #ca8a04; border-radius:13px; background:linear-gradient(100deg,#713f1255,#0004); min-height:62px; display:flex; gap:12px; align-items:center; }
-        .finish-verdict strong { color:#fef08a; font-size:clamp(18px,2.4vw,30px); font-weight:900; overflow-wrap:anywhere; }
-        .finish-verdict small { display:block; color:#cbd5e1; margin-top:4px; line-height:1.4; }
-        .finish-capture-label { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%); z-index:69; background:#020617df; border:1px solid #facc15; padding:18px 30px; border-radius:12px; color:#fde047; font-weight:900; font-size:clamp(20px,3vw,36px); white-space:nowrap; }
+        /* Replay stays inside the real track. No second race/diagram is rendered. */
+        .race-distance-hud { top:8px; pointer-events:none; }
+        .race-timeline-pose { animation:none!important; transition:filter .2s!important; }
+        .replay-mode .race-distance-hud, .all-finished .race-distance-hud { opacity:0; }
+        .replay-mode #pip-container, .replay-mode .race-commentary,
+        .replay-mode .race-cheer-ticker, .replay-mode .cheer-banner-slot,
+        .all-finished .race-commentary, .all-finished .cheer-banner-slot { visibility:hidden; }
+        .replay-mode .runner-name-tag { border-color:#cbd5e1; box-shadow:0 6px 15px #0008; }
+        .replay-mode .runner .sponsor { display:none; }
+        .replay-mode .weather-layer { opacity:.65; }
+        .replay-freeze .weather-layer { animation-play-state:paused!important; }
+        .replay-freeze .runner-icon { transition:none!important; }
+        .replay-broadcast { position:absolute; top:0; left:0; right:0; z-index:65; pointer-events:none; padding:10px 20px 20px; display:flex; align-items:center; justify-content:space-between; gap:14px; background:linear-gradient(#020617e8,#02061799 65%,transparent); }
+        .replay-brand { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+        .replay-brand strong { color:#fff; font-size:clamp(25px,3vw,36px); font-weight:900; font-style:italic; letter-spacing:.015em; line-height:1; text-shadow:0 2px 10px #000b; }
+        .replay-mark { width:7px; height:25px; background:#fbbf24; transform:skew(-14deg); box-shadow:5px 0 #fbbf2444; margin-right:4px; }
+        .replay-info { display:flex; flex-direction:column; align-items:flex-end; gap:3px; min-width:0; color:#f8fafc; text-align:right; font-weight:800; font-size:clamp(11px,1.5vw,14px); }
+        .replay-info small { color:#cbd5e1; font-size:10px; font-weight:600; }
+        .replay-progress { position:absolute; left:0; right:0; bottom:0; height:3px; background:#fbbf2420; }
+        .replay-progress span { display:block; height:100%; background:#fbbf24; transform-origin:left; transform:scaleX(0); }
+        .all-finished-label { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:65; padding:8px 20px; border-radius:99px; background:#020617d9; border:1px solid #94a3b8; color:#f8fafc; font-size:16px; font-weight:900; pointer-events:none; white-space:nowrap; }
+        .replay-bottom { position:absolute; left:0; right:0; bottom:0; z-index:65; padding:20px 20px 13px; background:linear-gradient(transparent,#020617b3 30%,#020617eb); color:#f8fafc; pointer-events:none; }
+        .replay-bottom-title { font-size:clamp(14px,2.1vw,24px); line-height:1.35; font-weight:900; color:#fef3c7; overflow-wrap:anywhere; }
+        .replay-bottom-sub { color:#cbd5e1; font-size:clamp(10px,1.2vw,12px); line-height:1.6; margin-top:4px; }
+        .replay-finish-details[hidden] { display:none; }
+        .replay-flash { position:absolute; inset:0; background:#f8fafc; z-index:64; pointer-events:none; animation:replayShutter .32s ease-out forwards; }
+        @keyframes replayShutter { 0% { opacity:.30; } 100% { opacity:0; } }
+        .runner-timing-point { position:absolute; left:50%; bottom:6px; width:10px; height:10px; margin-left:-5px; transform:rotate(45deg); background:#f8fafc; border:2px solid #1e293b; box-shadow:0 0 0 2px #ffffff66; z-index:30; }
+        .replay-mode .runner-timing-point { width:15px; height:15px; margin-left:-7.5px; background:#dbeafe; }
+        .replay-freeze .runner.replay-winner .runner-timing-point { background:#fbbf24; box-shadow:0 0 0 3px #f8fafc,0 0 18px #fde047; }
+        .replay-freeze .runner.replay-winner .runner-name-tag { color:#fef3c7; border-color:#fbbf24; }
+        .track-finish-reference { opacity:0; }
+        .replay-mode .track-finish-reference { opacity:1; }
+        @media(max-width:640px) { .replay-broadcast { padding:10px 12px 16px; } .replay-bottom { padding:18px 12px 10px; } .replay-info small { font-size:9px; } }
+        @media(prefers-reduced-motion:reduce) { .replay-flash { display:none; } }
         .finish-summary { border:1px solid #64748b; border-radius:12px; padding:12px 16px; margin:0 auto 20px; background:#0f172ab3; max-width:580px; text-align:center; }
-        @media(max-width:640px) { .weather-card { padding:9px 12px; } .weather-card p { flex-basis:100%; font-size:11px; } .student-bet-summary { padding:10px; } .finish-panel { padding:12px; } .finish-film { min-height:200px; } .cheer-banner-slot { bottom:22px; } }
-        @media(max-height:650px) { .race-host-shell { padding:8px; } .race-host-shell > div:first-child { padding:8px 14px; margin-bottom:8px; } .finish-film { min-height:140px; } .finish-panel-title { font-size:24px; } .finish-verdict { padding:8px 12px; } }
-        @media(prefers-reduced-motion:reduce) { .cheer-banner,.cheer-burst-ring,.cheer-confetti,.finish-flash { animation-duration:.01ms!important; } .cheer-meter > span { transition:none; } }
+        @media(max-width:640px) { .weather-card { padding:9px 12px; } .weather-card p { flex-basis:100%; font-size:11px; } .student-bet-summary { padding:10px; } .cheer-banner-slot { bottom:22px; } }
+        @media(max-height:650px) { .race-host-shell { padding:8px; } .race-host-shell > div:first-child { padding:8px 14px; margin-bottom:8px; } }
+        @media(prefers-reduced-motion:reduce) { .cheer-banner,.cheer-burst-ring,.cheer-confetti,.replay-flash { animation-duration:.01ms!important; } .cheer-meter > span { transition:none; } }
     </style>
 </head>
 <body>
@@ -467,6 +473,8 @@
         const BET_CLOSE_MS = 5000;
         const BASE_RACE_MS = 18000;
         const PHOTO_GAP_MS = 140;
+        // All durations are presentation-only. Recorded movement and settlement stay untouched.
+        const REPLAY_TIMING = Object.freeze({ liveHold:800, intro:650, leadIn:1150, speed:0.30, freeze:5200, plainHold:3000 });
         const CHEER_THRESHOLDS = [5, 12, 24];
         const RACE_TYPES = {
             early: { name:'도주형', note:'초반 가속에 강함 · 선두 격차를 벌리면 대도주' },
@@ -535,9 +543,9 @@
             const finishTick=Math.max(0,Math.min(ticks,times[first]-1));
             const close=Number.isFinite(gap)&&gap<=PHOTO_GAP_MS&&times[first]<99999&&times[second]<99999;
             const contenders=race.ranks.slice(0,3).filter((i,r)=>r<2||(times[i]-times[first])*msPerTick<=PHOTO_GAP_MS*1.5);
-            // Lane display order must not reveal the eventual ranking before the verdict.
-            const displayOrder=[...contenders].sort((a,b)=>a-b);
-            return {close,gapMs:gap,first,second,times,finishTick,contenders,displayOrder,msPerTick,replayStart:Math.max(0,finishTick-850/msPerTick),replayEnd:Math.min(ticks,Math.max(...contenders.map(i=>times[i]-1))+160/msPerTick)};
+            const allFinished = race.ranks.every(i => Number.isFinite(times[i]) && times[i] < 99999 && frames[ticks]?.positions?.[i] >= race.distance);
+            return { close, gapMs:gap, first, second, times, finishTick, contenders, msPerTick, allFinished,
+                replayStart:Math.max(0,finishTick-REPLAY_TIMING.leadIn/msPerTick), replayEnd:finishTick };
         };
         const finishGapLabel = ms => ms<.000001?'동시 통과':ms<1?'0.001초 미만 차':`${(ms/1000).toFixed(3)}초 차`;
         let lastCrowdSound=0;
@@ -559,32 +567,31 @@
                 }
             } catch(_) {}
         };
-        function PhotoFinishPanel({ race, horses, plan, mode }) {
-            const filmRef=useRef(null), markerRefs=useRef({});
-            useEffect(()=>{
-                let id=null, last=null, elapsed=0, disposed=false;
-                const paint=tick=>{
-                    const frame=sampleRaceFrame(race,tick), width=filmRef.current?.clientWidth||600;
-                    // One shared distance scale for every lane; positions are never adjusted to fake closeness.
-                    const start=sampleRaceFrame(race,plan.replayStart), back=Math.max(130,...plan.contenders.map(i=>race.distance-start.positions[i]));
-                    const frozen=sampleRaceFrame(race,plan.finishTick), closeSpan=Math.max(6,...plan.contenders.map(i=>Math.abs(race.distance-frozen.positions[i])))*1.35;
-                    const scale=mode==='REPLAY'?(width*.56)/back:(width*.46)/closeSpan;
-                    plan.displayOrder.forEach(i=>{const el=markerRefs.current[i]; if(el) el.style.transform=`translateX(${width*.68+(frame.positions[i]-race.distance)*scale}px)`;});
-                };
-                const step=ts=>{if(disposed)return; if(last===null)last=ts;elapsed+=Math.min(100,Math.max(0,ts-last));last=ts; const fraction=Math.min(1,elapsed/1900);paint(mode==='REPLAY'?plan.replayStart+(plan.replayEnd-plan.replayStart)*fraction:plan.finishTick);if(mode==='REPLAY'&&fraction<1)id=requestAnimationFrame(step);};
-                paint(mode==='REPLAY'?plan.replayStart:plan.finishTick); id=requestAnimationFrame(step);
-                const resize=()=>paint(mode==='REPLAY'?plan.replayStart+(plan.replayEnd-plan.replayStart)*Math.min(1,elapsed/1900):plan.finishTick);
-                window.addEventListener('resize',resize); return()=>{disposed=true;cancelAnimationFrame(id);window.removeEventListener('resize',resize);};
-            },[race,plan,mode]);
-            const verdict=mode==='VERDICT';
-            return <div className="finish-panel" data-testid="photo-panel" data-mode={mode}>
-                <div className="finish-panel-head"><div><div className="finish-panel-kicker">{mode==='REPLAY'?'SLOW REPLAY · 실제 경주 기록':'PHOTO FINISH · 결승점 확대 판정'}</div><div className="finish-panel-title">{verdict?'승부가 갈렸습니다!':mode==='REPLAY'?'마지막 순간을 다시 봅니다':'누가 먼저 통과했을까요?'}</div></div><span className="finish-badge">{verdict?'판정 확정':mode==='REPLAY'?'슬로모션':'결승 순간 정지'}</span></div>
-                <div className="finish-film" ref={filmRef}><div className="finish-film-line"><span>FINISH</span></div>{plan.displayOrder.map((idx,row)=>{const h=horses[idx], rank=race.ranks.indexOf(idx)+1; return <div key={h.id} className="finish-film-lane" style={{top:`${row*100/plan.displayOrder.length}%`,height:`${100/plan.displayOrder.length}%`}}><div className={`finish-film-runner ${verdict&&idx===plan.first?'winner':''}`} ref={el=>markerRefs.current[idx]=el} data-runner-index={idx}><span className="finish-film-emoji">{h.img?<img src={h.img} alt=""/>:<span style={{display:'inline-block',transform:h.id!==12&&h.id!==21?'scaleX(-1)':''}}>{h.emoji}</span>}</span><span className="finish-reference"/></div><div className="finish-film-name">{h.emoji} {h.name}</div>{verdict&&<div className="finish-film-rank">{rank}위</div>}</div>;})}</div>
-                <div className="finish-caption"><span>◆ 아래의 기준점이 결승선을 통과한 순서로 판정합니다.</span><span>이모지 그림 크기는 판정과 무관 · 동일한 기록 재생</span></div>
-                <div className="finish-verdict" aria-live="polite">{verdict?<><span className="text-4xl">🏆</span><div><strong>{horses[plan.first]?.name} 우승!</strong><small>{finishGapLabel(plan.gapMs)} · 기본 재생 속도로 환산한 시간차{plan.gapMs<.000001?' · 동시 통과는 기존 판정 순서 적용':''}</small></div></>:<div className="font-bold text-slate-300">{mode==='REPLAY'?'같은 결승 구간을 확대 재생하고 있습니다.':'첫 주자의 기준점이 결승선에 닿은 정확한 순간입니다.'}<small>확정 순위와 당첨금은 기존 경주 기록을 그대로 사용합니다.</small></div>}</div>
-            </div>;
-        }
-        function FinishSummary({ race, horses }) { const p=finishPresentation(race); if(!p?.close)return null; return <div className="finish-summary"><b className="text-yellow-300">📸 사진 판정 · {horses[p.first]?.name} 우승</b><div className="text-xs text-slate-300 mt-1">{finishGapLabel(p.gapMs)} · 기본 재생 환산 · 기존 결승 통과 기록 기준</div></div>; }
+        // Replay camera uses one uniform world scale. Lanes/runner positions are never rearranged.
+        const replayCamera = (race, plan, width, height, positions) => {
+            const capture = sampleRaceFrame(race, plan.finishTick);
+            const lat = plan.contenders.map(i => capture.laterals[i] || 0);
+            const low = Math.min(...lat), high = Math.max(...lat);
+            const top = 76, bottom = 90, usableHeight = Math.max(120, height-top-bottom);
+            const behind = Math.max(1, ...plan.contenders.map(i => (race.distance-capture.positions[i])*15));
+            const zoom = Math.max(.10, Math.min(.72, usableHeight/(high-low+280), (width*.64-45)/(behind+130)));
+            const group = plan.contenders.map(i=>positions[i]), lead = Math.max(...group);
+            const finishX = 1000+race.distance*15, leadX = 1000+lead*15;
+            const packSpan = (lead-Math.min(...group))*15*zoom;
+            const followAnchor = Math.max(width*.38,Math.min(width*.67,packSpan+95));
+            const follow = followAnchor-leadX*zoom, locked = width*.73-finishX*zoom;
+            // Smooth maximum: continuous tracking, then a gentle, fully stationary finish camera.
+            const band = Math.min(60,width*.06), blend = Math.max(0,band-Math.abs(follow-locked));
+            const tx = Math.max(follow,locked)+blend*blend/(4*band);
+            const ty = top+usableHeight*.5-(4000+(low+high)*.5-10)*zoom;
+            return { tx, ty, zoom };
+        };
+        const recordedRunnerPose = (tick, msPerTick, index, moving) => {
+            if (!moving) return 'translateY(0px) scaleY(1)';
+            const phase = (tick*msPerTick+index*37)/400*2*Math.PI, wave = (1-Math.cos(phase))*.5;
+            return `translateY(${-25*wave}px) scaleY(${.95+.10*wave})`;
+        };
+        function FinishSummary({ race, horses }) { const p=finishPresentation(race); if(!p?.close)return null; return <div className="finish-summary"><b className="text-yellow-300">📸 결승 순간 리플레이 · {horses[p.first]?.name} 우승</b><div className="text-xs text-slate-300 mt-1">{finishGapLabel(p.gapMs)} · 기본 재생 환산 · 기존 결승 통과 기록 기준</div></div>; }
 
         function AvatarDisplay({ avatarStr, sizeClasses }) {
             if(!avatarStr) return <div className={`flex items-center justify-center bg-slate-700 rounded-full ${sizeClasses}`}>👤</div>;
@@ -866,9 +873,9 @@
             const changeStatus = newStatus => {
                 if (!canOperate()) return;
                 const state = gameState.current;
-                const allowed = { LOBBY: ['QUIZ'], QUIZ: ['BETTING'], BETTING: ['RACE'], RACE: ['RESULT'], RESULT: ['QUIZ', 'END_HORSE'], END_HORSE: ['END_PLAYER'], END_PLAYER: ['END_AWARDS'], END_AWARDS: ['LOBBY'] };
+                const allowed = { LOBBY: ['QUIZ'], QUIZ: ['BETTING'], BETTING: ['RACE'], RACE: ['RESULT'], RESULT: ['QUIZ', 'END_PLAYER'], END_HORSE: ['END_PLAYER'], END_PLAYER: ['END_AWARDS'], END_AWARDS: ['LOBBY'] };
                 if (!allowed[state.status]?.includes(newStatus)) return;
-                if (newStatus === 'END_HORSE') state.finalPlayers = cloneData(state.players.filter(p => p.hasParticipated));
+                if (newStatus === 'END_PLAYER' && (state.status === 'RESULT' || !state.finalPlayers?.length)) state.finalPlayers = cloneData(state.players.filter(p => p.hasParticipated));
                 state.status = newStatus;
                 if (newStatus === 'BETTING') { state.bettingEndsAt = 0; recalcLiveOdds(); }
                 publishState(true);
@@ -999,6 +1006,11 @@
                         if (root.state?.matchId) {
                             gameState.current = { ...initialGame(), ...root.state, horses: asArray(root.state.horses), players: asArray(root.players), customWords: asArray(root.words?.items), raceData: root.recovery?.race || null, finalPlayers: asArray(root.standings), cheerBoard: root.cheerBoard || null };
                             gameState.current.players.forEach(p => { p.bets = readBets(p.bets); p.lastPing = 0; p.connected = false; });
+                            if (gameState.current.status === 'END_HORSE') {
+                                const state = gameState.current;
+                                if (!state.finalPlayers.length) state.finalPlayers = cloneData(state.players.filter(p => p.hasParticipated));
+                                state.status = 'END_PLAYER';
+                            }
                             setSetupRounds(gameState.current.totalRounds);
                             // 저장된 결과가 없는 미완성 계산은 배팅 상태로 되돌린다.
                             if (gameState.current.status === 'RACE' && !gameState.current.raceData?.timeline?.length) { gameState.current.status = 'BETTING'; gameState.current.bettingEndsAt = 0; }
@@ -1562,7 +1574,7 @@
                                     {uiState.round < uiState.totalRounds ? 
                                         <button onClick={startRound} className="bg-emerald-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-emerald-500">다음 라운드 준비 ➡️</button>
                                     : 
-                                        <button onClick={()=>changeStatus('END_HORSE')} className="bg-red-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-red-500">게임 종료 (최종 랭킹 보기) ➡️</button>
+                                        <button onClick={()=>changeStatus('END_PLAYER')} className="bg-red-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-red-500">게임 종료 (최종 랭킹 보기) ➡️</button>
                                     }
                                 </div>
                                 <h2 className="text-4xl font-black text-purple-400 mb-5">🏆 {uiState.round}라운드 결과</h2>
@@ -1576,15 +1588,6 @@
                                         ))}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                        {uiState.status === 'END_HORSE' && (
-                            <div className="m-auto text-center w-full p-6 overflow-y-auto custom-scrollbar max-h-full">
-                                <div className="mb-8 flex justify-center sticky top-0 z-30">
-                                    <button onClick={()=>changeStatus('END_PLAYER')} className="bg-blue-600 px-10 py-4 rounded-xl font-black text-xl shadow-lg hover:bg-blue-500"> 최종 경마왕 랭킹 발표 ➡️</button>
-                                </div>
-                                <h2 className="text-5xl font-black text-slate-100 mb-12 drop-shadow-md">마지막 경주 우승마</h2>
-                                <HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} />
                             </div>
                         )}
                         {uiState.status === 'END_PLAYER' && (
@@ -1999,8 +2002,8 @@
                     <div className="cheer-student-shell h-[100dvh] flex flex-col p-4 bg-teal-900 text-white items-center fade-in">
                         {connectionBanner}
                         <div className="cheer-student-card text-center w-full max-w-md bg-slate-800 rounded-3xl border-2 border-slate-600 shadow-2xl flex flex-col items-center">
-                            <h2 className="text-3xl font-black mb-2 text-yellow-400 animate-pulse font-display tracking-wide">{roomState.racePresentation==='FINISH'?'📸 결승 사진 판정 중!':'🏁 경주 진행 중!'}</h2>
-                            <p className="text-slate-400 mb-4 font-bold text-sm">{roomState.racePresentation==='FINISH'?'선생님 화면에서 마지막 승부를 확인하세요!':'함께 응원하면 더 화려하게! (1초 쿨타임)'}</p><p className="text-[10px] text-slate-400 mb-4">응원은 연출만 강화하며 속도·순위·배당은 바꾸지 않습니다.</p>
+                            <h2 className="text-3xl font-black mb-2 text-yellow-400 animate-pulse font-display tracking-wide">{roomState.racePresentation==='FINISH'?'🎬 Replay · 결승 장면 다시 보기':'🏁 경주 진행 중!'}</h2>
+                            <p className="text-slate-400 mb-4 font-bold text-sm">{roomState.racePresentation==='FINISH'?'모든 주자가 골인했습니다. 선생님 화면에서 방금 경주의 슬로 리플레이를 보세요!':'함께 응원하면 더 화려하게! (1초 쿨타임)'}</p><p className="text-[10px] text-slate-400 mb-4">응원은 연출만 강화하며 속도·순위·배당은 바꾸지 않습니다.</p>
                             <div className="grid grid-cols-2 gap-4 w-full">
                                 {roomState.horses.map(h => {
                                     if(!myBets[h.id]) return null;
@@ -2089,6 +2092,7 @@
             const containerRef = useRef(null), worldRef = useRef(null), horseRefs = useRef([]);
             const pipRef = useRef(null), hudDistRef = useRef(null), dustLayerRef = useRef(null);
             const evtContainerRef = useRef(null), particleContainerRef = useRef(null), cheerTickerRef = useRef(null), cheerBannerRef = useRef(null);
+            const replayProgressRef = useRef(null), photoDetailsRef = useRef(null);
             const initialBoard = useRef(cheerBoard); initialBoard.current = cheerBoard;
             const playback = useRef({ lastTs:null, currentTick:0, lastEvtTick:-1, spurt:false, camX:null });
             const leadTracker = useRef({ currentLeaderIdx:-1, lastLeadChangeTick:-999 });
@@ -2163,95 +2167,149 @@
             },[raceData, isHost]);
 
             useEffect(() => {
-                if(!raceData?.timeline?.length||!worldRef.current||!containerRef.current)return;
-                playback.current={lastTs:null,currentTick:0,lastEvtTick:-1,spurt:false,camX:START_OFFSET};
-                leadTracker.current={currentLeaderIdx:-1,lastLeadChangeTick:-999}; stageRef.current='LIVE';setFinishStage('LIVE');setIsSpurtCSS(false);setIsDramatic(false);
-                const ticks=raceData.timeline.length-1, msPerTick=BASE_RACE_MS/Math.max(1,ticks), plan=finishPlan;
-                let animId=null, finishTimer=null, disposed=false, settled=false, stageElapsed=0;
-                const setStage=stage=>{stageRef.current=stage;stageElapsed=0;setFinishStage(stage);};
-                const finish=()=>{if(disposed||settled)return;settled=true;if(isHost)finishCallback.current?.(raceData.roundId);};
-                const beginCapture=()=>{
-                    setStage('CAPTURE');setIsDramatic(false);raceAccent('photo');
-                    evtContainerRef.current?.replaceChildren();cheerTickerRef.current?.replaceChildren();cheerBannerRef.current?.replaceChildren();particleContainerRef.current?.replaceChildren();
-                    if(isHost)presentationCallback.current?.('FINISH',raceData.roundId);
+                if (!raceData?.timeline?.length || !worldRef.current || !containerRef.current) return;
+                playback.current = { lastTs:null, currentTick:0, lastEvtTick:-1, spurt:false, camX:START_OFFSET };
+                leadTracker.current = { currentLeaderIdx:-1, lastLeadChangeTick:-999 };
+                stageRef.current = 'LIVE'; setFinishStage('LIVE'); setIsSpurtCSS(false); setIsDramatic(false);
+                const ticks = raceData.timeline.length-1, msPerTick = BASE_RACE_MS/Math.max(1,ticks), plan = finishPlan;
+                const replayEligible = !!(plan?.close && plan.allFinished && plan.finishTick > plan.replayStart);
+                let animId = null, disposed = false, settled = false, stageElapsed = 0, frozenCamera = null;
+                const setStage = stage => { stageRef.current=stage; stageElapsed=0; setFinishStage(stage); };
+                const finish = () => { if (disposed || settled) return; settled=true; if (isHost) finishCallback.current?.(raceData.roundId); };
+                const clearLiveEffects = () => {
+                    effectTimers.current.forEach(clearTimeout); effectTimers.current.clear();
+                    [evtContainerRef,cheerTickerRef,cheerBannerRef,particleContainerRef,dustLayerRef].forEach(ref=>ref.current?.replaceChildren());
+                    horseRefs.current.forEach(el=>el?.querySelectorAll('.cheer-burst-ring,.cheer-confetti').forEach(node=>node.remove()));
+                    cheerEffects.current=horses.map(()=>0);
                 };
-                pipElements.current.clear();pipRef.current?.replaceChildren();
-                const step=ts=>{
-                    if(disposed||settled)return;
-                    const p=playback.current, dt=p.lastTs===null?0:Math.min(100,Math.max(0,ts-p.lastTs));p.lastTs=ts;
-                    const stage=stageRef.current;
-                    if(['CAPTURE','REPLAY','PHOTO','VERDICT'].includes(stage)){
-                        stageElapsed+=dt;
-                        if(stage==='CAPTURE'&&stageElapsed>=550)setStage(reducedMotion?'PHOTO':'REPLAY');
-                        else if(stage==='REPLAY'&&stageElapsed>=2150)setStage('PHOTO');
-                        else if(stage==='PHOTO'&&stageElapsed>=1050){setStage('VERDICT');raceAccent('verdict');}
-                        else if(stage==='VERDICT'&&stageElapsed>=2200){finish();return;}
-                        animId=requestAnimationFrame(step);return;
+                pipElements.current.clear(); pipRef.current?.replaceChildren();
+                const paint = (exTick, dt, replay, frozen=false) => {
+                    const p=playback.current, cur=sampleRaceFrame(raceData,exTick), curPos=cur.positions;
+                    const t1=Math.floor(exTick), t2=Math.min(ticks,t1+1), fraction=exTick-t1;
+                    const frame=raceData.timeline[t1]||{}, next=raceData.timeline[t2]||frame;
+                    const spds=horses.map((_,i)=>(frame.speeds?.[i]||0)+((next.speeds?.[i]??frame.speeds?.[i]??0)-(frame.speeds?.[i]||0))*fraction);
+                    const cw=Math.max(1,containerRef.current.clientWidth), ch=Math.max(1,containerRef.current.clientHeight);
+                    const hasFinisher=curPos.some(pos=>pos>=TRACK_LENGTH), leadPos=Math.max(...curPos,0), progress=leadPos/TRACK_LENGTH;
+                    let camera;
+                    if (replay) {
+                        // A resize is the only reason a captured frame may be reframed. It never resamples a later tick.
+                        if (!frozenCamera || frozenCamera.width!==cw || frozenCamera.height!==ch) frozenCamera=null;
+                        camera=frozen && frozenCamera ? frozenCamera : replayCamera(raceData,plan,cw,ch,curPos);
+                        if (frozen) frozenCamera={...camera,width:cw,height:ch};
+                    } else {
+                        const zoom=Math.min(ZOOM_SCALE,Math.max(.15,(ch-70)/1120));
+                        const cap=START_OFFSET+TRACK_LENGTH*VISUAL_SCALE-cw*.38/zoom;
+                        // After the LAST crossing, follow the completed field as it coasts out.
+                        // Before that crossing the finish line stays fixed so every arrival is visible.
+                        const allAcross=curPos.length>0 && curPos.every(pos=>pos>=TRACK_LENGTH);
+                        const coastCenter=curPos.reduce((sum,pos)=>sum+pos,0)/Math.max(1,curPos.length);
+                        const target=allAcross?START_OFFSET+coastCenter*VISUAL_SCALE:Math.min(START_OFFSET+leadPos*VISUAL_SCALE,cap);
+                        p.camX+=(target-p.camX)*(1-Math.pow(.85,dt/16.667));
+                        camera={zoom,tx:cw*.35-p.camX*zoom,ty:ch*.52-TRACK_CY*zoom};
                     }
-                    let tickDelta=dt/msPerTick;
-                    const before=sampleRaceFrame(raceData,p.currentTick), pMaxPos=Math.max(...before.positions,0), progress=pMaxPos/TRACK_LENGTH;
-                    const cw=containerRef.current.clientWidth, ch=containerRef.current.clientHeight;
-                    const finishZoom=Math.min(ZOOM_SCALE,Math.max(.20,(ch-115)/1080));
-                    const cameraRange=Math.min(180,cw*.52/(VISUAL_SCALE*finishZoom));
-                    if(plan?.close&&stageRef.current==='LIVE'&&pMaxPos>=TRACK_LENGTH-cameraRange&&p.currentTick<plan.finishTick){setStage('APPROACH');setIsDramatic(false);}
-                    if(progress>.8&&!p.spurt){p.spurt=true;setIsSpurtCSS(true);playSound('dash');}
-                    const approach=stageRef.current==='APPROACH';
-                    if(approach)tickDelta*=reducedMotion?1:.32;
-                    else if(!plan?.close&&progress>.85&&progress<.98){
-                        const sorted=[...before.positions].sort((a,b)=>b-a), close=(sorted[0]-(sorted[1]||0))<150;
-                        if(close&&!reducedMotion)tickDelta*=.3;setIsDramatic(close&&!reducedMotion);
-                    }else setIsDramatic(false);
-                    let exTick=Math.min(ticks,p.currentTick+tickDelta), capture=!!(plan?.close&&exTick>=plan.finishTick);
-                    if(capture)exTick=plan.finishTick;
-                    p.currentTick=exTick;
-                    const t1=Math.floor(exTick), frame=raceData.timeline[t1]||{}, cur=sampleRaceFrame(raceData,exTick), curPos=cur.positions, spds=frame.speeds||horses.map(()=>0);
-                    const hasFinisher=curPos.some(pos=>pos>=TRACK_LENGTH), leadPos=hasFinisher?TRACK_LENGTH+60:Math.max(...curPos,0);
-                    const leadData=getTrackPos(leadPos,0);
-                    p.camX+=(leadData.x-p.camX)*(1-Math.pow(.85,dt/16.667));
-                    const zoom=approach||capture?finishZoom:ZOOM_SCALE;
-                    const tx=approach||capture?cw*.72-(START_OFFSET+TRACK_LENGTH*VISUAL_SCALE)*zoom:cw*.35-p.camX*zoom;
-                    const ty=ch/2-TRACK_CY*zoom;
+                    const {tx,ty,zoom}=camera;
                     worldRef.current.style.transform=`translate(${tx}px, ${ty}px) scale(${zoom})`;
                     const standings=curPos.map((pos,i)=>({pos,i})).sort((a,b)=>{
                         const af=a.pos>=TRACK_LENGTH,bf=b.pos>=TRACK_LENGTH;
                         return af&&bf?raceData.ranks.indexOf(a.i)-raceData.ranks.indexOf(b.i):af!==bf?(af?-1:1):b.pos-a.pos;
                     });
                     const newLeader=standings[0]?.i;
-                    if(!capture&&!hasFinisher&&!approach&&progress>.1&&newLeader!==leadTracker.current.currentLeaderIdx&&t1-leadTracker.current.lastLeadChangeTick>25){
-                        if(leadTracker.current.currentLeaderIdx!==-1&&evtContainerRef.current){const el=document.createElement('div');el.className=`p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES.lead}`;el.textContent=`${horses[newLeader].name}: ${getMsg(EVENT_MSGS.lead)}`;evtContainerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),3000);}
+                    if (!replay && stageRef.current==='LIVE' && !hasFinisher && progress>.1 && newLeader!==leadTracker.current.currentLeaderIdx && t1-leadTracker.current.lastLeadChangeTick>25) {
+                        if (leadTracker.current.currentLeaderIdx!==-1 && evtContainerRef.current) {
+                            const el=document.createElement('div'); el.className=`p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES.lead}`;
+                            el.textContent=`${horses[newLeader].name}: ${getMsg(EVENT_MSGS.lead)}`;evtContainerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),3000);
+                        }
                         leadTracker.current={currentLeaderIdx:newLeader,lastLeadChangeTick:t1};
                     }
                     const wanted=new Set();
                     curPos.forEach((pos,i)=>{
                         cheerEffects.current[i]=(cheerEffects.current[i]||0)*Math.pow(.9,dt/16.667);
                         const {x,y}=getTrackPos(pos,cur.laterals[i]||0), runner=horseRefs.current[i];
-                        if(runner){
+                        if (runner) {
                             runner.style.left=`${x}px`;runner.style.top=`${y}px`;runner.style.zIndex=Math.floor(y+100);
+                            runner.classList.toggle('replay-winner',frozen && i===plan?.first);
                             const label=runner.querySelector('.runner-finish-rank');
-                            if(label){const finished=pos>=TRACK_LENGTH&&!plan?.close;label.hidden=!finished;if(finished)label.textContent=`${raceData.ranks.indexOf(i)+1}위 골인`;}
-                            const icon=runner.querySelector('.runner-icon');if(icon){icon.classList.toggle('active',!capture&&(spds[i]>10||cheerEffects.current[i]>10));icon.style.filter=cheerEffects.current[i]>30&&!approach&&!capture?'drop-shadow(0 0 35px rgba(250,204,21,.85)) brightness(1.2)':'';}
-                        }
-                        if(tx+x*zoom< -150&&!approach&&!capture){
-                            wanted.add(i);if(pipRef.current){
-                                let entry=pipElements.current.get(i);
-                                if(!entry){const el=document.createElement('div');el.className='pip-item';el.dataset.horseId=horses[i].id;const emoji=document.createElement('div');emoji.className='pip-emoji';emoji.textContent=horses[i].emoji;const info=document.createElement('div');info.className='pip-info';const name=document.createElement('div');name.className='pip-name';name.textContent=horses[i].name;const distance=document.createElement('div');distance.className='pip-dist';info.append(name,distance);el.append(emoji,info);pipRef.current.appendChild(el);entry={el,distance};pipElements.current.set(i,entry);}
-                                const text=pos>=TRACK_LENGTH?`${raceData.ranks.indexOf(i)+1}위 골인`:`${Math.floor(pos)}m`;if(entry.distance.textContent!==text)entry.distance.textContent=text;
+                            if (label) { const finished=pos>=TRACK_LENGTH && !replay;label.hidden=!finished;if(finished)label.textContent=`${raceData.ranks.indexOf(i)+1}위 골인`; }
+                            const icon=runner.querySelector('.runner-icon');
+                            if (icon) {
+                                // Same phase at the same recorded tick, at live speed, slow speed and in the still frame.
+                                icon.classList.remove('active');
+                                icon.style.transform=recordedRunnerPose(exTick,msPerTick,i,spds[i]>10);
+                                icon.style.filter=!replay && cheerEffects.current[i]>30?'drop-shadow(0 0 35px rgba(250,204,21,.85)) brightness(1.2)':'';
                             }
                         }
-                        if(spds[i]>60&&Math.random()<.1&&!approach&&!capture)createDust(x,y);
+                        if (tx+x*zoom < -150 && !replay) {
+                            wanted.add(i);
+                            if (pipRef.current) {
+                                let entry=pipElements.current.get(i);
+                                if (!entry) {
+                                    const el=document.createElement('div');el.className='pip-item';el.dataset.horseId=horses[i].id;
+                                    const emoji=document.createElement('div');emoji.className='pip-emoji';emoji.textContent=horses[i].emoji;
+                                    const info=document.createElement('div');info.className='pip-info';
+                                    const name=document.createElement('div');name.className='pip-name';name.textContent=horses[i].name;
+                                    const distance=document.createElement('div');distance.className='pip-dist';info.append(name,distance);el.append(emoji,info);pipRef.current.appendChild(el);
+                                    entry={el,distance};pipElements.current.set(i,entry);
+                                }
+                                const text=pos>=TRACK_LENGTH?`${raceData.ranks.indexOf(i)+1}위 골인`:`${Math.floor(pos)}m`;
+                                if (entry.distance.textContent!==text) entry.distance.textContent=text;
+                            }
+                        }
+                        if (!replay && stageRef.current==='LIVE' && spds[i]>60 && Math.random()<.1) createDust(x,y);
                     });
-                    if(hudDistRef.current)hudDistRef.current.textContent=`${Math.min(Math.floor(Math.max(...curPos,0)),TRACK_LENGTH)}m`;
+                    if (hudDistRef.current) hudDistRef.current.textContent=`${Math.min(Math.floor(leadPos),TRACK_LENGTH)}m`;
                     pipElements.current.forEach((entry,key)=>{if(!wanted.has(key)){entry.el.remove();pipElements.current.delete(key);}});
-                    if(!approach&&!capture&&t1!==p.lastEvtTick&&(frame.events||[]).length){
-                        (frame.events||[]).forEach(e=>{if(evtContainerRef.current&&horses[e.hIdx]){while(evtContainerRef.current.childElementCount>=4)evtContainerRef.current.firstChild.remove();const el=document.createElement('div');el.className=`p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES[e.type]||EVENT_STYLES.normal}`;el.textContent=`${horses[e.hIdx].name}: ${e.msg}`;evtContainerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),2500);}});p.lastEvtTick=t1;
+                    if (!replay && stageRef.current==='LIVE' && !hasFinisher && t1!==p.lastEvtTick && (frame.events||[]).length) {
+                        (frame.events||[]).forEach(e=>{if(evtContainerRef.current&&horses[e.hIdx]){
+                            while(evtContainerRef.current.childElementCount>=4)evtContainerRef.current.firstChild.remove();
+                            const el=document.createElement('div');el.className=`p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES[e.type]||EVENT_STYLES.normal}`;
+                            el.textContent=`${horses[e.hIdx].name}: ${e.msg}`;evtContainerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),2500);
+                        }});
                     }
-                    if(capture){beginCapture();animId=requestAnimationFrame(step);}
-                    else if(exTick>=ticks){if(!finishTimer)finishTimer=scheduleEffect(finish,3000);}
-                    else animId=requestAnimationFrame(step);
+                    if (!replay) p.lastEvtTick=t1;
+                    if (replayProgressRef.current) replayProgressRef.current.style.transform=`scaleX(${replay ? Math.min(1,Math.max(0,(exTick-plan.replayStart)/Math.max(.000001,plan.finishTick-plan.replayStart))) : 0})`;
                 };
-                animId=requestAnimationFrame(step);
-                return()=>{disposed=true;cancelAnimationFrame(animId);if(finishTimer){clearTimeout(finishTimer);effectTimers.current.delete(finishTimer);}pipElements.current.clear();};
-            },[raceData,isHost,finishPlan,reducedMotion]);
+                const step = ts => {
+                    if (disposed || settled) return;
+                    const p=playback.current;
+                    // Hidden tabs must not skip the last finisher or consume the 5.2-second photo hold.
+                    const dt=p.lastTs===null||document.hidden?0:Math.min(100,Math.max(0,ts-p.lastTs));p.lastTs=ts;
+                    const stage=stageRef.current;stageElapsed+=dt;
+                    if (stage==='LIVE') {
+                        p.currentTick=Math.min(ticks,p.currentTick+dt/msPerTick);
+                        paint(p.currentTick,dt,false);
+                        if (!p.spurt && Math.max(...sampleRaceFrame(raceData,p.currentTick).positions,0) > TRACK_LENGTH*.8) {p.spurt=true;setIsSpurtCSS(true);playSound('dash');}
+                        // Never branch into the replay at the first finish: run the COMPLETE timeline first.
+                        if (p.currentTick>=ticks) {setStage('ALL_FINISHED');setIsSpurtCSS(false);clearLiveEffects();}
+                    } else if (stage==='ALL_FINISHED') {
+                        paint(ticks,dt,false);
+                        if (stageElapsed >= (replayEligible?REPLAY_TIMING.liveHold:REPLAY_TIMING.plainHold)) {
+                            if (replayEligible) {
+                                setStage('REPLAY_INTRO');clearLiveEffects();
+                                if(isHost)presentationCallback.current?.('FINISH',raceData.roundId);
+                            } else {finish();return;}
+                        }
+                    } else if (stage==='REPLAY_INTRO') {
+                        // Let the audience read Replay over the just-completed race before cutting back.
+                        if (stageElapsed>=REPLAY_TIMING.intro) {p.currentTick=plan.replayStart;setStage('REPLAY');paint(p.currentTick,0,true);}
+                    } else if (stage==='REPLAY') {
+                        p.currentTick=Math.min(plan.finishTick,p.currentTick+dt/msPerTick*REPLAY_TIMING.speed);
+                        if (p.currentTick>=plan.finishTick) {p.currentTick=plan.finishTick;setStage('PHOTO');raceAccent('photo');}
+                        paint(p.currentTick,dt,true,stageRef.current==='PHOTO');
+                    } else if (stage==='PHOTO') {
+                        paint(plan.finishTick,0,true,true);
+                        if(photoDetailsRef.current)photoDetailsRef.current.hidden=stageElapsed<900;
+                        if(stageElapsed>=REPLAY_TIMING.freeze){finish();return;}
+                    }
+                    animId=requestAnimationFrame(step);
+                };
+                const visibility=()=>{playback.current.lastTs=null;};
+                document.addEventListener('visibilitychange',visibility);
+                paint(0,0,false); animId=requestAnimationFrame(step);
+                return () => {
+                    disposed=true;cancelAnimationFrame(animId);document.removeEventListener('visibilitychange',visibility);
+                    clearLiveEffects();pipElements.current.clear();
+                };
+            }, [raceData,isHost,finishPlan,reducedMotion]);
 
             if(!raceData) return <div className="h-full flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-white"></div></div>;
 
@@ -2262,12 +2320,13 @@
             const weatherClass = raceData.weather.id === 'RAIN' ? 'weather-rain' : (raceData.weather.id === 'HEAT' ? 'weather-heat' : (raceData.weather.id === 'WIND' ? 'weather-wind' : ''));
             const trackColorClass = `track-${raceData.weather.id}`;
 
+            const replayVisible = ['REPLAY_INTRO','REPLAY','PHOTO'].includes(finishStage);
             return (
-                <div id="race-track-container" ref={containerRef} data-finish-stage={finishStage} className={`${isSpurtCSS ? 'camera-shake slow-motion' : ''} ${isDramatic ? 'is-dramatic' : ''} ${finishStage !== 'LIVE' ? 'finish-mode' : ''}`}>
+                <div id="race-track-container" ref={containerRef} data-finish-stage={finishStage} className={`${isSpurtCSS && finishStage === 'LIVE' ? 'camera-shake slow-motion' : ''} ${isDramatic ? 'is-dramatic' : ''} ${replayVisible ? 'replay-mode' : ''} ${finishStage === 'PHOTO' ? 'replay-freeze' : ''} ${finishStage === 'ALL_FINISHED' ? 'all-finished' : ''}`}>
                     {weatherClass && <div className={`weather-layer ${weatherClass}`}></div>}
                     <div className="dramatic-overlay"></div>
 
-                    <div className="race-distance-hud absolute top-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
+                    <div className="race-distance-hud absolute top-2 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
                         <div className="bg-black/80 px-10 py-3 rounded-2xl border-2 border-yellow-500 shadow-2xl text-center transition-all duration-500">
                             <div className="text-yellow-400 font-bold text-lg tracking-widest mb-[-8px]">🏁 GOAL: {TRACK_LENGTH}m</div>
                             <div ref={hudDistRef} className="text-white font-black text-6xl font-display drop-shadow-md">0m</div>
@@ -2282,9 +2341,24 @@
 
                     {isHost && <div ref={cheerTickerRef} className="race-cheer-ticker absolute top-8 right-8 z-40 flex flex-col items-end pointer-events-none"></div>}
 
-                    {finishStage !== 'LIVE' && <><div className="finish-rail top">🏁 FINAL DUEL · 결승선 고정 카메라</div><div className="finish-rail bottom"/></>}
-                    {finishStage === 'CAPTURE' && <><div className="finish-capture-label">📸 PHOTO FINISH</div>{!reducedMotion && <div className="finish-flash"/>}</>}
-                    {['REPLAY','PHOTO','VERDICT'].includes(finishStage) && finishPlan && <PhotoFinishPanel race={raceData} horses={horses} plan={finishPlan} mode={finishStage}/>}
+                    {finishStage === 'ALL_FINISHED' && <div className="all-finished-label">🏁 전원 골인{finishPlan?.close && finishPlan.allFinished ? ' · 잠시 후 Replay' : ''}</div>}
+                    {replayVisible && <>
+                        <div className="replay-broadcast" data-testid="replay-header" role="status">
+                            <div className="replay-brand"><span className="replay-mark"/><strong>Replay</strong></div>
+                            <div className="replay-info"><span>{finishStage === 'PHOTO' ? 'FINISH FRAME · 결승 순간 정지' : finishStage === 'REPLAY_INTRO' ? '방금 경주 · 결승 구간 다시 보기' : 'SLOW MOTION · 0.3×'}</span><small>{finishStage === 'PHOTO' ? '1위 주자의 기준점이 결승선에 닿은 순간' : '실제 경기장 · 같은 경주 기록'}</small></div>
+                            <div className="replay-progress"><span ref={replayProgressRef}/></div>
+                        </div>
+                        {finishStage === 'PHOTO' && <>
+                            {!reducedMotion && <div className="replay-flash"/>}
+                            <div className="replay-bottom" data-testid="finish-frame-caption">
+                                <div className="replay-bottom-title">📸 결승선에 닿은 바로 그 순간</div>
+                                <div className="replay-finish-details" ref={photoDetailsRef} hidden>
+                                    <div className="replay-bottom-sub"><b className="text-yellow-300">1위 · {horses[finishPlan.first]?.name}</b>　/　2위 · {horses[finishPlan.second]?.name}　·　{finishGapLabel(finishPlan.gapMs)}</div>
+                                </div>
+                                <div className="replay-bottom-sub">◆ 발밑 기준점 = 기록상 주자 위치 · 시간차는 기본 재생 속도 기준</div>
+                            </div>
+                        </>}
+                    </>}
                     <div ref={cheerBannerRef} className="cheer-banner-slot" aria-live="polite"/>
                     <div id="pip-container" ref={pipRef}></div>
                     {isSpurtCSS && !isDramatic && <div id="slow-mo-overlay"></div>}
@@ -2305,6 +2379,7 @@
                             <line x1={START_OFFSET} y1={pStart.y - 550} x2={START_OFFSET} y2={pStart.y + 550} stroke="white" strokeWidth="60" />
                             <line x1={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y1={pEnd.y - 550} x2={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y2={pEnd.y + 550} stroke="white" strokeWidth="60" />
                             <line x1={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE + 60} y1={pEnd.y - 550} x2={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE + 60} y2={pEnd.y + 550} stroke="#fbbf24" strokeWidth="60" strokeDasharray="60,60" />
+                            <line className="track-finish-reference" x1={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y1={TRACK_CY - 590} x2={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y2={TRACK_CY + 590} stroke="#fbbf24" strokeWidth="5"/>
                         </svg>
 
                         <div ref={dustLayerRef} className="absolute inset-0 pointer-events-none z-10"></div>
@@ -2312,14 +2387,15 @@
                         {horses.map((h, i) => {
                             const isFlipped = h.id !== 12 && h.id !== 21 && !h.img;
                             return (
-                            <div key={h.id} ref={el=>horseRefs.current[i]=el} className="runner">
+                            <div key={h.id} ref={el=>horseRefs.current[i]=el} className="runner" data-runner-index={i}>
                                 <div className="runner-name-tag">
                                     <div className="name">{h.name}</div><div className="runner-finish-rank text-yellow-300 text-xl" hidden></div>
                                     {raceData.sponsors && raceData.sponsors[h.id] && (
                                         <div className="sponsor">🏆 {raceData.sponsors[h.id]}</div>
                                     )}
                                 </div>
-                                <div className="runner-icon drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] overflow-hidden rounded-full flex items-center justify-center transition-all duration-300">
+                                <span className="runner-timing-point" aria-hidden="true"/>
+                                <div className="runner-icon race-timeline-pose drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] overflow-hidden rounded-full flex items-center justify-center transition-all duration-300">
                                     {h.img ? <img src={h.img} className="w-full h-full object-cover" alt=""/> : <span className={`inline-block ${isFlipped ? '-scale-x-100' : ''}`}>{h.emoji}</span>}
                                 </div>
                             </div>
