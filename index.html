@@ -189,6 +189,39 @@
         @media(max-width:640px) { .weather-card { padding:9px 12px; } .weather-card p { flex-basis:100%; font-size:11px; } .student-bet-summary { padding:10px; } .cheer-banner-slot { bottom:22px; } }
         @media(max-height:650px) { .race-host-shell { padding:8px; } .race-host-shell > div:first-child { padding:8px 14px; margin-bottom:8px; } }
         @media(prefers-reduced-motion:reduce) { .cheer-banner,.cheer-burst-ring,.cheer-confetti,.replay-flash,.runner-speed-trail,.runner-cheer-flame { animation-duration:.01ms!important; } .cheer-meter > span { transition:none; } }
+
+        .horse-items { margin-top:7px; border-top:1px solid #475569; padding-top:7px; min-width:0; }
+        .item-icons { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
+        .item-icons details { border:1px solid #64748b; border-radius:7px; background:#102936; padding:3px 6px; font-size:12px; max-width:100%; }
+        .item-icons summary { cursor:pointer; font-weight:800; list-style:none; padding:3px; }
+        .item-icons details[open] { flex:1 1 100%; }
+        .item-blocked summary { color:#94a3b8; text-decoration:line-through; }
+        .item-explain { font-size:11px; line-height:1.7; overflow-wrap:anywhere; padding:4px; }
+        .horse-history { font-size:11px; line-height:1.7; color:#cbd5e1; margin-top:5px; }
+        .horse-history summary { cursor:pointer; color:#a7f3d0; }
+        .history-result { border:1px solid #475569; border-radius:12px; padding:12px; margin:0 0 18px; background:#0f172a99; font-size:12px; text-align:left; }
+        .history-result summary { cursor:pointer; }
+
+        .weather-snow { inset:-90px; will-change:transform; opacity:.65; background-image:radial-gradient(circle,#fff 0 2px,transparent 3px),radial-gradient(circle,#e0f2fe 0 1px,transparent 2px); background-size:110px 90px,170px 130px; background-position:0 0,50px 30px; animation:snowDrift 4s linear infinite; }
+        @keyframes snowDrift { from {transform:translate3d(0,-45px,0);} to {transform:translate3d(25px,45px,0);} }
+        .snow-incident-notice { position:absolute; top:154px; right:18px; max-width:calc(100% - 300px); z-index:55; padding:10px 16px; border:1px solid #bae6fd; border-radius:12px; background:#0f172aeb; color:#cffafe; font-size:18px; font-weight:900; pointer-events:none; }
+        .snow-incident-notice:empty {display:none;}
+        .pip-item.snow-incident { border-color:#bae6fd; background:#164e63f2; }
+        .pip-event { font-size:12px; font-weight:900; color:#cffafe; margin-top:4px; }
+        .runner-cue-layer { position:absolute; inset:0; pointer-events:none; opacity:0; }
+        .cue-aura { position:absolute; left:-10px; top:-5px; width:240px; height:240px; border:3px solid var(--cue-color,#fde68a); border-radius:50%; box-shadow:0 0 14px var(--cue-color,#fde68a); background:radial-gradient(ellipse,transparent 40%,#fef3c728 75%,transparent); }
+        .cue-tail { position:absolute; left:-76px; bottom:14px; font-size:44px; white-space:nowrap; letter-spacing:3px; }
+        .cue-label { position:absolute; top:-74px; left:-25px; width:270px; text-align:center; color:var(--cue-color,#fde68a); font-size:25px; font-weight:900; text-shadow:0 2px 5px #000,0 0 4px #000; white-space:nowrap; }
+        .cue-light { position:absolute; left:50%; top:45%; font-size:24px; color:var(--cue-color,#fde68a); }
+        .cue-gel { position:absolute; right:-8px; bottom:24px; font-size:36px; opacity:0; }
+        .runner[data-cue="zen"] .cue-aura { border-color:#fde68a; background:radial-gradient(ellipse,#2dd4bf22 20%,#fcd34d44 60%,transparent 73%); box-shadow:0 0 20px #fbbf2466,inset 0 0 18px #5eead477; }
+        .runner[data-cue="snow"] .cue-aura { top:125px; height:75px; box-shadow:none; background:transparent; }
+        .runner[data-cue="snow"] .runner-speed-trail,.runner[data-cue="snow"] .runner-cheer-flame { visibility:hidden; }
+        .runner[data-cue="moon"] .cue-aura { border:0; border-radius:45%; background:linear-gradient(transparent,#e9d5ff55); box-shadow:none; }
+        .runner[data-cue="gel-boost"] .cue-aura,.runner[data-cue="delivery"] .cue-aura,.runner[data-cue="splash"] .cue-aura,.runner[data-cue="steam"] .cue-aura,.runner[data-cue="turtle"] .cue-aura { border:0; box-shadow:none; background:none; }
+        .replay-mode .cue-label { font-size:22px; }
+        .replay-freeze .runner * { animation-play-state:paused!important; transition:none!important; }
+        @media(prefers-reduced-motion:reduce) { .weather-snow {animation:none;} .cue-aura {box-shadow:none!important;} }
     </style>
 </head>
 <body>
@@ -245,7 +278,7 @@
                 gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
                 osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-                osc.start(); osc.stop(audioCtx.currentTime + duration);
+                osc.start(); osc.stop(audioCtx.currentTime + duration);osc.onended=()=>{osc.disconnect();gainNode.disconnect();};
             } catch(e) {}
         };
         const SOUNDS = {
@@ -283,7 +316,9 @@
             { id: 21, emoji: '🚶🏻‍♂️‍➡️', name: '김 민재', desc: '처음엔 조용하지만 뒤를 돌아보면 무시무시한 속도로 당신을 추격하고 있다!', stats: { speed: 64, spurt: 96, stability: 55, luck: 55 }, type: 'chaser' },
             { id: 22, emoji: '🦛', name: '히포포타무스', desc: '수륙양용 괴물. 비 오는 날 진흙탕에서 더욱 빨라집니다.', stats: { speed: 68, spurt: 78, stability: 62, luck: 35 }, type: 'chaser' },
             { id: 23, emoji: '🦕', name: '브라키오 카이저', desc: '거대한 목을 휘두르며 걷습니다. 모든 것은 운에 달렸습니다.', stats: { speed: 58, spurt: 69, stability: 40, luck: 98 }, type: 'luck' },
-            { id: 24, emoji: '🦅', name: '데저트 이글', desc: '사막의 독수리! 초반부터 맹렬하게 날아오릅니다.', stats: { speed: 88, spurt: 74, stability: 65, luck: 40 }, type: 'early' }
+            { id: 24, emoji: '🦅', name: '데저트 이글', desc: '사막의 독수리! 초반부터 맹렬하게 날아오릅니다.', stats: { speed: 88, spurt: 74, stability: 65, luck: 40 }, type: 'early' },
+            { id: 25, emoji: '🐪', name: '오아시스 러너', desc: '사막 체질! 폭염에도 후반 스퍼트가 약해지지 않습니다.', stats: { speed: 60, spurt: 84, stability: 72, luck: 35 }, type: 'late' },
+            { id: 26, emoji: '🚂', name: '칙칙폭주', desc: '천천히 출발해 중반 45~60% 구간에서 증기압을 쏟아냅니다.', stats: { speed: 61, spurt: 72, stability: 70, luck: 40 }, type: 'chaser' }
         ];
 
         const TYPE_MATCHUP = {
@@ -303,8 +338,12 @@
             { id: 'SUNNY', name: '맑음 ☀️', desc: '경기하기 딱 좋은 날씨입니다.', color: 'text-yellow-300' },
             { id: 'RAIN', name: '우천 🌧️', desc: '진흙탕! 변수가 더 많아집니다.', color: 'text-blue-300' },
             { id: 'HEAT', name: '폭염 🔥', desc: '지칩니다! 후반 스퍼트가 약해집니다.', color: 'text-red-300' },
-            { id: 'WIND', name: '강풍 🌬️', desc: '초반에 누가 바람의 흐름을 탈까요?', color: 'text-teal-300' }
+            { id: 'WIND', name: '강풍 🌬️', desc: '초반에 누가 바람의 흐름을 탈까요?', color: 'text-teal-300' },
+            { id: 'SNOW', name: '눈길 ❄️', desc: '눈길에서는 일부 주자가 크게 미끄러져 잠시 급감속할 수 있습니다.', color: 'text-cyan-200' }
         ];
+
+        const WEATHER_WEIGHTS = { SUNNY:50, RAIN:15, HEAT:15, WIND:15, SNOW:5 };
+        const chooseWeather = (rng=Math.random) => { let pick=rng()*100; return WEATHERS.find(w=>(pick-=WEATHER_WEIGHTS[w.id])<0)||WEATHERS[0]; };
 
         const EVENT_MSGS = {
             spurt: ['🔥 폼 미쳤다! 폭발적인 가속!', '🚀 영혼까지 끌어모은 스퍼트!', '✨ 안보일 정도로 치고 나갑니다!', '💨 폭주 기관차 발동!', '⚡ 갑자기 기어가 바뀌었습니다!', '🌟 이게 진짜 실력이다!!'],
@@ -330,14 +369,117 @@
         const getMsg = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
         const ITEMS = [
-            { id: 'banana', icon: '🍌', name: '바나나', desc: '선택한 캐릭터 속도 -10%' }, 
-            { id: 'whip', icon: '🏇', name: '채찍', desc: '속도 +25%, 안정성 절반 감소' }, 
-            { id: 'carrot', icon: '🥕', name: '당근', desc: '초반 가속 증가' },
+            { id: 'banana', icon: '🍌', name: '바나나', desc: '목표 속도 -10%·추가 중첩 효과는 매번 절반' }, 
+            { id: 'whip', icon: '🏇', name: '채찍', desc: '목표 속도 +25%, 안정성 절반·추가 중첩 기여는 매번 절반' }, 
+            { id: 'carrot', icon: '🥕', name: '당근', desc: '선두 진행률 30% 전까지 목표 속도 +30%·중첩 감쇠' },
             { id: 'sedative', icon: '💊', name: '진정제', desc: '기복이 심한 캐릭터 안정화' }, 
-            { id: 'curse', icon: '☠️', name: '비난', desc: '선택한 캐릭터 기본 목표 속도 -20%' }, 
+            { id: 'curse', icon: '☠️', name: '비난', desc: '목표 속도 -20%·추가 중첩 효과는 매번 절반' }, 
             { id: 'coin', icon: '🍀', name: '럭키코인', desc: '당첨금 2배 (50% 확률로 꽝)' }, 
-            { id: 'insurance', icon: '📜', name: '보험증', desc: '배팅 실패 시 25% 환급' }
+            { id: 'insurance', icon: '📜', name: '보험증', desc: '배팅 실패 시 25% 환급' },
+            { id: 'shield', icon: '🛡️', name: '보호 부적', desc: '가장 강한 방해 1개 차단. 방해가 없어도 출발 시 소모·중복 예약 불가' },
+            { id: 'shoes', icon: '👟', name: '전천후 편자', desc: '불리한 날씨·눈길 사고의 속도 손실 절반 완화·중복 예약 불가' },
+            { id: 'gel', icon: '🥤', name: '에너지 젤', desc: '자신의 중반 40~65%에서 목표 속도 +12%·중첩 감쇠' },
+            { id: 'repair', icon: '🔧', name: '정비 키트', desc: '최하·하 컨디션을 중으로 회복·중복 예약 불가' }
         ];
+
+
+        const ITEM_ORDER = ['shield','shoes','repair','sedative','banana','whip','carrot','sand','curse','gel'];
+        const SINGLE_ITEMS = ['shield','shoes','repair'];
+        const stackWeight = n => n>0 ? 2*(1-Math.pow(.5,n)) : 0;
+        const whipStability = n => { let factor=1; for(let i=0;i<Math.min(n,60);i++) factor*=1-.5*Math.pow(.5,i); return factor; };
+        const weatherPenalty = (factor, shoes) => shoes && factor<1 ? 1-(1-factor)/2 : factor;
+        const shoeUseful = (h,weather) => {
+            const id=typeof weather==='string'?weather:weather?.id;
+            return id==='SNOW'||id==='RAIN'&&['early','chaser'].includes(h.type)||id==='WIND'&&h.type==='early'||id==='HEAT'&&h.type==='late'&&h.id!==25;
+        };
+        const itemCandidates = state => ITEMS.filter(item => item.id!=='shoes'||state.horses.some(h=>shoeUseful(h,state.weather))).filter(item=>item.id!=='repair'||state.horses.some(h=>h.conditionIdx<2));
+        // Only accepted reservations enter this resolver. No identities or future random outcomes leave it.
+        const resolveHorseItems = (horse, players) => {
+            const counts={};
+            players.forEach(p=>{const u=p.usedItemOn;if(u?.target==='horse'&&Number(u.horseId)===horse.id&&p.inventory===u.itemId)counts[u.itemId]=(counts[u.itemId]||0)+1;});
+            const effective={...counts}, blocked={};
+            if(counts.shield){const bad=['curse','banana','sand'].find(id=>effective[id]>0);if(bad){effective[bad]--;blocked[bad]=1;}}
+            const stabilityBase=effective.sedative&&['luck','early'].includes(horse.type)?90:horse.stats.stability;
+            return { counts, effective, blocked, originalConditionIdx:horse.conditionIdx, conditionIdx:effective.repair&&horse.conditionIdx<2?2:horse.conditionIdx,
+                stability:Math.max(0,Math.min(100,stabilityBase*whipStability(effective.whip||0))), stabilityFactor:whipStability(effective.whip||0), shoes:!!effective.shoes };
+        };
+        const itemSpeedMultiplier = (plan,progress,ownProgress,rank) => {
+            const c=plan.effective;let factor=1;
+            if(c.banana)factor*=1-.1*stackWeight(c.banana);
+            if(c.whip)factor*=1+.25*stackWeight(c.whip);
+            if(c.carrot&&progress<.3)factor*=1+.3*stackWeight(c.carrot);
+            if(c.sand&&rank>0)factor*=1-.1*stackWeight(c.sand);
+            if(c.curse)factor*=1-.2*stackWeight(c.curse);
+            if(c.gel&&ownProgress>=.4&&ownProgress<.65)factor*=1+.12*stackWeight(c.gel);
+            return Math.max(.60,Math.min(1.75,factor));
+        };
+        const makeItemBoard = (state,players=state.players,phase='planned') => ({matchId:state.matchId,roundId:state.roundId,version:(state.itemBoard?.version||0)+1,phase,
+            horses:Object.fromEntries(state.horses.map(h=>[h.id,resolveHorseItems(h,players)]))});
+        const refreshItemBoard = state => {
+            const board=makeItemBoard(state);
+            if(JSON.stringify(board.horses)!==JSON.stringify(state.itemBoard?.horses)||state.itemBoard?.roundId!==state.roundId)state.itemBoard=board;
+        };
+        const itemReservationError = (itemId, horse, player, state) => {
+            if(itemId==='repair'&&horse.conditionIdx>=2)return '정비 키트는 최하·하 컨디션에만 사용할 수 있습니다.';
+            if(itemId==='shoes'&&!shoeUseful(horse,state.weather))return '이 말은 이번 날씨에서 편자로 완화할 불이익이 없습니다.';
+            if(SINGLE_ITEMS.includes(itemId)&&state.players.some(p=>p.uid!==player.uid&&p.inventory===itemId&&p.usedItemOn?.itemId===itemId&&p.usedItemOn?.target==='horse'&&Number(p.usedItemOn.horseId)===horse.id))return '다른 학생이 이 말에 같은 아이템을 이미 예약했습니다.';
+            return '';
+        };
+        const itemDetail = (id,plan) => {
+            const n=plan.effective[id]||0,w=stackWeight(n),pct=x=>`${Math.round(x*1000)/10}%`;
+            if(id==='whip')return `목표 속도 +${pct(.25*w)} · 안정성 ×${plan.stabilityFactor.toFixed(4)}`;
+            if(id==='banana')return `목표 속도 -${pct(.1*w)}`;
+            if(id==='curse')return `목표 속도 -${pct(.2*w)}`;
+            if(id==='carrot')return `선두 30% 이전 목표 속도 +${pct(.3*w)}`;
+            if(id==='gel')return `자신의 40~65% 구간 목표 속도 +${pct(.12*w)}`;
+            if(id==='sedative')return '운형·도주형 안정성을 90으로 설정 후 채찍 적용 · 중복 가산 없음';
+            if(id==='shield')return '비난 → 바나나 → 모래 순으로 방해 1개 차단 · 최대 1겹 · 방해가 없어도 소모';
+            if(id==='shoes')return '불리한 날씨 손실 50% 완화 · 눈길 사고 속도 25% → 62.5% · 사고 시간은 동일';
+            if(id==='repair')return `${CONDITIONS[plan.originalConditionIdx].label} → ${CONDITIONS[plan.conditionIdx].label}(정비) · 중 이상 상승 없음`;
+            return ITEMS.find(v=>v.id===id)?.desc||'';
+        };
+        function HorseItems({ plan, phase='planned' }) {
+            if(!plan||!Object.values(plan.counts).some(n=>n>0))return null;
+            return <div className="horse-items" onClick={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}>
+                <div className="text-xs font-bold text-amber-200">{phase==='confirmed'?'확정 아이템':'적용 예정'}</div>
+                <div className="item-icons">{ITEM_ORDER.filter(id=>plan.counts[id]).map(id=>{const item=ITEMS.find(x=>x.id===id);return <details key={id} className={plan.blocked[id]?'item-blocked':''}>
+                    <summary aria-label={`${item?.name} ${plan.counts[id]}개 설명`}>{item?.icon||'💨'}×{plan.counts[id]}{plan.blocked[id]>0&&<span> ⊘{plan.blocked[id]}</span>}</summary>
+                    <div className="item-explain"><b>{item?.name} · {plan.counts[id]}개</b><div>{plan.blocked[id]>0?`보호로 ${plan.blocked[id]}개 무효 · 나머지 ${plan.effective[id]}개 적용`:''}</div><div>{itemDetail(id,plan)}</div></div>
+                </details>})}</div>
+                {plan.counts.repair>0&&<div className="text-xs text-emerald-300 mt-1">정비: {CONDITIONS[plan.originalConditionIdx].label} → {CONDITIONS[plan.conditionIdx].label}</div>}
+                <div className="text-[10px] text-slate-400 mt-1">아이템 속도 보정 합계 ×0.60~1.75 · 구간·최고속도에 따라 실제 가속이 달라집니다.</div>
+            </div>;
+        }
+        const emptyHistory = matchId => ({matchId,rounds:{},horses:{}});
+        const recordRaceHistory = state => {
+            const race=state.raceData;if(!race||race.matchId!==state.matchId||race.roundId!==state.roundId)return;
+            let history=state.horseHistory;
+            if(history?.matchId!==state.matchId)history=emptyHistory(state.matchId);
+            if(history.rounds?.[race.roundId])return;
+            history=cloneData(history);history.rounds=history.rounds||{};history.horses=history.horses||{};
+            race.ranks.forEach((i,rank)=>{const id=race.settlement.horses[i].id,place=rank+1;
+                const old=history.horses[id]||{starts:0,wins:0,podiums:0,weather:{},recent:[]};
+                old.starts++;if(place===1)old.wins++;if(place<=3)old.podiums++;
+                const w=old.weather[race.weather.id]||{starts:0,podiums:0};w.starts++;if(place<=3)w.podiums++;old.weather[race.weather.id]=w;
+                old.recent=[{round:state.round,roundId:race.roundId,place,midPlace:race.midRanks?.[i]||place,snow:(race.snowEvents||[]).some(e=>e.hIdx===i)},...asArray(old.recent)].slice(0,3);
+                history.horses[id]=old;
+            });
+            history.rounds[race.roundId]=true;state.horseHistory=history;
+        };
+        function HorseHistory({ history, horseId, weather }) {
+            const h=history?.horses?.[horseId];if(!h)return <div className="text-[10px] text-slate-400">이번 게임 첫 출전</div>;
+            const last=asArray(h.recent)[0];
+            return <details className="horse-history" onClick={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}><summary>이번 게임 {h.starts}전 {h.wins}승 · 입상 {h.podiums}회</summary>
+                {last&&<div>직전 출전({last.round}R): 중반 {last.midPlace}위 → 최종 {last.place}위{last.snow?' · 눈길 사고':''}</div>}
+                <div>{WEATHERS.filter(w=>h.weather?.[w.id]).map(w=><div key={w.id}>{w.name} {h.weather[w.id].starts}전 · 입상 {h.weather[w.id].podiums}회</div>)}</div>
+                <div className="text-slate-400">최근 출전: {asArray(h.recent).map(r=>`${r.round}R ${r.place}위`).join(' · ')}</div>
+            </details>;
+        }
+        function HistoryResult({ history, horses, roundId }) {
+            const rows=horses.map(h=>({h,r:asArray(history?.horses?.[h.id]?.recent).find(r=>r.roundId===roundId)})).filter(x=>x.r);
+            const story=rows.find(x=>x.r.snow&&x.r.place<=3)||rows.filter(x=>x.r.midPlace-x.r.place>=2).sort((a,b)=>(b.r.midPlace-b.r.place)-(a.r.midPlace-a.r.place))[0]||rows.find(x=>x.r.place===1);
+            return <div className="history-result">{story&&<div className="text-yellow-200 font-bold mb-2">{story.h.emoji} {story.h.name} · {story.r.snow&&story.r.place<=3?`눈길 사고 후 ${story.r.place}위 입상`:`중반 ${story.r.midPlace}위 → 최종 ${story.r.place}위`}</div>}<details><summary>이번 게임 주자 기록</summary><div className="grid grid-cols-2 gap-2 mt-2">{rows.map(({h})=><div key={h.id}><b>{h.emoji} {h.name}</b><HorseHistory history={history} horseId={h.id}/></div>)}</div></details></div>;
+        }
 
         // 기본 단어장과 TXT 업로드는 동일한 5칸 형식을 사용한다.
         // 단어 | 정답 | 오답1 | 오답2 | 오답3 (쉼표는 뜻의 일부로 보존)
@@ -398,9 +540,9 @@ society | 사회 | 정부 | 가족 | 학교`;
 
         const generateRoomCode = () => Math.floor(1000 + Math.random() * 9000).toString();
         // 안정화 보조 함수: 기존 경기 규칙/보상 수치는 유지한다.
-        const ROOM_SCHEMA = 'edurace-v4'; // 지정 보기 퀴즈: 이전 버전과 혼용하지 않는다.
+        const ROOM_SCHEMA = 'edurace-v5'; // 콘텐츠 확장·아이템 집계·경기 이력: 이전 버전과 혼용하지 않는다.
         const ROOM_TTL = 6 * 60 * 60 * 1000;
-        const HOST_SESSION_KEY = 'edurace_host_v4:' + location.pathname;
+        const HOST_SESSION_KEY = 'edurace_host_v5:' + location.pathname;
         const newId = () => (window.crypto?.randomUUID?.() || `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`);
         const serverNow = () => Date.now() + (window.eduraceServerOffset || 0);
         const readJSON = (store, key, fallback) => { try { const v = JSON.parse(store.getItem(key)); return v == null ? fallback : v; } catch (_) { return fallback; } };
@@ -486,7 +628,7 @@ society | 사회 | 정부 | 가족 | 학교`;
             url.search = ''; url.hash = ''; url.searchParams.set('room', String(code));
             return url.href;
         };
-        const validateBet = (data, player, horses) => {
+        const validateBet = (data, player, horses, state=null) => {
             const rawBets = data.bets ?? {};
             if (typeof rawBets !== 'object') return { error: '잘못된 배팅 형식입니다.' };
             const allowed = new Set(horses.map(h => String(h.id))), bets = {};
@@ -507,9 +649,10 @@ society | 사회 | 정부 | 가족 | 학교`;
                 else if (!self && item.target === 'horse' && allowed.has(String(item.horseId))) usedItemOn = { target: 'horse', horseId: Number(item.horseId), itemId: item.itemId };
                 else return { error: '아이템의 적용 대상이 올바르지 않습니다.' };
             }
+            if(state&&usedItemOn?.target==='horse'){const reason=itemReservationError(usedItemOn.itemId,horses.find(h=>h.id===usedItemOn.horseId),player,state);if(reason)return {error:reason};}
             return { bets, usedItemOn };
         };
-        const initialGame = () => ({ status: 'LOBBY', matchId: newId(), roundId: '', round: 0, totalRounds: 3, horses: [], raceData: null, players: [], weather: WEATHERS[0], customWords: [], wordVersion: newId(), quizEndsAt: 0, bettingEndsAt: 0, cheerBoard: null, racePresentation: 'LIVE', settledRoundId: '', finalPlayers: [] });
+        const initialGame = () => ({ status: 'LOBBY', matchId: newId(), roundId: '', round: 0, totalRounds: 3, horses: [], raceData: null, players: [], weather: WEATHERS[0], customWords: [], wordVersion: newId(), quizEndsAt: 0, bettingEndsAt: 0, cheerBoard: null, racePresentation: 'LIVE', settledRoundId: '', finalPlayers: [], itemBoard:null, horseHistory:null });
         const readWallet = () => {
             const saved = readJSON(localStorage, 'edurace_wallet_v2', null);
             if (saved && Number.isSafeInteger(saved.balance) && saved.balance >= 0 && saved.claims && typeof saved.claims === 'object') return saved;
@@ -556,11 +699,13 @@ society | 사회 | 정부 | 가족 | 학교`;
                 if (['early','chaser'].includes(horse.type)) return { label:'우천 불리', tone:'caution', note:'우천에서 기본 목표 속도 ×0.85가 적용됩니다.' };
                 return { label:'우천 직접 보정 없음', tone:'', note:'이 유형에 직접 적용되는 우천 속도 보정은 없습니다.' };
             }
+            if(id==='SNOW')return {label:'급감속 사고 주의',tone:'caution',note:'초반 가속이 소폭 둔해지며 일부 주자가 크게 미끄러져 잠시 급감속할 수 있습니다.'};
+            if(id==='HEAT'&&horse.id===25)return {label:'사막 체질',tone:'favorable',note:'폭염의 후반형 스퍼트 불이익을 면제받습니다. 추가 가속 보너스는 없습니다.'};
             if (id === 'HEAT' && horse.type === 'late') return { label:'폭염 스퍼트 약화', tone:'caution', note:'후반형의 막판 스퍼트 배율에 ×0.90이 적용됩니다.' };
             if (id === 'WIND' && horse.type === 'early') return { label:'강풍 복불복', tone:'variable', note:'경주 계산 시 도주형의 기본 목표 속도에 ×0.60 또는 ×1.40이 적용됩니다. 어느 쪽인지는 사전에 공개하지 않습니다.' };
             return { label:id === 'SUNNY' ? '날씨 보정 없음' : '직접 날씨 보정 없음', tone:'', note:'이 유형에 직접 적용되는 날씨 속도 보정은 없습니다.' };
         };
-        const weatherBrief = weather => ({ SUNNY:'날씨에 따른 속도 보정 없음. 컨디션과 주행 유형을 함께 확인하세요.', RAIN:'안정형은 유리, 도주형·추격형은 감속. 히포포타무스는 별도의 우천 보정이 있습니다.', HEAT:'후반형의 막판 스퍼트가 조금 약해집니다. 다른 유형에는 직접 폭염 보정이 없습니다.', WIND:'도주형의 기본 목표 속도가 크게 오르거나 내려갑니다. 다른 유형에는 직접 강풍 보정이 없습니다.' }[weather?.id] || weather?.desc || '');
+        const weatherBrief = weather => ({ SUNNY:'날씨에 따른 속도 보정 없음. 컨디션과 주행 유형을 함께 확인하세요.', RAIN:'안정형은 유리, 도주형·추격형은 감속. 히포포타무스는 별도의 우천 보정이 있습니다.', HEAT:'후반형의 막판 스퍼트가 조금 약해집니다. 오아시스 러너는 이 불이익을 받지 않습니다.', WIND:'도주형의 기본 목표 속도가 크게 오르거나 내려갑니다. 다른 유형에는 직접 강풍 보정이 없습니다.', SNOW:'눈길에서는 일부 주자가 크게 미끄러져 잠시 급감속할 수 있습니다. 초반 가속도 소폭 둔해집니다.' }[weather?.id] || weather?.desc || '');
         function WeatherCard({ weather }) {
             return <div className="weather-card" data-testid="weather-card"><strong className={weather?.color || 'text-yellow-300'}>경기장 날씨 · {weather?.name || '맑음 ☀️'}</strong><p>{weatherBrief(weather)}</p></div>;
         }
@@ -599,7 +744,7 @@ society | 사회 | 정부 | 가족 | 학교`;
         };
         const finishPresentation = race => {
             if (!race?.timeline?.length || !race?.ranks?.length) return null;
-            const frames=race.timeline, ticks=Math.max(1,frames.length-1), msPerTick=BASE_RACE_MS/ticks;
+            const frames=race.timeline, ticks=Math.max(1,frames.length-1), msPerTick=(race.playbackMs||BASE_RACE_MS)/ticks;
             const times=(race.exactFinishTimes||[]).length===race.ranks.length?race.exactFinishTimes.slice():race.ranks.map((_,i)=>{
                 const t=frames.findIndex(f=>f.positions?.[i]>=race.distance); if(t<0)return 99999;
                 const prev=t?frames[t-1].positions[i]:0, curr=frames[t].positions[i]; return t+(race.distance-prev)/Math.max(.000001,curr-prev);
@@ -666,6 +811,327 @@ society | 사회 | 정부 | 가족 | 학교`;
             return <div className={`flex items-center justify-center rounded-full skin-${rarity} ${sizeClasses} shadow-md overflow-hidden bg-slate-800`} title={`${horse.name} (${rarity})`}>
                 {horse.img ? <img src={horse.img} className="w-full h-full object-cover" alt={horse.name} /> : horse.emoji}
             </div>;
+        }
+
+
+        // Existing race engine extracted intact; additions are scoped to the specified features.
+        function simulateRaceCore(state, random=Math.random, timingTicks=240) {
+            const getMsg=arr=>arr[Math.floor(random()*arr.length)];
+                    const horses = state.horses.map(h => ({ ...h, stats: { ...h.stats } }));
+                    // Freeze accepted wagers, odds and self-item luck before playback.
+                    const lockedPlayers = state.players.map(p => ({ uid: p.uid, bets: { ...(p.bets || {}) }, usedItemOn: p.usedItemOn ? { ...p.usedItemOn } : null, inventory: p.inventory || null, coinWin: p.usedItemOn?.target === 'self' && p.inventory === 'coin' ? random() > 0.5 : false }));
+                    const weather = state.weather.id;
+                    const distance = 6000;
+
+                    const sponsorLeaders = getSponsorLeaders(horses, state.players);
+                    const sponsors = {};
+                    horses.forEach(h => {
+                        let maxBet = 0; let topBettor = null;
+                        state.players.forEach(p => {
+                            if(p.bets && p.bets[h.id] > maxBet) { maxBet = p.bets[h.id]; topBettor = p.name; }
+                        });
+                        if(topBettor) sponsors[h.id] = topBettor;
+                    });
+
+                    const itemBoard=makeItemBoard(state,lockedPlayers,'confirmed');
+                    const itemPlans=itemBoard.horses;
+                    horses.forEach(h=>{h.stats.stability=itemPlans[h.id].stability;h.conditionIdx=itemPlans[h.id].conditionIdx;});
+                    const luckCenters = {};
+                    [...new Set(HORSES.map(h => h.type))].forEach(type => {
+                        const group = HORSES.filter(h => h.id <= 24 && h.type === type);
+                        luckCenters[type] = group.reduce((sum, h) => sum + h.stats.luck, 0) / group.length;
+                    });
+
+                    const snowEvents=[], featureWindows=[], featureMap={};
+                    const snowTickMs=BASE_RACE_MS/Math.max(1,timingTicks);
+                    const holdTicks=Math.max(1,Math.round(600/snowTickMs)), recoveryTicks=Math.max(1,Math.round(1000/snowTickMs));
+                    const snowPlans=weather==='SNOW'?shuffle(horses.map((_,i)=>i),random).slice(0,Math.min(horses.length,random()<.5?1:2)).map(hIdx=>({hIdx,trigger:.22+random()*.5,incident:null})):[];
+                    const trackFeature=(kind,i,active,t)=>{const key=kind+':'+i;let e=featureMap[key];if(active){if(!e){e={kind,hIdx:i,startTick:Math.max(0,t-1),endTick:t};featureMap[key]=e;featureWindows.push(e);}e.endTick=t;}};
+                    const duration = 1200; 
+                    const timeline = [];
+                    let positions = horses.map(()=>0);
+                    let laterals = horses.map((_, i) => (i - 3.5) * 120); 
+                    let curSpeeds = horses.map(()=>0);
+                    let momentums = horses.map(()=>0);
+                    
+                    const windFates = horses.map(() => random() > 0.5 ? 1.4 : 0.6);
+                    const exactFinishTimes = new Array(horses.length).fill(99999); 
+
+                    const hasMax = horses.some(h => h.id === 4);
+                    const hasKenny = horses.some(h => h.id === 12);
+                    
+                    let prevRanks = horses.map((_, i) => i);
+                    let triggered = { lastSpurt: false, runaway: false };
+                    let runaways = horses.map(() => false);
+
+                    for (let t=0; t<=duration; t++) {
+                        let tickData = { positions: [], speeds: [], laterals: [], events: [] };
+                        const maxPos = Math.max(...positions);
+                        const progress = maxPos / distance;
+                        
+                        const avgFieldSpeed = curSpeeds.reduce((a,b)=>a+b, 0) / (horses.length || 1);
+
+                        const curStandings = positions.map((p,i)=>({i,p})).sort((a,b)=>b.p - a.p);
+                        const curRanks = new Array(horses.length);
+                        curStandings.forEach((s, r) => curRanks[s.i] = r);
+
+                        for(let i=0; i<horses.length; i++) {
+                            if (positions[i] >= distance + 100) {
+                                // Never teleport a finisher backwards or rank it by array index.
+                                tickData.speeds.push(0); tickData.laterals.push(laterals[i]);
+                                continue;
+                            }
+
+                            const h = horses[i], plan=itemPlans[h.id], ownProgress=positions[i]/distance;
+                            const cond = CONDITIONS[h.conditionIdx].multi;
+                            let targetSpeed = h.stats.speed * cond;
+                            const distToLeader = maxPos - positions[i];
+
+                            let nearestDist = 9999;
+                            let nearestType = null;
+                            horses.forEach((otherH, otherI) => {
+                                if(i !== otherI) {
+                                    let dist = Math.abs(positions[otherI] - positions[i]);
+                                    if (dist < 300 && dist < nearestDist) { nearestDist = dist; nearestType = otherH.type; }
+                                }
+                            });
+                            
+                            if (nearestType && TYPE_MATCHUP[h.type]) {
+                                if (nearestType === TYPE_MATCHUP[h.type].strongVs) targetSpeed *= TYPE_MATCHUP[h.type].bonus;
+                                else if (nearestType === TYPE_MATCHUP[h.type].weakVs) targetSpeed *= TYPE_MATCHUP[h.type].penalty;
+                            }
+
+                            if (hasMax && hasKenny && (h.id === 4 || h.id === 12)) targetSpeed *= 1.05;
+
+                            if(weather === 'RAIN') { if(h.type === 'early') targetSpeed *= weatherPenalty(.85,plan.shoes); if(h.type === 'stable') targetSpeed *= 1.1; if(h.type === 'chaser') targetSpeed *= weatherPenalty(.85,plan.shoes); }
+                            if(weather === 'WIND' && h.type === 'early') { targetSpeed *= weatherPenalty(windFates[i],plan.shoes); }
+                            if(weather === 'RAIN' && h.id === 22) targetSpeed += 15;
+                            if(weather === 'SNOW' && ownProgress<.2)targetSpeed*=weatherPenalty(.94,plan.shoes);
+                            const steam=h.id===26&&ownProgress>=.45&&ownProgress<.60;
+                            if(h.id===26&&ownProgress<.2)targetSpeed*=.9;
+                            if(steam)targetSpeed*=1.12;
+                            trackFeature('steam',i,steam,t);
+                            trackFeature('gel',i,!!plan.effective.gel&&ownProgress>=.4&&ownProgress<.65,t);
+
+                            targetSpeed *= itemSpeedMultiplier(plan,progress,ownProgress,curRanks[i]);
+
+                            if (h.type === 'stable') {
+                                
+                                const floorSpeed = avgFieldSpeed * (0.9 + (cond - 1) * 0.5);
+                                targetSpeed = Math.max(targetSpeed, floorSpeed * (1 + (random()*0.04 - 0.02)));
+    
+                                // 후반부(80% 이상 진행) 진입 시, 현재 순위가 상위권(1~3등)이라면 '버티기' 모드 발동
+                                if (progress > 0.85 && curRanks[i] <= 2) {
+                                    targetSpeed *= 1.1; 
+                                }
+                            }
+                            else if (h.type === 'luck') {
+                                const luckyRoll = random();
+                                if (luckyRoll < 0.15) targetSpeed *= 4.5; 
+                                else if (luckyRoll < 0.30) targetSpeed *= 2.1;
+                                else if (luckyRoll < 0.70) targetSpeed *= 0.8; 
+                                else targetSpeed *= 0.3; 
+                            }
+
+                            if (h.type === 'early' && progress > 0.5 && progress <= 0.85) targetSpeed *= 0.98; 
+
+                            // 🌟 초반(진행률 30% 이하)에 도주마에게 무조건적인 부스터를 부여!
+                            if (h.type === 'early' && progress < 0.3) {
+                                targetSpeed *= 1.4; 
+                            }
+                            
+                            
+                            const spurtStart = h.type === 'late' ? 0.80 : 0.85;
+                            
+                            if (progress > spurtStart) {
+                                const spurtFactor = (h.stats.spurt / 100) * 2.8; 
+                                targetSpeed *= spurtFactor;
+                                if (h.type === 'late') targetSpeed *= 2.15; 
+                                if (weather === 'HEAT' && h.type === 'late' && h.id !== 25) targetSpeed *= weatherPenalty(.9,plan.shoes); 
+                                
+                                if (h.type === 'early') {
+                                    if (curRanks[i] === 0 && curStandings.length > 1) {
+                                        let distToSecond = positions[i] - curStandings[1].p;
+                                        if (distToSecond > 150 || runaways[i]) { // 조건 완화: 300m -> 200m
+                                            runaways[i] = true;
+                                            targetSpeed *= 1.8; // 
+                                            if (!triggered.runaway) {
+                                                tickData.events.push({ hIdx: i, msg: '대도주 성공!! 아무도 잡을 수 없습니다!', type: 'lead'});
+                                                triggered.runaway = true;
+                                            }
+                                        } else {
+                                            targetSpeed *= 1.3; // 🌟 추가: 1등이지만 대도주가 아닐 때도 살짝 버티는 힘 부여
+                                        }
+                                    } else if (!runaways[i]) {
+                                        targetSpeed *= 0.95; // 🌟 핵심 수정: 선두 뺏겼다고 확 죽어버리지 않게 0.8 -> 0.95로 완화
+                                    }
+                                }
+                            } else if (h.type === 'chaser' && curRanks[i] > 0) {
+                                // 사거리를 1000m로 늘리고, 범위 내에 들어오면 1.45배 속도로 맹추격
+                                if (distToLeader < 1400) {
+                                    targetSpeed *= 1.5;
+                                } 
+                                // 사정거리 밖에 있어도 포기하지 않고 1.25배의 기본 추격 속도 부여
+                                else {
+                                    targetSpeed *= 1.35; 
+                                }
+                            }
+                            
+
+                            // 1. 기본 추격 계수 상향 (2.5 -> 3.5)
+                            let catchUp = (distToLeader / distance) * 3.5; 
+
+                            // 2. 400m 이상 벌어졌을 때의 가속도 상향 (300 -> 200으로 나누어 더 큰 값 부여)
+                            if (distToLeader > 400) catchUp += (distToLeader - 400) / 200; 
+
+                            // 3. 🌟 (새로 추가) 경기가 60% 이상 진행됐을 때 끈을 더 강하게 당깁니다!
+                            if (progress > 0.6) catchUp *= 1.5; 
+
+                            if (h.type === 'late' && progress > 0.5) catchUp *= 1.8;
+                            targetSpeed *= (1 + catchUp);
+
+                            const baseLateral = (i - 3.5) * 120;
+                            let desiredLateral = baseLateral, draftingBoost = 1.0;
+                            const ahead = positions.map((p, j) => ({ j, gap: p - positions[i] }))
+                                .filter(o => o.j !== i && o.gap > 5 && o.gap < 400 && Math.abs(laterals[i] - laterals[o.j]) < 145)
+                                .sort((a, b) => a.gap - b.gap)[0];
+                            if (ahead) {
+                                desiredLateral += laterals[i] >= laterals[ahead.j] ? 80 : -80;
+                                // Enable the formerly unreachable wake conservatively: <=3%, never stacked.
+                                if (ahead.gap > 60 && progress > 0.1 && progress < 0.9) draftingBoost += 0.03 * (1 - ahead.gap / 400);
+                            }
+                            desiredLateral = Math.max(-440, Math.min(440, desiredLateral));
+                            laterals[i] += (desiredLateral - laterals[i]) * 0.08;
+                            targetSpeed *= draftingBoost;
+
+                            curSpeeds[i] += (targetSpeed - curSpeeds[i]) * 0.15;
+                            // Luck only makes a small, type-centered change to zero-mean fluctuation.
+                            // No extra speed bonus or changed luck-type jackpot probabilities.
+                            const luckNoise = 1 + ((luckCenters[h.type] || 50) - h.stats.luck) / 500;
+                            momentums[i] += (random() - 0.5) * ((100 - h.stats.stability) * 0.1) * luckNoise;
+                            momentums[i] *= 0.9; 
+                            
+                            let finalSpeed = curSpeeds[i] + momentums[i];
+
+                            const speedCap =
+                            h.type === 'late' ? 175 :
+                            h.type === 'chaser' ? 175 :
+                            h.type === 'early' ? 170 :
+                            h.type === 'luck' ? 180 :
+                            155;
+
+                            finalSpeed = Math.max(15, Math.min(finalSpeed, speedCap)); 
+
+                            // Accident loss is applied AFTER the ordinary engine floor/cap and catch-up.
+                            const snowPlan=snowPlans.find(v=>v.hIdx===i);
+                            if(snowPlan&&!snowPlan.incident&&ownProgress>=snowPlan.trigger&&ownProgress<.75){
+                                const baseSpeed=timeline[t-1]?.speeds?.[i]||finalSpeed;
+                                snowPlan.incident={kind:'snow',hIdx:i,startTick:t-1,holdEndTick:t-1+holdTicks,endTick:t-1+holdTicks+recoveryTicks,baseSpeed,minimumFactor:plan.shoes ? .625 : .25,progress:ownProgress};
+                                snowEvents.push(snowPlan.incident);
+                            }
+                            const incident=snowPlan?.incident;
+                            if(incident){const elapsed=t-1-incident.startTick;
+                                if(elapsed<holdTicks+recoveryTicks){
+                                    const low=Math.min(finalSpeed,incident.baseSpeed)*incident.minimumFactor;
+                                    const recover=Math.max(0,Math.min(1,(elapsed+1-holdTicks)/recoveryTicks));
+                                    const smooth=recover*recover*(3-2*recover);
+                                    finalSpeed=low+(finalSpeed-low)*smooth;
+                                }
+                            }
+                            let prevPos = positions[i];
+                            positions[i] += finalSpeed * (distance / 20000);
+                            
+                            if (prevPos < distance && positions[i] >= distance) {
+                                exactFinishTimes[i] = t + (distance - prevPos) / (positions[i] - prevPos);
+                            }
+
+                            tickData.speeds.push(finalSpeed);
+                            tickData.laterals.push(laterals[i]);
+
+                            if (positions[i] < distance && t % 20 === 0 && progress > 0.3 && t > 50) {
+                                let rankChange = prevRanks[i] - curRanks[i];
+                                if (rankChange >= 2 && random() < 0.5) {
+                                    tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.overtake), type: 'overtake'});
+                                } else if (rankChange <= -2 && random() < 0.3) {
+                                    if (curRanks[i] > 3) tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.disaster), type: 'disaster'});
+                                    else tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.slip), type: 'slip'});
+                                }
+                            }
+                        }
+                        
+                        if (progress > 0.90 && progress < 0.92 && !triggered.lastSpurt) {
+                            tickData.events.push({ hIdx: curStandings[0].i, msg: getMsg(EVENT_MSGS.lastSpurt), type: 'lastSpurt' });
+                            triggered.lastSpurt = true;
+                        }
+                        if (maxPos < distance && t % 10 === 0 && progress > 0.5 && curStandings.length > 1) {
+                            if (Math.abs(curStandings[0].p - curStandings[1].p) < 20 && random() < 0.2) {
+                                tickData.events.push({ hIdx: curStandings[0].i, msg: getMsg(EVENT_MSGS.neckAndNeck), type: 'neckAndNeck' });
+                            }
+                        }
+
+                        prevRanks = [...curRanks];
+                        tickData.positions = [...positions];
+                        timeline.push(tickData);
+                        
+                        if (Math.min(...positions) >= distance + 100) break; 
+                    }
+
+                    const finalRanks = horses.map((_, i) => i).sort((a, b) => exactFinishTimes[a] - exactFinishTimes[b]);
+                    
+                    const race = { timeline, ranks: finalRanks, exactFinishTimes, distance, sponsors, sponsorLeaders, weather: state.weather, matchId: state.matchId, roundId: state.roundId,
+                        settlement: { players: lockedPlayers, horses: horses.map(h => ({ id: h.id, odds: h.odds })) } };
+                    race.itemBoard=itemBoard;race.snowEvents=snowEvents;race.featureWindows=featureWindows;
+                    return race;
+        }
+
+        function buildRace(state,random=Math.random) {
+            let race;
+            if(state.weather.id==='SNOW'){
+                // Replay the same host random stream once to calibrate accident time to this race's ticks.
+                const tape=[];let cursor=0;
+                const recorded=()=>cursor<tape.length?tape[cursor++]:((tape.push(random())),tape[cursor++]);
+                const pilot=simulateRaceCore(state,recorded,240), timingTicks=Math.max(1,pilot.timeline.length-1);
+                cursor=0;race=simulateRaceCore(state,recorded,timingTicks);
+                race.playbackMs=(race.timeline.length-1)*BASE_RACE_MS/timingTicks;
+            }else race=simulateRaceCore(state,random);
+            decorateRace(race,state.horses);
+            return race;
+        }
+        function decorateRace(race,horses) {
+            const frames=race.timeline,ticks=frames.length-1,msPerTick=(race.playbackMs||BASE_RACE_MS)/Math.max(1,ticks);
+            const middle=frames.find(f=>Math.max(...f.positions)>=race.distance*.5)||frames[frames.length-1];
+            race.midRanks=middle.positions.map(p=>1+middle.positions.filter(v=>v>p+.000001).length);
+            const cues=[];
+            const add=(kind,hIdx,startTick,endTick,label)=>cues.push({id:`${race.roundId}:${kind}:${hIdx}:${startTick}`,kind,hIdx,startTick,endTick,label});
+            race.snowEvents.forEach(e=>cues.push({...e,id:`${race.roundId}:snow:${e.hIdx}`,label:'❄ 크게 미끄러졌다!'}));
+            const accelerating=(i,t)=>!race.snowEvents.some(e=>e.hIdx===i&&t>=e.startTick&&t<=e.endTick)&&frames[t].speeds[i]>(frames[Math.max(0,t-3)].speeds[i]||0)+1.5;
+            const duration=ms=>Math.max(1,ms/msPerTick);
+            horses.forEach((h,i)=>{
+                const name={7:['turtle','🚀 등껍질 부스터!'],14:['moon','✨ 문워크!'],18:['zen','초월!'],19:['phoenix','🔥 불사조의 비상'],25:['oasis','사막 체질!']}[h.id];
+                if(name&&(h.id!==25||race.weather.id==='HEAT')){
+                    const t=frames.findIndex((f,t)=>t>3&&Math.max(...f.positions)>=race.distance*.8&&f.positions[i]<race.distance&&accelerating(i,t));
+                    if(t>0)add(name[0],i,t-1,Math.min(ticks,t+duration(1600)),name[1]);
+                }
+                if(h.id===22&&race.weather.id==='RAIN')for(const threshold of [.15,.45,.7]){
+                    const t=frames.findIndex(f=>f.positions[i]>=race.distance*threshold);if(t>=0)add('splash',i,t,Math.min(ticks,t+duration(950)),'💦 우천 질주');
+                }
+                if(h.id===20){let last=-9999,count=0;for(let t=4;t<ticks&&count<2;t++){
+                    const rank=frames[t].positions.filter(v=>v>frames[t].positions[i]).length,old=frames[t-3].positions.filter(v=>v>frames[t-3].positions[i]).length;
+                    if(rank<old&&accelerating(i,t)&&t-last>duration(2500)&&frames[t].positions[i]<race.distance){add('delivery',i,t-1,t+duration(900),'🚚 로켓배송!');last=t;count++;}
+                }}
+            });
+            race.featureWindows.forEach(e=>{
+                if(e.kind==='gel'){
+                    add('gel',e.hIdx,e.startTick,e.endTick,'🥤 에너지 젤');
+                    let t=Math.max(3,Math.ceil(e.startTick));while(t<e.endTick&&!accelerating(e.hIdx,t))t++;
+                    if(t<e.endTick)add('gel-boost',e.hIdx,t-1,Math.min(e.endTick,t+duration(900)),'🥤 중반 가속!');
+                }
+                if(e.kind==='steam'){
+                    let t=Math.max(3,Math.ceil(e.startTick));while(t<e.endTick&&!accelerating(e.hIdx,t))t++;
+                    if(t<e.endTick)add('steam',e.hIdx,t-1,e.endTick,'🚂 증기압 최대!');
+                }
+            });
+            race.cues=cues.sort((a,b)=>a.startTick-b.startTick);
         }
 
         function App() {
@@ -898,8 +1364,8 @@ society | 사회 | 정부 | 가족 | 학교`;
                 if (!t.ready || !t.connected || t.closing || t.lost || t.inFlight || !t.dirty) return;
                 clearTimeout(t.timer); t.timer = null; t.dirty = false; t.inFlight = true;
                 const state = gameState.current;
-                const { players, customWords, raceData, finalPlayers, cheerBoard, ...publicState } = state;
-                const pieces = { state: publicState, words: { version: state.wordVersion, items: customWords }, 'recovery/race': raceData, standings: finalPlayers };
+                const { players, customWords, raceData, finalPlayers, cheerBoard, itemBoard, horseHistory, ...publicState } = state;
+                const pieces = { state: publicState, words: { version: state.wordVersion, items: customWords }, 'recovery/race': raceData, standings: finalPlayers, itemBoard, horseHistory };
                 // The small shared cheer board is sent at most 2.5 times/sec, not with a full race timeline.
                 if (state.status !== 'RACE' || t.cheerRound !== state.roundId || serverNow() - (t.lastCheerWrite || 0) >= 400) pieces.cheerBoard = cheerBoard;
                 else if (t.last.cheerBoard !== JSON.stringify(cheerBoard)) t.dirty = true;
@@ -1006,10 +1472,10 @@ society | 사회 | 정부 | 가족 | 학교`;
                     if (data.seq <= (player.lastBetSeq || 0)) return;
                     player.lastBetSeq = data.seq;
                     if (!betIsOpen(state, now)) { acknowledge('betAck', false, '배팅이 마감되어 마지막 승인 내역으로 진행합니다.'); return; }
-                    const checked = validateBet(data, player, state.horses);
+                    const checked = validateBet(data, player, state.horses, state);
                     if (checked.error) { acknowledge('betAck', false, checked.error); return; }
                     player.bets = checked.bets; player.usedItemOn = checked.usedItemOn; player.isReady = data.isReady === true; player.hasParticipated = true;
-                    recalcLiveOdds(); acknowledge('betAck', true); return;
+                    refreshItemBoard(state); recalcLiveOdds(); acknowledge('betAck', true); return;
                 }
                 if (data.type === 'QUIZ_ANSWER') {
                     if (data.seq <= (player.lastQuizSeq || 0)) return;
@@ -1023,7 +1489,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                     player.quizCombo = correct ? player.quizCombo + 1 : 0;
                     if (correct) {
                         player.money += 1000 + player.quizCombo * 200; player.stats.quizCnt++;
-                        if (!player.inventory && Math.random() < 0.2) player.inventory = ITEMS[Math.floor(Math.random() * ITEMS.length)].id;
+                        if (!player.inventory && Math.random() < 0.2) { const candidates=itemCandidates(state);player.inventory=candidates[Math.floor(Math.random()*candidates.length)].id; }
                     }
                     player.hasParticipated = true; player.quizIndex++; player.quizAvailableAt = now + (correct ? 600 : 1500);
                     acknowledge('quizAck', true); return;
@@ -1084,7 +1550,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                         }
                         if (disposed) return;
                         if (root.state?.matchId) {
-                            gameState.current = { ...initialGame(), ...root.state, horses: asArray(root.state.horses), players: asArray(root.players), customWords: asArray(root.words?.items), raceData: root.recovery?.race || null, finalPlayers: asArray(root.standings), cheerBoard: root.cheerBoard || null };
+                            gameState.current = { ...initialGame(), ...root.state, horses: asArray(root.state.horses), players: asArray(root.players), customWords: asArray(root.words?.items), raceData: root.recovery?.race || null, finalPlayers: asArray(root.standings), cheerBoard: root.cheerBoard || null, itemBoard:root.itemBoard||null, horseHistory:root.horseHistory||null };
                             gameState.current.players.forEach(p => { p.bets = readBets(p.bets); p.lastPing = 0; p.connected = false; });
                             if (gameState.current.status === 'END_HORSE') {
                                 const state = gameState.current;
@@ -1178,7 +1644,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                 const state = gameState.current;
                 if (!['LOBBY', 'RESULT'].includes(state.status) || (state.status === 'RESULT' && state.round >= state.totalRounds)) return;
                 state.totalRounds = Math.max(state.round + 1, Math.min(10, Number(state.totalRounds) || 3));
-                state.weather = Math.random() < 0.5 ? WEATHERS[0] : WEATHERS[1 + Math.floor(Math.random() * 3)];
+                state.weather = chooseWeather();
                 state.horses = shuffle(HORSES).slice(0, 8).map(h => ({ ...h, stats: { ...h.stats }, conditionIdx: Math.floor(Math.random() * CONDITIONS.length), odds: '1.1' }));
                 state.round++; state.roundId = newId(); state.raceData = null; state.settledRoundId = ''; state.quizEndsAt = serverNow() + 30000; state.bettingEndsAt = 0; state.cheerBoard = null; state.racePresentation = 'LIVE';
                 state.players.forEach(p => {
@@ -1186,7 +1652,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                     if (p.connected) p.hasParticipated = true;
                     resetQuizFor(p);
                 });
-                recalcLiveOdds(); changeStatus('QUIZ');
+                refreshItemBoard(state);recalcLiveOdds(); changeStatus('QUIZ');
             };
 
             useEffect(() => {
@@ -1244,261 +1710,9 @@ society | 사회 | 정부 | 가족 | 학교`;
                     const state = gameState.current;
                     if (!canOperate() || state.status !== 'BETTING' || !state.horses.length || !state.bettingEndsAt || serverNow() < state.bettingEndsAt) return;
                     recalcLiveOdds();
-                    const horses = state.horses.map(h => ({ ...h, stats: { ...h.stats } }));
-                    // Freeze accepted wagers, odds and self-item luck before playback.
-                    const lockedPlayers = state.players.map(p => ({ uid: p.uid, bets: { ...(p.bets || {}) }, usedItemOn: p.usedItemOn ? { ...p.usedItemOn } : null, inventory: p.inventory || null, coinWin: p.usedItemOn?.target === 'self' && p.inventory === 'coin' ? Math.random() > 0.5 : false }));
-                    const weather = state.weather.id;
-                    const distance = 6000;
-
-                    const sponsorLeaders = getSponsorLeaders(horses, state.players);
-                    const sponsors = {};
-                    horses.forEach(h => {
-                        let maxBet = 0; let topBettor = null;
-                        state.players.forEach(p => {
-                            if(p.bets && p.bets[h.id] > maxBet) { maxBet = p.bets[h.id]; topBettor = p.name; }
-                        });
-                        if(topBettor) sponsors[h.id] = topBettor;
-                    });
-
-                    const itemEffects = {};
-                    lockedPlayers.forEach(p => {
-                        if (p.usedItemOn && p.inventory && p.usedItemOn.target === 'horse') {
-                            if (!itemEffects[p.usedItemOn.horseId]) itemEffects[p.usedItemOn.horseId] = [];
-                            itemEffects[p.usedItemOn.horseId].push(p.inventory);
-                        }
-                    });
-                    // Apply stability effects once, independent of player/join order.
-                    // Sedative establishes stability 90 first; each whip then halves that value.
-                    horses.forEach(h => {
-                        const effects = itemEffects[h.id] || [];
-                        if (effects.includes('sedative') && ['luck', 'early'].includes(h.type)) h.stats.stability = 90;
-                        h.stats.stability = Math.max(0, Math.min(100, h.stats.stability * Math.pow(0.5, effects.filter(e => e === 'whip').length)));
-                    });
-                    const luckCenters = {};
-                    [...new Set(HORSES.map(h => h.type))].forEach(type => {
-                        const group = HORSES.filter(h => h.type === type);
-                        luckCenters[type] = group.reduce((sum, h) => sum + h.stats.luck, 0) / group.length;
-                    });
-
-                    const duration = 1200; 
-                    const timeline = [];
-                    let positions = horses.map(()=>0);
-                    let laterals = horses.map((_, i) => (i - 3.5) * 120); 
-                    let curSpeeds = horses.map(()=>0);
-                    let momentums = horses.map(()=>0);
-                    
-                    const windFates = horses.map(() => Math.random() > 0.5 ? 1.4 : 0.6);
-                    const exactFinishTimes = new Array(horses.length).fill(99999); 
-
-                    const hasMax = horses.some(h => h.id === 4);
-                    const hasKenny = horses.some(h => h.id === 12);
-                    
-                    let prevRanks = horses.map((_, i) => i);
-                    let triggered = { lastSpurt: false, runaway: false };
-                    let runaways = horses.map(() => false);
-
-                    for (let t=0; t<=duration; t++) {
-                        let tickData = { positions: [], speeds: [], laterals: [], events: [] };
-                        const maxPos = Math.max(...positions);
-                        const progress = maxPos / distance;
-                        
-                        const avgFieldSpeed = curSpeeds.reduce((a,b)=>a+b, 0) / (horses.length || 1);
-
-                        const curStandings = positions.map((p,i)=>({i,p})).sort((a,b)=>b.p - a.p);
-                        const curRanks = new Array(horses.length);
-                        curStandings.forEach((s, r) => curRanks[s.i] = r);
-
-                        for(let i=0; i<horses.length; i++) {
-                            if (positions[i] >= distance + 100) {
-                                // Never teleport a finisher backwards or rank it by array index.
-                                tickData.speeds.push(0); tickData.laterals.push(laterals[i]);
-                                continue;
-                            }
-
-                            const h = horses[i];
-                            const cond = CONDITIONS[h.conditionIdx].multi;
-                            let targetSpeed = h.stats.speed * cond;
-                            const distToLeader = maxPos - positions[i];
-
-                            let nearestDist = 9999;
-                            let nearestType = null;
-                            horses.forEach((otherH, otherI) => {
-                                if(i !== otherI) {
-                                    let dist = Math.abs(positions[otherI] - positions[i]);
-                                    if (dist < 300 && dist < nearestDist) { nearestDist = dist; nearestType = otherH.type; }
-                                }
-                            });
-                            
-                            if (nearestType && TYPE_MATCHUP[h.type]) {
-                                if (nearestType === TYPE_MATCHUP[h.type].strongVs) targetSpeed *= TYPE_MATCHUP[h.type].bonus;
-                                else if (nearestType === TYPE_MATCHUP[h.type].weakVs) targetSpeed *= TYPE_MATCHUP[h.type].penalty;
-                            }
-
-                            if (hasMax && hasKenny && (h.id === 4 || h.id === 12)) targetSpeed *= 1.05;
-
-                            if(weather === 'RAIN') { if(h.type === 'early') targetSpeed *= 0.85; if(h.type === 'stable') targetSpeed *= 1.1; if(h.type === 'chaser') targetSpeed *= 0.85; }
-                            if(weather === 'WIND' && h.type === 'early') { targetSpeed *= windFates[i]; }
-                            if(weather === 'RAIN' && h.id === 22) targetSpeed += 15;
-
-                            const effects = itemEffects[h.id] || [];
-                            effects.forEach(eff => {
-                                if(eff==='banana') targetSpeed *= 0.9; 
-                                if(eff==='whip') targetSpeed *= 1.25; 
-                                if(eff==='carrot' && progress < 0.3) targetSpeed *= 1.3; 
-                                if(eff==='sand' && curRanks[i] > 0) targetSpeed *= 0.9;
-                                // Sedative/whip stability was resolved once above.
-                                if(eff==='curse') targetSpeed *= 0.8; 
-                            });
-
-                            if (h.type === 'stable') {
-                                
-                                const floorSpeed = avgFieldSpeed * (0.9 + (cond - 1) * 0.5);
-                                targetSpeed = Math.max(targetSpeed, floorSpeed * (1 + (Math.random()*0.04 - 0.02)));
-    
-                                // 후반부(80% 이상 진행) 진입 시, 현재 순위가 상위권(1~3등)이라면 '버티기' 모드 발동
-                                if (progress > 0.85 && curRanks[i] <= 2) {
-                                    targetSpeed *= 1.1; 
-                                }
-                            }
-                            else if (h.type === 'luck') {
-                                const luckyRoll = Math.random();
-                                if (luckyRoll < 0.15) targetSpeed *= 4.5; 
-                                else if (luckyRoll < 0.30) targetSpeed *= 2.1;
-                                else if (luckyRoll < 0.70) targetSpeed *= 0.8; 
-                                else targetSpeed *= 0.3; 
-                            }
-
-                            if (h.type === 'early' && progress > 0.5 && progress <= 0.85) targetSpeed *= 0.98; 
-
-                            // 🌟 초반(진행률 30% 이하)에 도주마에게 무조건적인 부스터를 부여!
-                            if (h.type === 'early' && progress < 0.3) {
-                                targetSpeed *= 1.4; 
-                            }
-                            
-                            
-                            const spurtStart = h.type === 'late' ? 0.80 : 0.85;
-                            
-                            if (progress > spurtStart) {
-                                const spurtFactor = (h.stats.spurt / 100) * 2.8; 
-                                targetSpeed *= spurtFactor;
-                                if (h.type === 'late') targetSpeed *= 2.15; 
-                                if (weather === 'HEAT' && h.type === 'late') targetSpeed *= 0.9; 
-                                
-                                if (h.type === 'early') {
-                                    if (curRanks[i] === 0 && curStandings.length > 1) {
-                                        let distToSecond = positions[i] - curStandings[1].p;
-                                        if (distToSecond > 150 || runaways[i]) { // 조건 완화: 300m -> 200m
-                                            runaways[i] = true;
-                                            targetSpeed *= 1.8; // 
-                                            if (!triggered.runaway) {
-                                                tickData.events.push({ hIdx: i, msg: '대도주 성공!! 아무도 잡을 수 없습니다!', type: 'lead'});
-                                                triggered.runaway = true;
-                                            }
-                                        } else {
-                                            targetSpeed *= 1.3; // 🌟 추가: 1등이지만 대도주가 아닐 때도 살짝 버티는 힘 부여
-                                        }
-                                    } else if (!runaways[i]) {
-                                        targetSpeed *= 0.95; // 🌟 핵심 수정: 선두 뺏겼다고 확 죽어버리지 않게 0.8 -> 0.95로 완화
-                                    }
-                                }
-                            } else if (h.type === 'chaser' && curRanks[i] > 0) {
-                                // 사거리를 1000m로 늘리고, 범위 내에 들어오면 1.45배 속도로 맹추격
-                                if (distToLeader < 1400) {
-                                    targetSpeed *= 1.5;
-                                } 
-                                // 사정거리 밖에 있어도 포기하지 않고 1.25배의 기본 추격 속도 부여
-                                else {
-                                    targetSpeed *= 1.35; 
-                                }
-                            }
-                            
-
-                            // 1. 기본 추격 계수 상향 (2.5 -> 3.5)
-                            let catchUp = (distToLeader / distance) * 3.5; 
-
-                            // 2. 400m 이상 벌어졌을 때의 가속도 상향 (300 -> 200으로 나누어 더 큰 값 부여)
-                            if (distToLeader > 400) catchUp += (distToLeader - 400) / 200; 
-
-                            // 3. 🌟 (새로 추가) 경기가 60% 이상 진행됐을 때 끈을 더 강하게 당깁니다!
-                            if (progress > 0.6) catchUp *= 1.5; 
-
-                            if (h.type === 'late' && progress > 0.5) catchUp *= 1.8;
-                            targetSpeed *= (1 + catchUp);
-
-                            const baseLateral = (i - 3.5) * 120;
-                            let desiredLateral = baseLateral, draftingBoost = 1.0;
-                            const ahead = positions.map((p, j) => ({ j, gap: p - positions[i] }))
-                                .filter(o => o.j !== i && o.gap > 5 && o.gap < 400 && Math.abs(laterals[i] - laterals[o.j]) < 145)
-                                .sort((a, b) => a.gap - b.gap)[0];
-                            if (ahead) {
-                                desiredLateral += laterals[i] >= laterals[ahead.j] ? 80 : -80;
-                                // Enable the formerly unreachable wake conservatively: <=3%, never stacked.
-                                if (ahead.gap > 60 && progress > 0.1 && progress < 0.9) draftingBoost += 0.03 * (1 - ahead.gap / 400);
-                            }
-                            desiredLateral = Math.max(-440, Math.min(440, desiredLateral));
-                            laterals[i] += (desiredLateral - laterals[i]) * 0.08;
-                            targetSpeed *= draftingBoost;
-
-                            curSpeeds[i] += (targetSpeed - curSpeeds[i]) * 0.15;
-                            // Luck only makes a small, type-centered change to zero-mean fluctuation.
-                            // No extra speed bonus or changed luck-type jackpot probabilities.
-                            const luckNoise = 1 + ((luckCenters[h.type] || 50) - h.stats.luck) / 500;
-                            momentums[i] += (Math.random() - 0.5) * ((100 - h.stats.stability) * 0.1) * luckNoise;
-                            momentums[i] *= 0.9; 
-                            
-                            let finalSpeed = curSpeeds[i] + momentums[i];
-
-                            const speedCap =
-                            h.type === 'late' ? 175 :
-                            h.type === 'chaser' ? 175 :
-                            h.type === 'early' ? 170 :
-                            h.type === 'luck' ? 180 :
-                            155;
-
-                            finalSpeed = Math.max(15, Math.min(finalSpeed, speedCap)); 
-
-                            let prevPos = positions[i];
-                            positions[i] += finalSpeed * (distance / 20000);
-                            
-                            if (prevPos < distance && positions[i] >= distance) {
-                                exactFinishTimes[i] = t + (distance - prevPos) / (positions[i] - prevPos);
-                            }
-
-                            tickData.speeds.push(finalSpeed);
-                            tickData.laterals.push(laterals[i]);
-
-                            if (positions[i] < distance && t % 20 === 0 && progress > 0.3 && t > 50) {
-                                let rankChange = prevRanks[i] - curRanks[i];
-                                if (rankChange >= 2 && Math.random() < 0.5) {
-                                    tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.overtake), type: 'overtake'});
-                                } else if (rankChange <= -2 && Math.random() < 0.3) {
-                                    if (curRanks[i] > 3) tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.disaster), type: 'disaster'});
-                                    else tickData.events.push({ hIdx: i, msg: getMsg(EVENT_MSGS.slip), type: 'slip'});
-                                }
-                            }
-                        }
-                        
-                        if (progress > 0.90 && progress < 0.92 && !triggered.lastSpurt) {
-                            tickData.events.push({ hIdx: curStandings[0].i, msg: getMsg(EVENT_MSGS.lastSpurt), type: 'lastSpurt' });
-                            triggered.lastSpurt = true;
-                        }
-                        if (maxPos < distance && t % 10 === 0 && progress > 0.5 && curStandings.length > 1) {
-                            if (Math.abs(curStandings[0].p - curStandings[1].p) < 20 && Math.random() < 0.2) {
-                                tickData.events.push({ hIdx: curStandings[0].i, msg: getMsg(EVENT_MSGS.neckAndNeck), type: 'neckAndNeck' });
-                            }
-                        }
-
-                        prevRanks = [...curRanks];
-                        tickData.positions = [...positions];
-                        timeline.push(tickData);
-                        
-                        if (Math.min(...positions) >= distance + 100) break; 
-                    }
-
-                    const finalRanks = horses.map((_, i) => i).sort((a, b) => exactFinishTimes[a] - exactFinishTimes[b]);
-                    
-                    state.raceData = { timeline, ranks: finalRanks, exactFinishTimes, distance, sponsors, sponsorLeaders, weather: state.weather, matchId: state.matchId, roundId: state.roundId,
-                        settlement: { players: lockedPlayers, horses: horses.map(h => ({ id: h.id, odds: h.odds })) } };
+                    const race=buildRace(state);
+                    state.raceData=race;state.itemBoard=race.itemBoard;
+                    const lockedPlayers=race.settlement.players, sponsorLeaders=race.sponsorLeaders;
                     lockedPlayers.forEach(locked => {
                         const p = state.players.find(p => p.uid === locked.uid);
                         if (p && locked.usedItemOn?.target === 'horse') p.inventory = null;
@@ -1531,6 +1745,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                     }
                     return { locked, cost: Math.round(cost), win: Math.round(win) };
                 });
+                recordRaceHistory(state);
                 state.settledRoundId = state.roundId;
                 outcomes.forEach(({ locked, cost, win }) => {
                     const p = state.players.find(p => p.uid === locked.uid); if (!p) return;
@@ -1649,7 +1864,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                                 <div className="flex items-center justify-between gap-3 shrink-0"><h2 className="text-2xl font-black text-yellow-400">💰 배팅 타임!</h2><span className="text-xs text-slate-300 text-right">모두 준비되어도 자동 출발하지 않습니다.<br/>선생님이 마감을 시작해 주세요.</span></div>
                                 <div className="betting-host-scroll custom-scrollbar"><BettingReadiness players={uiState.players}/>
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-3 pb-2">
-                                        {uiState.horses.map(h=><div key={h.id} className="bg-slate-800 border border-slate-700 p-3 rounded-xl shadow-md min-w-0"><div className="flex items-center gap-2 mb-2"><span className="text-4xl shrink-0">{h.emoji}</span><div className="min-w-0"><div className="font-black text-base leading-tight break-words">{h.name}</div><div className="font-black text-red-400">{h.odds}배 <span className="text-xs text-slate-400">(예상)</span></div></div></div><HorseIntel horse={h} weather={uiState.weather}/></div>)}
+                                        {uiState.horses.map(h=><div key={h.id} className="bg-slate-800 border border-slate-700 p-3 rounded-xl shadow-md min-w-0"><div className="flex items-center gap-2 mb-2"><span className="text-4xl shrink-0">{h.emoji}</span><div className="min-w-0"><div className="font-black text-base leading-tight break-words">{h.name}</div><div className="font-black text-red-400">{h.odds}배 <span className="text-xs text-slate-400">(예상)</span></div></div></div><HorseIntel horse={h} weather={uiState.weather}/><HorseItems plan={uiState.itemBoard?.roundId===uiState.roundId?uiState.itemBoard.horses?.[h.id]:null} phase={uiState.itemBoard?.phase}/><HorseHistory history={uiState.horseHistory?.matchId===uiState.matchId?uiState.horseHistory:null} horseId={h.id}/></div>)}
                                     </div>
                                 </div>
                                 <div className="shrink-0">{uiState.bettingEndsAt?<CountdownBar endsAt={uiState.bettingEndsAt} onCancel={cancelBettingCountdown}/>:<button onClick={beginBettingCountdown} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded-xl text-xl shadow-lg active:scale-95 transition" data-testid="begin-countdown">5초 후 배팅 마감 · 경주 시작 🏁</button>}</div>
@@ -1671,7 +1886,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                                 </div>
                                 <h2 className="text-4xl font-black text-purple-400 mb-5">🏆 {uiState.round}라운드 결과</h2>
                                 <FinishSummary race={uiState.raceData} horses={uiState.horses}/>
-                                <HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} />
+                                <HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} /><HistoryResult history={uiState.horseHistory} horses={uiState.horses} roundId={uiState.roundId}/>
                                 <div className="bg-slate-800 rounded-xl p-4 mb-8 border border-slate-700 shadow-md">
                                     <h3 className="text-xl font-bold mb-4 border-b border-slate-600 pb-2">현재 재산 순위</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-left">
@@ -1737,6 +1952,7 @@ society | 사회 | 정부 | 가족 | 학교`;
             const [myReady, setMyReady] = useState(false);
             const [bettingClosed, setBettingClosed] = useState(false);
             const [cheerBoard, setCheerBoard] = useState(null);
+            const [itemBoard,setItemBoard]=useState(null), [horseHistory,setHorseHistory]=useState(null);
             const [quizNotice, setQuizNotice] = useState('');
             const client = useRef(null);
             if (!client.current) client.current = { sessionId: newId(), seq: 0, instanceId: '', meta: null, state: null, me: null, words: null, connected: false, hostOnline: false, joinedAt: 0, draftBets: {}, draftItem: null, draftReady: false, pendingBet: null, pendingQuiz: null, quizTimer: null, cheerTimer: null, betTimer: null, disposed: false };
@@ -1812,6 +2028,8 @@ society | 사회 | 정부 | 가족 | 학교`;
                     c.words = { version: v.version, items: asArray(v.items) }; setWordBank(c.words);
                 }, fail));
                 unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/standings`), snap => setFinalPlayers(asArray(snap.val())), fail));
+                unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/itemBoard`),snap=>setItemBoard(snap.val()),fail));
+                unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/horseHistory`),snap=>setHorseHistory(snap.val()),fail));
                 const ping = setInterval(updatePresence, 3000);
                 return () => {
                     c.disposed = true; clearInterval(ping); clearTimeout(c.quizTimer); clearTimeout(c.cheerTimer); clearTimeout(c.betTimer); unsubs.forEach(fn => fn());
@@ -1923,7 +2141,13 @@ society | 사회 | 정부 | 가족 | 학교`;
             };
             const handleSelectTargetHorse = hId => {
                 const c = client.current; if (!canAct('BETTING') || !isItemSelecting || !c.me.inventory) return;
-                setIsItemSelecting(false); sendBet(c.draftBets, { target: 'horse', horseId: hId, itemId: c.me.inventory });
+                const horse=c.state.horses.find(h=>h.id===hId), id=c.me.inventory;
+                const validBoard=itemBoard?.matchId===c.state.matchId&&itemBoard?.roundId===c.state.roundId?itemBoard:null;
+                const own=c.me.usedItemOn?.target==='horse'&&c.me.usedItemOn.horseId===hId&&c.me.usedItemOn.itemId===id;
+                const reserved=SINGLE_ITEMS.includes(id)&&(validBoard?.horses?.[hId]?.counts?.[id]||0)>0&&!own;
+                const reason=reserved?'다른 학생이 이 말에 같은 아이템을 이미 예약했습니다.':itemReservationError(id,horse,c.me,{weather:c.state.weather,players:[]});
+                if(reason){setBetNotice(reason);return;}
+                setIsItemSelecting(false); sendBet(c.draftBets, { target: 'horse', horseId: hId, itemId: id });
             };
             const handleCheer = horseId => {
                 const c = client.current;
@@ -2055,7 +2279,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                                     
                                     {usedItem?.target === 'horse' && usedItem.horseId === h.id && (
                                         <div className="absolute top-2 right-2 bg-purple-600 border border-purple-400 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg z-10">
-                                            {myItem?.icon} 아이템 적용됨!
+                                            {myItem?.icon} {me.usedItemOn?.horseId===h.id&&me.usedItemOn?.itemId===usedItem.itemId?'예약 승인':'승인 대기'}
                                         </div>
                                     )}
 
@@ -2068,7 +2292,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                                         </div>
                                     </div>
                                     
-                                    <HorseIntel horse={h} weather={roomState.weather}/>
+                                    <HorseIntel horse={h} weather={roomState.weather}/><HorseItems plan={itemBoard?.matchId===roomState.matchId&&itemBoard?.roundId===roomState.roundId?itemBoard.horses?.[h.id]:null} phase={itemBoard?.phase}/><HorseHistory history={horseHistory?.matchId===roomState.matchId?horseHistory:null} horseId={h.id}/>
                                     <div className="flex items-center justify-end">
                                         <div className="text-lg font-black text-emerald-400 bg-teal-900 px-3 py-1 rounded-lg border border-slate-700">{(myBets[h.id] || 0)}💰</div>
                                     </div>
@@ -2107,7 +2331,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                                             <div className="font-black text-sm text-slate-100 truncate w-full px-2">{h.name}</div>
                                             <div className="text-xs font-bold text-emerald-400 mt-2 bg-teal-900 px-3 py-1 rounded-full">{myBets[h.id]}💰</div>
                                             
-                                            <CheerMini count={cheerBoard?.horses?.[h.id]?.count || 0} sponsors={asArray(cheerBoard?.sponsors?.[h.id])}/>
+                                            <span className="text-[10px] text-amber-200">확정: {ITEM_ORDER.filter(id=>itemBoard?.matchId===roomState.matchId&&itemBoard?.roundId===roomState.roundId&&itemBoard.horses?.[h.id]?.counts?.[id]).map(id=>`${ITEMS.find(x=>x.id===id)?.icon||''}×${itemBoard.horses[h.id].counts[id]}`).join('  ')||'없음'}</span><CheerMini count={cheerBoard?.horses?.[h.id]?.count || 0} sponsors={asArray(cheerBoard?.sponsors?.[h.id])}/>
                                             {cheerCooldown && (
                                                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-[1px]">
                                                     <div className="text-white font-black text-xl flex items-center gap-2"><i className="fas fa-hourglass-half animate-spin"></i> 쿨타임</div>
@@ -2126,7 +2350,7 @@ society | 사회 | 정부 | 가족 | 학교`;
             }
 
             if (roomState.status === 'RESULT') {
-                return <>{connectionBanner}<ResultPhase me={me} /></>;
+                return <>{connectionBanner}<ResultPhase me={me} history={horseHistory?.matchId===roomState.matchId?horseHistory:null} horses={roomState.horses} roundId={roomState.roundId} /></>;
             }
             
             if (roomState.status === 'END_HORSE') {
@@ -2172,6 +2396,19 @@ society | 사회 | 정부 | 가족 | 학교`;
             return null;
         }
 
+
+        const cueAt = (race,i,tick) => {
+            const active=(race.cues||[]).filter(e=>e.hIdx===i&&tick>=e.startTick&&tick<=e.endTick);
+            return active.find(e=>e.kind==='snow')||active.find(e=>e.kind!=='gel')||null;
+        };
+        const playCueSound = kind => {
+            if(kind==='snow'){play8BitTone('triangle',180,.18,.045,65);return;}
+            if(kind==='steam'){play8BitTone('sine',650,.32,.04,380);return;}
+            if(kind==='zen'){play8BitTone('sine',528,.45,.03);play8BitTone('sine',792,.48,.018);return;}
+            if(kind==='delivery'){play8BitTone('sine',880,.12,.035,1100);return;}
+            play8BitTone('sine',420,.18,.025,680);
+        };
+
         function RacePhase({ raceData, horses, isHost, onFinish, cheerBoard, onPresentation }) {
             const finishCallback = useRef(onFinish); finishCallback.current = onFinish;
             const presentationCallback = useRef(onPresentation); presentationCallback.current = onPresentation;
@@ -2185,7 +2422,7 @@ society | 사회 | 정부 | 가족 | 학교`;
             useEffect(() => () => { effectTimers.current.forEach(clearTimeout); effectTimers.current.clear(); }, []);
             const containerRef = useRef(null), trackCanvasRef = useRef(null), horseRefs = useRef([]);
             const pipRef = useRef(null), hudDistRef = useRef(null), dustLayerRef = useRef(null);
-            const evtContainerRef = useRef(null), particleContainerRef = useRef(null), cheerTickerRef = useRef(null), cheerBannerRef = useRef(null);
+            const snowNoticeRef = useRef(null), evtContainerRef = useRef(null), particleContainerRef = useRef(null), cheerTickerRef = useRef(null), cheerBannerRef = useRef(null);
             const replayProgressRef = useRef(null), photoDetailsRef = useRef(null);
             const initialBoard = useRef(cheerBoard); initialBoard.current = cheerBoard;
             const playback = useRef({ lastTs:null, currentTick:0, lastEvtTick:-1, spurt:false, camX:null });
@@ -2268,11 +2505,12 @@ society | 사회 | 정부 | 가족 | 학교`;
                 playback.current = { lastTs:null, currentTick:0, lastEvtTick:-1, spurt:false, camX:START_OFFSET, photoPainted:false };
                 leadTracker.current = { currentLeaderIdx:-1, lastLeadChangeTick:-999 };
                 stageRef.current = 'LIVE'; setFinishStage('LIVE'); setIsSpurtCSS(false); setIsDramatic(false);
-                const ticks = raceData.timeline.length-1, msPerTick = BASE_RACE_MS/Math.max(1,ticks), plan = finishPlan;
+                const ticks = raceData.timeline.length-1, msPerTick = (raceData.playbackMs||BASE_RACE_MS)/Math.max(1,ticks), plan = finishPlan;
                 const replayEligible = !!(plan?.close && plan.allFinished && plan.finishTick > plan.replayStart);
                 const ranksByIndex = [];
                 raceData.ranks.forEach((index, rank) => { ranksByIndex[index]=rank+1; });
-                const parts = horseRefs.current.map(el => ({ label:el?.querySelector('.runner-finish-rank'), icon:el?.querySelector('.runner-icon') }));
+                const parts = horseRefs.current.map(el => ({ label:el?.querySelector('.runner-finish-rank'), icon:el?.querySelector('.runner-icon'), cue:el?.querySelector('.runner-cue-layer'), aura:el?.querySelector('.cue-aura'), tail:el?.querySelector('.cue-tail'), cueLabel:el?.querySelector('.cue-label'), lights:el?.querySelectorAll('.cue-light'), gel:el?.querySelector('.cue-gel') }));
+                const cueSounds=new Set();let lastCueTick=-1;
                 const size = { width:1, height:1 }, dpr=Math.min(window.devicePixelRatio||1,1.5);
                 const resize = () => {
                     const rect=containerRef.current?.getBoundingClientRect();
@@ -2288,14 +2526,14 @@ society | 사회 | 정부 | 가족 | 학교`;
                     if (canvas.width!==pixelsW || canvas.height!==pixelsH) { canvas.width=pixelsW; canvas.height=pixelsH; }
                     const ctx=canvas.getContext('2d',{alpha:false});
                     ctx.setTransform(dpr,0,0,dpr,0,0);
-                    ctx.fillStyle='#5c4033';ctx.fillRect(0,0,width,height);
+                    ctx.fillStyle=raceData.weather.id==='SNOW'?'#6a8080':'#5c4033';ctx.fillRect(0,0,width,height);
                     const {tx,ty,zoom}=camera, trackY=TRACK_CY*zoom+ty;
-                    ctx.fillStyle='#166534';ctx.fillRect(0,trackY-600*zoom,width,1200*zoom);
-                    ctx.fillStyle='#22c55e';ctx.fillRect(0,trackY-550*zoom,width,1100*zoom);
+                    ctx.fillStyle=raceData.weather.id==='SNOW'?'#a8cdb3':'#166534';ctx.fillRect(0,trackY-600*zoom,width,1200*zoom);
+                    ctx.fillStyle=raceData.weather.id==='SNOW'?'#deebdf':'#22c55e';ctx.fillRect(0,trackY-550*zoom,width,1100*zoom);
                     const start=(START_OFFSET-2000)*zoom+tx, end=(START_OFFSET+TRACK_LENGTH*VISUAL_SCALE+3000)*zoom+tx;
                     const lineStart=Math.max(0,start), lineEnd=Math.min(width,end);
                     if (lineEnd>lineStart) {
-                        ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=12*zoom;
+                        ctx.strokeStyle=raceData.weather.id==='SNOW'?'rgba(30,65,80,.25)':'rgba(255,255,255,.2)';ctx.lineWidth=12*zoom;
                         ctx.setLineDash([100*zoom,100*zoom]);ctx.lineDashOffset=lineStart-start;
                         for (let lane=-3;lane<=4;lane++) {
                             const y=trackY+(lane*120-60)*zoom;
@@ -2311,6 +2549,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                         ctx.beginPath();ctx.moveTo(x,trackY-550*zoom);ctx.lineTo(x,trackY+550*zoom);ctx.stroke();
                         if (dashed) ctx.setLineDash([]);
                     };
+                    if(raceData.weather.id==='SNOW'){marker(START_OFFSET,'#334155',76);marker(finishX,'#334155',76);}
                     marker(START_OFFSET,'#fff',60);
                     marker(finishX,'#fff',60);
                     marker(finishX+60,'#fbbf24',60,true);
@@ -2321,10 +2560,10 @@ society | 사회 | 정부 | 가족 | 학교`;
                 const finish = () => { if (disposed || settled) return; settled=true; if (isHost) finishCallback.current?.(raceData.roundId); };
                 const clearLiveEffects = () => {
                     effectTimers.current.forEach(clearTimeout); effectTimers.current.clear();
-                    [evtContainerRef,cheerTickerRef,cheerBannerRef,particleContainerRef,dustLayerRef].forEach(ref=>ref.current?.replaceChildren());
+                    [snowNoticeRef,evtContainerRef,cheerTickerRef,cheerBannerRef,particleContainerRef,dustLayerRef].forEach(ref=>ref.current?.replaceChildren());
                     horseRefs.current.forEach(el=>el?.querySelectorAll('.cheer-burst-ring,.cheer-confetti').forEach(node=>node.remove()));
                     cheerUntil.current=horses.map(()=>0);
-                    horseRefs.current.forEach(el=>{el?.classList.remove('cheer-active','is-accelerating');});
+                    horseRefs.current.forEach(el=>{el?.classList.remove('cheer-active','is-accelerating');if(el)el.dataset.cue='';});
                 };
                 pipElements.current.clear(); pipRef.current?.replaceChildren();
                 const paint = (exTick, dt, replay, frozen=false) => {
@@ -2365,6 +2604,10 @@ society | 사회 | 정부 | 가족 | 학교`;
                         }
                         leadTracker.current={currentLeaderIdx:newLeader,lastLeadChangeTick:t1};
                     }
+                    if(snowNoticeRef.current){
+                        const notice=!replay?(raceData.snowEvents||[]).filter(e=>exTick>=e.startTick&&exTick<=e.endTick).map(e=>`❄️ ${horses[e.hIdx].name} · ${exTick<e.holdEndTick?'크게 미끄러졌다! 급감속!':'자세 회복 중'}`).join(' / '):'';
+                        if(snowNoticeRef.current.textContent!==notice)snowNoticeRef.current.textContent=notice;
+                    }
                     const wanted=new Set();
                     curPos.forEach((pos,i)=>{
                         const {x,y}=getTrackPos(pos,cur.laterals[i]||0), runner=horseRefs.current[i];
@@ -2376,11 +2619,28 @@ society | 사회 | 정부 | 가족 | 학교`;
                             runner.classList.toggle('cheer-active',!replay && performance.now()<(cheerUntil.current[i]||0));
                             const olderSpeed=raceData.timeline[Math.max(0,t1-8)]?.speeds?.[i]||0;
                             runner.classList.toggle('is-accelerating',!replay && !reducedMotion && pos<TRACK_LENGTH && spds[i]>60 && spds[i]-olderSpeed>8);
-                            const {label,icon}=parts[i]||{};
+                            const {label,icon,cue,aura,tail,cueLabel,lights,gel}=parts[i]||{};
+                            const event=cueAt(raceData,i,exTick),isSnow=event?.kind==='snow';
+                            const delta=spds[i]-(raceData.timeline[Math.max(0,t1-2)]?.speeds?.[i]||0);
+                            const show=event&&pos<TRACK_LENGTH&&(isSnow||event.kind==='splash'||delta>=-.5);
+                            runner.dataset.cue=show?event.kind:'';
+                            if(gel)gel.style.opacity=(raceData.cues||[]).some(e=>e.kind==='gel'&&e.hIdx===i&&exTick>=e.startTick&&exTick<=e.endTick)?'1':'0';
+                            if(cue){cue.style.opacity=show?'1':'0';if(show){
+                                const progress=Math.max(0,Math.min(1,(exTick-event.startTick)/Math.max(1,event.endTick-event.startTick))),phase=(exTick-event.startTick)*msPerTick/1000;
+                                const colors={snow:'#bae6fd',zen:'#fde68a',phoenix:'#fdba74',oasis:'#fcd9a0',moon:'#e9d5ff',steam:'#e2e8f0',splash:'#7dd3fc','gel-boost':'#86efac',delivery:'#a7f3d0',turtle:'#67e8f9'};
+                                cue.style.setProperty('--cue-color',colors[event.kind]||'#fde68a');
+                                aura.style.transform=`scale(${isSnow ? .65+progress*1.1 : .9+Math.sin(phase*3)*.12})`;aura.style.opacity=isSnow?`${1-progress*.7}`:'.7';
+                                const glyphs={snow:'❄ · ❄',zen:'✦ · ✦',phoenix:'🔥 ✦',oasis:'✦ ·',moon:'✦',steam:'☁ ☁',splash:'💦 ·','gel-boost':'≋ ≋',delivery:'≋ ≋',turtle:'🔥'};
+                                tail.textContent=glyphs[event.kind]||'';tail.style.transform=`translate(${-12-Math.sin(phase*6)*12}px,${Math.sin(phase*3)*5}px)`;
+                                cueLabel.textContent=isSnow?(exTick<event.holdEndTick?'❄ 급감속!':'❄ 자세 회복 중'):event.label;
+                                lights.forEach((node,j)=>{const angle=phase*1.5+j*2.094;node.style.transform=`translate(${Math.cos(angle)*110}px,${Math.sin(angle)*85}px)`;node.style.opacity=isSnow?'0':'.65';});
+                            }}
                             if (label) { const finished=pos>=TRACK_LENGTH && !replay; if(label.hidden!==!finished)label.hidden=!finished;const rankText=`${ranksByIndex[i]}위 골인`;if(finished&&label.textContent!==rankText)label.textContent=rankText; }
                             if (icon) {
                                 // Same phase at the same recorded tick, at live speed, slow speed and in the still frame.
-                                icon.style.transform=recordedRunnerPose(exTick,msPerTick,i,spds[i]>10);
+                                const basePose=show&&event.kind==='zen'?`translateY(${-6*(1-Math.cos(exTick*msPerTick/700+i))}px)`:recordedRunnerPose(exTick,msPerTick,i,spds[i]>10);
+                                const accidentTilt=isSnow?Math.max(0,1-Math.max(0,(exTick-event.holdEndTick)/Math.max(1,event.endTick-event.holdEndTick))):0;
+                                icon.style.transform=basePose+(isSnow?` rotate(${-(reducedMotion?10:24)*accidentTilt}deg) scaleY(${1-.24*accidentTilt})`:show&&event.kind==='moon'?` rotate(${Math.sin(exTick*.3)*7}deg)`:'');
                             }
                         }
                         if (sx < -150 && !replay) {
@@ -2392,9 +2652,13 @@ society | 사회 | 정부 | 가족 | 학교`;
                                     const emoji=document.createElement('div');emoji.className='pip-emoji';emoji.textContent=horses[i].emoji;
                                     const info=document.createElement('div');info.className='pip-info';
                                     const name=document.createElement('div');name.className='pip-name';name.textContent=horses[i].name;
-                                    const distance=document.createElement('div');distance.className='pip-dist';info.append(name,distance);el.append(emoji,info);pipRef.current.appendChild(el);
-                                    entry={el,distance};pipElements.current.set(i,entry);
+                                    const distance=document.createElement('div');distance.className='pip-dist';const eventLabel=document.createElement('div');eventLabel.className='pip-event';eventLabel.hidden=true;info.append(name,distance,eventLabel);el.append(emoji,info);pipRef.current.appendChild(el);
+                                    entry={el,distance,emoji,eventLabel};pipElements.current.set(i,entry);
                                 }
+                                const accident=(raceData.snowEvents||[]).find(e=>e.hIdx===i&&exTick>=e.startTick&&exTick<=e.endTick);
+                                entry.el.classList.toggle('snow-incident',!!accident);entry.el.style.order=accident?'-1':'0';entry.eventLabel.hidden=!accident;
+                                entry.eventLabel.textContent=accident?(exTick<accident.holdEndTick?'❄ 급감속!':'❄ 자세 회복 중'):'';
+                                entry.emoji.style.transform=accident?'rotate(-18deg) scaleY(.82)':'';
                                 const text=pos>=TRACK_LENGTH?`${ranksByIndex[i]}위 골인`:`${Math.floor(pos)}m`;
                                 if (entry.distance.textContent!==text) entry.distance.textContent=text;
                             }
@@ -2410,6 +2674,12 @@ society | 사회 | 정부 | 가족 | 학교`;
                             const el=document.createElement('div');el.className=`p-3 rounded-2xl shadow-xl animate-slide-in mb-3 w-fit ${EVENT_STYLES[e.type]||EVENT_STYLES.normal}`;
                             el.textContent=`${horses[e.hIdx].name}: ${e.msg}`;evtContainerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),2500);
                         }});
+                    }
+                    if(!replay&&stageRef.current==='LIVE'){
+                        (raceData.cues||[]).filter(e=>e.startTick>lastCueTick&&e.startTick<=exTick).forEach(e=>{
+                            if(!cueSounds.has(e.id)){cueSounds.add(e.id);if(e.kind!=='gel'&&e.kind!=='splash')playCueSound(e.kind);}
+                            if(e.kind==='snow'&&evtContainerRef.current){while(evtContainerRef.current.childElementCount>=4)evtContainerRef.current.firstChild.remove();const el=document.createElement('div');el.className='p-3 rounded-xl bg-slate-900/90 text-cyan-200 text-xl font-black mb-2';el.textContent=`❄️ 크게 미끄러졌다! ${horses[e.hIdx].name} 급감속!`;evtContainerRef.current.appendChild(el);scheduleEffect(()=>el.remove(),2400);}
+                        });lastCueTick=exTick;
                     }
                     if (!replay) p.lastEvtTick=t1;
                     if (replayProgressRef.current) replayProgressRef.current.style.transform=`scaleX(${replay ? Math.min(1,Math.max(0,(exTick-plan.replayStart)/Math.max(.000001,plan.finishTick-plan.replayStart))) : 0})`;
@@ -2460,7 +2730,7 @@ society | 사회 | 정부 | 가족 | 학교`;
 
             if(!raceData) return <div className="h-full flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-white"></div></div>;
 
-            const weatherClass = raceData.weather.id === 'RAIN' ? 'weather-rain' : (raceData.weather.id === 'HEAT' ? 'weather-heat' : (raceData.weather.id === 'WIND' ? 'weather-wind' : ''));
+            const weatherClass = raceData.weather.id === 'RAIN' ? 'weather-rain' : (raceData.weather.id === 'HEAT' ? 'weather-heat' : (raceData.weather.id === 'WIND' ? 'weather-wind' : raceData.weather.id==='SNOW'?'weather-snow':''));
             const trackColorClass = `track-${raceData.weather.id}`;
 
             const replayVisible = ['REPLAY_INTRO','REPLAY','PHOTO'].includes(finishStage);
@@ -2502,6 +2772,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                             </div>
                         </>}
                     </>}
+                    <div ref={snowNoticeRef} className="snow-incident-notice" aria-live="polite"/>
                     <div ref={cheerBannerRef} className="cheer-banner-slot" aria-live="polite"/>
                     <div id="pip-container" ref={pipRef}></div>
                     {isSpurtCSS && !isDramatic && <div id="slow-mo-overlay"></div>}
@@ -2522,6 +2793,8 @@ society | 사회 | 정부 | 가족 | 학교`;
                                 </div>
                                 <span className="runner-timing-point" aria-hidden="true"/>
                                 <div className="runner-speed-trail" aria-hidden="true"/>
+                                <div className="runner-cue-layer" aria-hidden="true"><div className="cue-aura"/><span className="cue-tail"/><span className="cue-label"/>{[0,1,2].map(n=><span className="cue-light" key={n}>✦</span>)}</div>
+                                <span className="cue-gel" aria-hidden="true">🥤</span>
                                 <div className="runner-icon race-timeline-pose drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] overflow-hidden rounded-full flex items-center justify-center transition-all duration-300">
                                     {h.img ? <img src={h.img} className="w-full h-full object-cover" alt=""/> : <span className={`inline-block ${isFlipped ? '-scale-x-100' : ''}`}>{h.emoji}</span>}
                                 </div>
@@ -2538,9 +2811,9 @@ society | 사회 | 정부 | 가족 | 학교`;
             );
         }
 
-        function ResultPhase({ me }) {
+        function ResultPhase({ me, history, horses, roundId }) {
             return (
-                <div className="h-[100dvh] flex flex-col p-6 max-w-md mx-auto fade-in text-center items-center justify-center bg-teal-900 w-full">
+                <div className="h-[100dvh] overflow-y-auto flex flex-col p-4 max-w-md mx-auto fade-in text-center items-center bg-teal-900 w-full">
                     <h2 className="text-3xl font-black text-slate-200 mb-8 font-display tracking-wide">라운드 정산 결과</h2>
                     <div className="bg-slate-800 border border-slate-700 p-8 rounded-3xl w-full shadow-2xl mb-8 flex flex-col gap-3">
                         <div className="text-sm font-bold text-slate-400 mb-2">배팅금: {me.lastCost||0}💰</div>
@@ -2551,7 +2824,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                         <div className="text-sm text-slate-500 font-bold mb-4">이번 판 순수익</div>
                         <div className="mt-4 text-emerald-400 font-black bg-teal-900 py-4 rounded-xl border border-slate-700 text-2xl shadow-inner">최종 잔액: {Math.floor(me.money)} 💰</div>
                     </div>
-                    <p className="text-slate-400 font-bold animate-pulse text-lg">호스트 대기중...</p>
+                    <div className="w-full"><HistoryResult history={history} horses={horses||[]} roundId={roundId}/></div><p className="text-slate-400 font-bold animate-pulse text-lg">호스트 대기중...</p>
                 </div>
             );
         }
