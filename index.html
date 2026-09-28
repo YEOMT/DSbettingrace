@@ -30,11 +30,12 @@
 
         /* --- REAL RACE TRACK STYLES --- */
         #race-track-container { position: relative; width: 100%; height: 100%; overflow: hidden; background: #5c4033; box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
-        #track-world { position: absolute; top: 0; left: 0; width: 120000px; height: 8000px; transform-origin: 0 0; will-change: transform; transition: filter 0.5s; }
-        .track-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+        /* The visible track is painted in a viewport canvas. Never rasterize a 120000px world. */
+        .race-track-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index:0; pointer-events: none; }
+        #track-world { position: absolute; inset: 0; z-index:5; pointer-events: none; }
 
-        .runner { position: absolute; width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; will-change: transform, left, top; z-index: 20; margin-left: -110px; margin-top: -110px; }
-        .runner-icon { font-size: 11rem; filter: drop-shadow(-15px 15px 15px rgba(0,0,0,0.7)); transition: transform 0.1s, filter 0.2s; line-height: 1; }
+        .runner { position: absolute; left: 0; top: 0; width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transform-origin: 0 0; will-change: transform; z-index: 20; }
+        .runner-icon { font-size: 11rem; filter: drop-shadow(-15px 15px 15px rgba(0,0,0,0.7)); line-height: 1; }
         .runner-icon.active { animation: bounce 0.2s infinite alternate cubic-bezier(0.2, 0.8, 0.2, 1); }
         @keyframes bounce { from { transform: translateY(0) scaleY(0.95); } to { transform: translateY(-25px) scaleY(1.05); } }
         
@@ -47,19 +48,19 @@
 
         /* Weather Effects */
         .weather-layer { position: absolute; inset: 0; pointer-events: none; z-index: 35; }
-        .weather-rain { background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="0" x2="30" y2="100" stroke="rgba(200,220,255,0.4)" stroke-width="2"/></svg>') repeat; background-size: 60px 60px; animation: rainDrop 0.3s linear infinite; }
-        @keyframes rainDrop { from { background-position: 0 0; } to { background-position: -20px 100px; } }
-        .weather-heat { background: rgba(255, 60, 0, 0.1); backdrop-filter: blur(0.5px); animation: heatHaze 2s infinite alternate; }
-        @keyframes heatHaze { from { backdrop-filter: blur(0.5px); opacity: 0.8; } to { backdrop-filter: blur(1px); opacity: 1; } }
-        .weather-wind { background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="50" x2="0" y2="50" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/></svg>') repeat; background-size: 200px 100px; animation: windBlow 0.15s linear infinite; }
-        @keyframes windBlow { from { background-position: 0 0; } to { background-position: -200px 0; } }
+        .weather-rain { inset:-120px; will-change:transform; background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="0" x2="30" y2="100" stroke="rgba(200,220,255,0.4)" stroke-width="2"/></svg>') repeat; background-size: 60px 60px; animation: rainDrop 0.3s linear infinite; }
+        @keyframes rainDrop { from { transform:translate3d(20px,-50px,0); } to { transform:translate3d(0,50px,0); } }
+        .weather-heat { background: rgba(255, 60, 0, 0.1); animation: heatHaze 2s infinite alternate; }
+        @keyframes heatHaze { from { opacity: 0.6; } to { opacity: 1; } }
+        .weather-wind { inset:-120px; will-change:transform; background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="50" x2="0" y2="50" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/></svg>') repeat; background-size: 200px 100px; animation: windBlow 0.3s linear infinite; }
+        @keyframes windBlow { from { transform:translate3d(100px,0,0); } to { transform:translate3d(-100px,0,0); } }
         .track-RAIN { filter: sepia(0.6) hue-rotate(190deg) brightness(0.6) saturate(0.7); }
         .track-HEAT { filter: sepia(0.3) saturate(1.5) hue-rotate(-15deg); }
         .track-WIND { filter: contrast(1.1) brightness(0.9); }
 
         .dramatic-overlay { position: absolute; inset: 0; background: radial-gradient(circle, transparent 10%, rgba(0,0,0,0.85) 100%); pointer-events: none; z-index: 18; opacity: 0; transition: opacity 0.8s; }
         #race-track-container.is-dramatic .dramatic-overlay { opacity: 1; }
-        #race-track-container.is-dramatic #track-world { filter: brightness(0.5) saturate(1.2); }
+        #race-track-container.is-dramatic .race-track-canvas { filter: brightness(0.5) saturate(1.2); }
         #race-track-container.is-dramatic .runner-icon { filter: brightness(1.6) drop-shadow(0 0 25px rgba(255,255,255,0.8)); }
 
         @keyframes slideIn { 0% { transform: translateX(-50px); opacity: 0; } 10% { transform: translateX(0); opacity: 1; } 90% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-50px); opacity: 0; } }
@@ -67,6 +68,13 @@
 
         @keyframes cheerBubble { 0% { transform: translateY(10px) scale(0.5); opacity: 1; } 50% { opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
         .cheer-particle { animation: cheerBubble 1.2s ease-out forwards; position: absolute; bottom: 0; z-index: 100; pointer-events: none; filter: drop-shadow(0 0 5px rgba(255,255,255,0.8)); font-size: 3rem; }
+        .runner-speed-trail { position:absolute; left:-114px; bottom:30px; width:130px; height:94px; opacity:0; pointer-events:none; background:linear-gradient(90deg,transparent,#ecfeffdd 60%,transparent) 0 7px/100px 6px no-repeat,linear-gradient(90deg,transparent,#fde68add 60%,transparent) 25px 40px/105px 5px no-repeat,linear-gradient(90deg,transparent,#ffffffaa 60%,transparent) 4px 73px/92px 4px no-repeat; }
+        .runner.is-accelerating .runner-speed-trail { opacity:.9; animation:speedTrail .24s linear infinite; }
+        @keyframes speedTrail { from { transform:translateX(18px); opacity:.9; } to { transform:translateX(-18px); opacity:.25; } }
+        .runner-cheer-flame { position:absolute; right:-22px; top:-40px; opacity:0; font-size:64px; line-height:1; pointer-events:none; text-shadow:0 0 12px #f59e0b; }
+        .runner.cheer-active .runner-cheer-flame { opacity:1; animation:cheerFlame .42s ease-in-out infinite alternate; }
+        @keyframes cheerFlame { from { transform:translateY(4px) rotate(-8deg) scale(.9); } to { transform:translateY(-8px) rotate(8deg) scale(1.08); } }
+        .runner.cheer-active .runner-name-tag { border-color:#facc15; box-shadow:0 0 18px #f59e0b9c,0 6px 15px #0009; }
         
         @keyframes cheerExplode { 0% { transform: scale(0.5); opacity: 1; } 50% { transform: scale(2.5); opacity: 0.8; } 100% { transform: scale(4); opacity: 0; } }
         .flash-horse { filter: brightness(2) sepia(0.8) hue-rotate(-30deg) saturate(3) drop-shadow(0 0 40px yellow) !important; transition: filter 0.1s; }
@@ -143,12 +151,13 @@
         .runner.cheer-level-3 .runner-name-tag { border-color:#f9a8d4; box-shadow:0 0 15px #c026d166; }
         /* Replay stays inside the real track. No second race/diagram is rendered. */
         .race-distance-hud { top:8px; pointer-events:none; }
-        .race-timeline-pose { animation:none!important; transition:filter .2s!important; }
+        .race-timeline-pose { animation:none!important; transition:none!important; }
         .replay-mode .race-distance-hud, .all-finished .race-distance-hud { opacity:0; }
         .replay-mode #pip-container, .replay-mode .race-commentary,
         .replay-mode .race-cheer-ticker, .replay-mode .cheer-banner-slot,
         .all-finished .race-commentary, .all-finished .cheer-banner-slot { visibility:hidden; }
         .replay-mode .runner-name-tag { border-color:#cbd5e1; box-shadow:0 6px 15px #0008; }
+        .replay-mode .runner-speed-trail, .replay-mode .runner-cheer-flame { display:none; }
         .replay-mode .runner .sponsor { display:none; }
         .replay-mode .weather-layer { opacity:.65; }
         .replay-freeze .weather-layer { animation-play-state:paused!important; }
@@ -179,7 +188,7 @@
         .finish-summary { border:1px solid #64748b; border-radius:12px; padding:12px 16px; margin:0 auto 20px; background:#0f172ab3; max-width:580px; text-align:center; }
         @media(max-width:640px) { .weather-card { padding:9px 12px; } .weather-card p { flex-basis:100%; font-size:11px; } .student-bet-summary { padding:10px; } .cheer-banner-slot { bottom:22px; } }
         @media(max-height:650px) { .race-host-shell { padding:8px; } .race-host-shell > div:first-child { padding:8px 14px; margin-bottom:8px; } }
-        @media(prefers-reduced-motion:reduce) { .cheer-banner,.cheer-burst-ring,.cheer-confetti,.replay-flash { animation-duration:.01ms!important; } .cheer-meter > span { transition:none; } }
+        @media(prefers-reduced-motion:reduce) { .cheer-banner,.cheer-burst-ring,.cheer-confetti,.replay-flash,.runner-speed-trail,.runner-cheer-flame { animation-duration:.01ms!important; } .cheer-meter > span { transition:none; } }
     </style>
 </head>
 <body>
@@ -876,7 +885,6 @@ society | 사회 | 정부 | 가족 | 학교`;
 
         function HostView({ onExit }) {
             const [roomCode, setRoomCode] = useState('');
-            const [setupRounds, setSetupRounds] = useState(3);
             const [quizTimeLeft, setQuizTimeLeft] = useState(30);
             const gameState = useRef(null);
             if (!gameState.current) gameState.current = initialGame();
@@ -898,6 +906,8 @@ society | 사회 | 정부 | 가족 | 학교`;
                 players.forEach(p => { pieces[`players/${p.uid}`] = p; });
                 const patch = {}, sent = {};
                 Object.entries(pieces).forEach(([path, value]) => {
+                    // Race frames are immutable once created; cheering must not serialize them again.
+                    if (path === 'recovery/race' && t.lastRaceRef === value) return;
                     const serialized = JSON.stringify(value);
                     if (t.last[path] !== serialized) { patch[path] = JSON.parse(serialized); sent[path] = serialized; }
                 });
@@ -905,6 +915,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                 try {
                     if (Object.keys(patch).length) await window.fbUpdate(window.fbRef(window.firebaseDb, `rooms/${t.code}`), patch);
                     Object.assign(t.last, sent);
+                    if (Object.hasOwn(sent, 'recovery/race')) t.lastRaceRef = raceData;
                     if (Object.hasOwn(sent, 'cheerBoard')) { t.lastCheerWrite = serverNow(); t.cheerRound = cheerBoard?.roundId || ''; }
                     // 결과/승인 기록이 저장된 뒤에만 처리한 요청을 지운다.
                     await Promise.all(actions.map(ref => window.fbRemove(ref).catch(() => {})));
@@ -1080,7 +1091,6 @@ society | 사회 | 정부 | 가족 | 학교`;
                                 if (!state.finalPlayers.length) state.finalPlayers = cloneData(state.players.filter(p => p.hasParticipated));
                                 state.status = 'END_PLAYER';
                             }
-                            setSetupRounds(gameState.current.totalRounds);
                             // 저장된 결과가 없는 미완성 계산은 배팅 상태로 되돌린다.
                             if (gameState.current.status === 'RACE' && !gameState.current.raceData?.timeline?.length) { gameState.current.status = 'BETTING'; gameState.current.bettingEndsAt = 0; }
                             if (gameState.current.status === 'RACE') {
@@ -1167,7 +1177,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                 if (!canOperate()) return;
                 const state = gameState.current;
                 if (!['LOBBY', 'RESULT'].includes(state.status) || (state.status === 'RESULT' && state.round >= state.totalRounds)) return;
-                if (state.round === 0) state.totalRounds = setupRounds;
+                state.totalRounds = Math.max(state.round + 1, Math.min(10, Number(state.totalRounds) || 3));
                 state.weather = Math.random() < 0.5 ? WEATHERS[0] : WEATHERS[1 + Math.floor(Math.random() * 3)];
                 state.horses = shuffle(HORSES).slice(0, 8).map(h => ({ ...h, stats: { ...h.stats }, conditionIdx: Math.floor(Math.random() * CONDITIONS.length), odds: '1.1' }));
                 state.round++; state.roundId = newId(); state.raceData = null; state.settledRoundId = ''; state.quizEndsAt = serverNow() + 30000; state.bettingEndsAt = 0; state.cheerBoard = null; state.racePresentation = 'LIVE';
@@ -1535,11 +1545,18 @@ society | 사회 | 정부 | 가족 | 학교`;
             const handleRematch = () => {
                 if (!canOperate() || gameState.current.status !== 'END_AWARDS') return;
                 const old = gameState.current;
-                gameState.current = { ...initialGame(), players: old.players, customWords: old.customWords, wordVersion: old.wordVersion, totalRounds: setupRounds };
+                gameState.current = { ...initialGame(), players: old.players, customWords: old.customWords, wordVersion: old.wordVersion, totalRounds: old.totalRounds };
                 gameState.current.players.forEach(p => {
                     Object.assign(p, { money: 10000, inventory: null, isReady: false, bets: {}, usedItemOn: null, lastCost: 0, lastGrossWin: 0, lastWin: 0, lastCheerAt: 0, hasParticipated: false, stats: { quizCnt: 0, betWin: 0, betLoss: 0, totalBet: 0 } });
                     resetQuizFor(p);
                 });
+                publishState(true);
+            };
+            const changeTotalRounds = value => {
+                const state = gameState.current, count = Number(value);
+                if (!Number.isSafeInteger(count) || count < Math.max(1, state.round) || count > 10 ||
+                    !['LOBBY','QUIZ','BETTING','RACE','RESULT'].includes(state.status) || !canOperate()) return;
+                state.totalRounds = count;
                 publishState(true);
             };
 
@@ -1552,14 +1569,18 @@ society | 사회 | 정부 | 가족 | 학교`;
                                 <i className="fas fa-forward"></i> 경주 스킵 (결과 보기)
                             </button>
                         )}
-                        <div className="text-right"><div className="text-sm font-bold text-slate-400">참가자: {uiState.players.length}명 · 접속 {uiState.players.filter(p=>p.connected).length}명</div><div className="text-xl font-bold">라운드: {uiState.round}/{uiState.totalRounds}</div><button onClick={closeRoom} className="text-xs text-slate-400 underline mt-1">방 닫기</button></div>
+                        <div className="text-right"><div className="text-sm font-bold text-slate-400">참가자: {uiState.players.length}명 · 접속 {uiState.players.filter(p=>p.connected).length}명</div><div className="text-xl font-bold flex items-center justify-end gap-2">라운드: {uiState.round} / {['LOBBY','QUIZ','BETTING','RACE','RESULT'].includes(uiState.status) ? <select aria-label="전체 라운드 수" title="전체 라운드 수 변경" value={uiState.totalRounds} onChange={e=>changeTotalRounds(e.target.value)} className="bg-slate-700 text-yellow-300 border border-slate-500 rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-yellow-400">{Array.from({length:10},(_,i)=>i+1).map(n=><option key={n} value={n} disabled={n<uiState.round}>{n}</option>)}</select> : uiState.totalRounds}</div><button onClick={closeRoom} className="text-xs text-slate-400 underline mt-1">방 닫기</button></div>
                     </div>
 
                     {netMessage && <div className="bg-amber-900/80 text-yellow-100 text-sm font-bold p-2 rounded-lg mb-2 text-center">{netMessage}{!roomCode && <button onClick={()=>location.reload()} className="ml-3 underline">다시 불러오기</button>}</div>}
                     <div className="race-host-body flex-1 bg-glass rounded-2xl border border-slate-600 flex flex-col overflow-hidden relative">
                         {uiState.status === 'LOBBY' && (
                             <div className="m-auto text-center w-full max-w-4xl p-6 overflow-y-auto custom-scrollbar max-h-full">
-                                <h2 className="text-3xl font-bold mb-8">학생들의 접속을 대기중입니다...</h2>
+                                <h2 className="text-3xl font-bold mb-3">학생들의 접속을 대기중입니다...</h2>
+                                <div className="mx-auto mb-6 w-fit min-w-[240px] bg-emerald-950/90 border-2 border-emerald-400 rounded-2xl px-8 py-3 shadow-[0_0_26px_rgba(52,211,153,.25)]" role="status" aria-label={`참가 방 번호 ${roomCode}`}>
+                                    <div className="text-base font-bold text-emerald-200 tracking-widest">참가 방 번호</div>
+                                    <div className="text-6xl md:text-7xl font-black font-display text-white tracking-[.12em] leading-tight">{roomCode || '…'}</div>
+                                </div>
                                 
                                 <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch mb-8">
                                     <div className="bg-slate-800 p-6 rounded-2xl border border-slate-600 shadow-xl flex flex-col items-center justify-center shrink-0">
@@ -1584,7 +1605,7 @@ society | 사회 | 정부 | 가족 | 학교`;
 
                                         <div className="flex justify-center items-center gap-4 bg-slate-800 py-4 px-6 rounded-2xl border border-slate-600">
                                             <span className="text-xl font-bold text-slate-300">진행할 라운드:</span>
-                                            <select value={setupRounds} onChange={e=>setSetupRounds(Number(e.target.value))} className="bg-slate-700 text-white font-black text-xl px-4 py-2 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500">
+                                            <select value={uiState.totalRounds} onChange={e=>changeTotalRounds(e.target.value)} aria-label="진행할 라운드" className="bg-slate-700 text-white font-black text-xl px-4 py-2 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500">
                                                 {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} 라운드</option>)}
                                             </select>
                                         </div>
@@ -2162,27 +2183,28 @@ society | 사회 | 정부 | 가족 | 학교`;
             const pipElements = useRef(new Map());
             const scheduleEffect = (fn, delay) => { const id = setTimeout(() => { effectTimers.current.delete(id); fn(); }, delay); effectTimers.current.add(id); return id; };
             useEffect(() => () => { effectTimers.current.forEach(clearTimeout); effectTimers.current.clear(); }, []);
-            const containerRef = useRef(null), worldRef = useRef(null), horseRefs = useRef([]);
+            const containerRef = useRef(null), trackCanvasRef = useRef(null), horseRefs = useRef([]);
             const pipRef = useRef(null), hudDistRef = useRef(null), dustLayerRef = useRef(null);
             const evtContainerRef = useRef(null), particleContainerRef = useRef(null), cheerTickerRef = useRef(null), cheerBannerRef = useRef(null);
             const replayProgressRef = useRef(null), photoDetailsRef = useRef(null);
             const initialBoard = useRef(cheerBoard); initialBoard.current = cheerBoard;
             const playback = useRef({ lastTs:null, currentTick:0, lastEvtTick:-1, spurt:false, camX:null });
             const leadTracker = useRef({ currentLeaderIdx:-1, lastLeadChangeTick:-999 });
-            const cheerEffects = useRef([]);
+            const cheerUntil = useRef([]);
             const [isSpurtCSS, setIsSpurtCSS] = useState(false), [isDramatic, setIsDramatic] = useState(false);
             const TRACK_LENGTH = raceData?.distance || 6000, VISUAL_SCALE = 15, START_OFFSET = 1000, TRACK_CY = 4000, ZOOM_SCALE = isHost ? .48 : .3;
             const getTrackPos = (pos, lateral) => ({ x:START_OFFSET+pos*VISUAL_SCALE, y:TRACK_CY+lateral });
-            const createDust = (x,y) => {
-                if (!dustLayerRef.current || dustLayerRef.current.childElementCount >= 24 || reducedMotion) return;
-                const el=document.createElement('div'); el.className='dust'; el.style.left=`${x-(Math.random()-.5)*40-60}px`; el.style.top=`${y+(Math.random()-.5)*40}px`;
+            const createDust = (x,y,zoom) => {
+                if (!dustLayerRef.current || dustLayerRef.current.childElementCount >= 12 || reducedMotion) return;
+                const el=document.createElement('div'); el.className='dust'; el.style.left=`${x-(Math.random()-.5)*40*zoom-60*zoom}px`; el.style.top=`${y+(Math.random()-.5)*40*zoom}px`;
+                el.style.width=`${40*zoom}px`; el.style.height=`${40*zoom}px`;
                 dustLayerRef.current.appendChild(el); scheduleEffect(()=>el.remove(),700);
             };
             useEffect(() => { playSound('start'); }, []);
 
             // The host's accepted count is authoritative. This effect does not read/write race positions.
             useEffect(() => {
-                cheerEffects.current=horses.map(()=>0);
+                cheerUntil.current=horses.map(()=>0);
                 const counts=horses.map(h=>initialBoard.current?.roundId===raceData?.roundId ? Number(initialBoard.current.horses?.[h.id]?.count)||0 : 0);
                 const lastBursts=horses.map(()=>0), queue=[];
                 let showing=false, disposed=false, lastTicker=0;
@@ -2209,8 +2231,10 @@ society | 사회 | 정부 | 가족 | 학교`;
                     const {horseId,playerName,count,roundId}=e.detail||{};
                     if(disposed||roundId!==raceData?.roundId||stageRef.current!=='LIVE')return;
                     const i=horses.findIndex(h=>h.id===Number(horseId)); if(i<0||!Number.isSafeInteger(count)||count<=counts[i])return;
-                    const oldLevel=cheerLevel(counts[i]), level=cheerLevel(count);counts[i]=count;cheerEffects.current[i]=100;paintLevel(i);
+                    const oldLevel=cheerLevel(counts[i]), level=cheerLevel(count);counts[i]=count;paintLevel(i);
                     const now=performance.now();
+                    cheerUntil.current[i]=now+2000;
+                    horseRefs.current[i]?.classList.add('cheer-active');
                     if(cheerTickerRef.current&&playerName&&now-lastTicker>260){
                         lastTicker=now; const el=makeText('div','text-sm font-black text-yellow-300 bg-black/70 px-3 py-1 rounded-full mb-1 border border-yellow-500/50 shadow-md animate-slide-in',`${playerName} → ${horses[i].name} 📣 ${count}`);
                         while(cheerTickerRef.current.childElementCount>=3)cheerTickerRef.current.firstChild.remove();
@@ -2240,12 +2264,58 @@ society | 사회 | 정부 | 가족 | 학교`;
             },[raceData, isHost]);
 
             useEffect(() => {
-                if (!raceData?.timeline?.length || !worldRef.current || !containerRef.current) return;
-                playback.current = { lastTs:null, currentTick:0, lastEvtTick:-1, spurt:false, camX:START_OFFSET };
+                if (!raceData?.timeline?.length || !trackCanvasRef.current || !containerRef.current) return;
+                playback.current = { lastTs:null, currentTick:0, lastEvtTick:-1, spurt:false, camX:START_OFFSET, photoPainted:false };
                 leadTracker.current = { currentLeaderIdx:-1, lastLeadChangeTick:-999 };
                 stageRef.current = 'LIVE'; setFinishStage('LIVE'); setIsSpurtCSS(false); setIsDramatic(false);
                 const ticks = raceData.timeline.length-1, msPerTick = BASE_RACE_MS/Math.max(1,ticks), plan = finishPlan;
                 const replayEligible = !!(plan?.close && plan.allFinished && plan.finishTick > plan.replayStart);
+                const ranksByIndex = [];
+                raceData.ranks.forEach((index, rank) => { ranksByIndex[index]=rank+1; });
+                const parts = horseRefs.current.map(el => ({ label:el?.querySelector('.runner-finish-rank'), icon:el?.querySelector('.runner-icon') }));
+                const size = { width:1, height:1 }, dpr=Math.min(window.devicePixelRatio||1,1.5);
+                const resize = () => {
+                    const rect=containerRef.current?.getBoundingClientRect();
+                    if (rect) { size.width=Math.max(1,rect.width); size.height=Math.max(1,rect.height); playback.current.photoPainted=false; }
+                };
+                resize();
+                const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resize) : null;
+                if (observer) observer.observe(containerRef.current);
+                else window.addEventListener('resize',resize);
+                const drawTrack = (camera, width, height, replay) => {
+                    const canvas=trackCanvasRef.current; if (!canvas) return;
+                    const pixelsW=Math.round(width*dpr), pixelsH=Math.round(height*dpr);
+                    if (canvas.width!==pixelsW || canvas.height!==pixelsH) { canvas.width=pixelsW; canvas.height=pixelsH; }
+                    const ctx=canvas.getContext('2d',{alpha:false});
+                    ctx.setTransform(dpr,0,0,dpr,0,0);
+                    ctx.fillStyle='#5c4033';ctx.fillRect(0,0,width,height);
+                    const {tx,ty,zoom}=camera, trackY=TRACK_CY*zoom+ty;
+                    ctx.fillStyle='#166534';ctx.fillRect(0,trackY-600*zoom,width,1200*zoom);
+                    ctx.fillStyle='#22c55e';ctx.fillRect(0,trackY-550*zoom,width,1100*zoom);
+                    const start=(START_OFFSET-2000)*zoom+tx, end=(START_OFFSET+TRACK_LENGTH*VISUAL_SCALE+3000)*zoom+tx;
+                    const lineStart=Math.max(0,start), lineEnd=Math.min(width,end);
+                    if (lineEnd>lineStart) {
+                        ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=12*zoom;
+                        ctx.setLineDash([100*zoom,100*zoom]);ctx.lineDashOffset=lineStart-start;
+                        for (let lane=-3;lane<=4;lane++) {
+                            const y=trackY+(lane*120-60)*zoom;
+                            ctx.beginPath();ctx.moveTo(lineStart,y);ctx.lineTo(lineEnd,y);ctx.stroke();
+                        }
+                        ctx.setLineDash([]);ctx.lineDashOffset=0;
+                    }
+                    const finishX=START_OFFSET+TRACK_LENGTH*VISUAL_SCALE;
+                    const marker=(worldX,color,strokeWidth,dashed=false) => {
+                        const x=worldX*zoom+tx; if (x < -80*zoom || x > width+80*zoom) return;
+                        ctx.strokeStyle=color;ctx.lineWidth=strokeWidth*zoom;
+                        if (dashed) ctx.setLineDash([60*zoom,60*zoom]);
+                        ctx.beginPath();ctx.moveTo(x,trackY-550*zoom);ctx.lineTo(x,trackY+550*zoom);ctx.stroke();
+                        if (dashed) ctx.setLineDash([]);
+                    };
+                    marker(START_OFFSET,'#fff',60);
+                    marker(finishX,'#fff',60);
+                    marker(finishX+60,'#fbbf24',60,true);
+                    if (replay) marker(finishX,'#fbbf24',5);
+                };
                 let animId = null, disposed = false, settled = false, stageElapsed = 0, frozenCamera = null;
                 const setStage = stage => { stageRef.current=stage; stageElapsed=0; setFinishStage(stage); };
                 const finish = () => { if (disposed || settled) return; settled=true; if (isHost) finishCallback.current?.(raceData.roundId); };
@@ -2253,7 +2323,8 @@ society | 사회 | 정부 | 가족 | 학교`;
                     effectTimers.current.forEach(clearTimeout); effectTimers.current.clear();
                     [evtContainerRef,cheerTickerRef,cheerBannerRef,particleContainerRef,dustLayerRef].forEach(ref=>ref.current?.replaceChildren());
                     horseRefs.current.forEach(el=>el?.querySelectorAll('.cheer-burst-ring,.cheer-confetti').forEach(node=>node.remove()));
-                    cheerEffects.current=horses.map(()=>0);
+                    cheerUntil.current=horses.map(()=>0);
+                    horseRefs.current.forEach(el=>{el?.classList.remove('cheer-active','is-accelerating');});
                 };
                 pipElements.current.clear(); pipRef.current?.replaceChildren();
                 const paint = (exTick, dt, replay, frozen=false) => {
@@ -2261,7 +2332,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                     const t1=Math.floor(exTick), t2=Math.min(ticks,t1+1), fraction=exTick-t1;
                     const frame=raceData.timeline[t1]||{}, next=raceData.timeline[t2]||frame;
                     const spds=horses.map((_,i)=>(frame.speeds?.[i]||0)+((next.speeds?.[i]??frame.speeds?.[i]??0)-(frame.speeds?.[i]||0))*fraction);
-                    const cw=Math.max(1,containerRef.current.clientWidth), ch=Math.max(1,containerRef.current.clientHeight);
+                    const cw=size.width, ch=size.height;
                     const hasFinisher=curPos.some(pos=>pos>=TRACK_LENGTH), leadPos=Math.max(...curPos,0), progress=leadPos/TRACK_LENGTH;
                     let camera;
                     if (replay) {
@@ -2281,10 +2352,10 @@ society | 사회 | 정부 | 가족 | 학교`;
                         camera={zoom,tx:cw*.35-p.camX*zoom,ty:ch*.52-TRACK_CY*zoom};
                     }
                     const {tx,ty,zoom}=camera;
-                    worldRef.current.style.transform=`translate(${tx}px, ${ty}px) scale(${zoom})`;
+                    drawTrack(camera,cw,ch,replay);
                     const standings=curPos.map((pos,i)=>({pos,i})).sort((a,b)=>{
                         const af=a.pos>=TRACK_LENGTH,bf=b.pos>=TRACK_LENGTH;
-                        return af&&bf?raceData.ranks.indexOf(a.i)-raceData.ranks.indexOf(b.i):af!==bf?(af?-1:1):b.pos-a.pos;
+                        return af&&bf?ranksByIndex[a.i]-ranksByIndex[b.i]:af!==bf?(af?-1:1):b.pos-a.pos;
                     });
                     const newLeader=standings[0]?.i;
                     if (!replay && stageRef.current==='LIVE' && !hasFinisher && progress>.1 && newLeader!==leadTracker.current.currentLeaderIdx && t1-leadTracker.current.lastLeadChangeTick>25) {
@@ -2296,22 +2367,23 @@ society | 사회 | 정부 | 가족 | 학교`;
                     }
                     const wanted=new Set();
                     curPos.forEach((pos,i)=>{
-                        cheerEffects.current[i]=(cheerEffects.current[i]||0)*Math.pow(.9,dt/16.667);
                         const {x,y}=getTrackPos(pos,cur.laterals[i]||0), runner=horseRefs.current[i];
+                        const sx=tx+x*zoom, sy=ty+y*zoom;
                         if (runner) {
-                            runner.style.left=`${x}px`;runner.style.top=`${y}px`;runner.style.zIndex=Math.floor(y+100);
+                            runner.style.transform=`translate3d(${sx-110*zoom}px,${sy-110*zoom}px,0) scale(${zoom})`;
+                            runner.style.zIndex=Math.floor(y/16);
                             runner.classList.toggle('replay-winner',frozen && i===plan?.first);
-                            const label=runner.querySelector('.runner-finish-rank');
-                            if (label) { const finished=pos>=TRACK_LENGTH && !replay;label.hidden=!finished;if(finished)label.textContent=`${raceData.ranks.indexOf(i)+1}위 골인`; }
-                            const icon=runner.querySelector('.runner-icon');
+                            runner.classList.toggle('cheer-active',!replay && performance.now()<(cheerUntil.current[i]||0));
+                            const olderSpeed=raceData.timeline[Math.max(0,t1-8)]?.speeds?.[i]||0;
+                            runner.classList.toggle('is-accelerating',!replay && !reducedMotion && pos<TRACK_LENGTH && spds[i]>60 && spds[i]-olderSpeed>8);
+                            const {label,icon}=parts[i]||{};
+                            if (label) { const finished=pos>=TRACK_LENGTH && !replay; if(label.hidden!==!finished)label.hidden=!finished;const rankText=`${ranksByIndex[i]}위 골인`;if(finished&&label.textContent!==rankText)label.textContent=rankText; }
                             if (icon) {
                                 // Same phase at the same recorded tick, at live speed, slow speed and in the still frame.
-                                icon.classList.remove('active');
                                 icon.style.transform=recordedRunnerPose(exTick,msPerTick,i,spds[i]>10);
-                                icon.style.filter=!replay && cheerEffects.current[i]>30?'drop-shadow(0 0 35px rgba(250,204,21,.85)) brightness(1.2)':'';
                             }
                         }
-                        if (tx+x*zoom < -150 && !replay) {
+                        if (sx < -150 && !replay) {
                             wanted.add(i);
                             if (pipRef.current) {
                                 let entry=pipElements.current.get(i);
@@ -2323,13 +2395,14 @@ society | 사회 | 정부 | 가족 | 학교`;
                                     const distance=document.createElement('div');distance.className='pip-dist';info.append(name,distance);el.append(emoji,info);pipRef.current.appendChild(el);
                                     entry={el,distance};pipElements.current.set(i,entry);
                                 }
-                                const text=pos>=TRACK_LENGTH?`${raceData.ranks.indexOf(i)+1}위 골인`:`${Math.floor(pos)}m`;
+                                const text=pos>=TRACK_LENGTH?`${ranksByIndex[i]}위 골인`:`${Math.floor(pos)}m`;
                                 if (entry.distance.textContent!==text) entry.distance.textContent=text;
                             }
                         }
-                        if (!replay && stageRef.current==='LIVE' && spds[i]>60 && Math.random()<.1) createDust(x,y);
+                        if (!replay && stageRef.current==='LIVE' && sx>-50 && sx<cw+50 && spds[i]>60 && Math.random()<.05*Math.min(2,dt/16.667)) createDust(sx,sy,zoom);
                     });
-                    if (hudDistRef.current) hudDistRef.current.textContent=`${Math.min(Math.floor(leadPos),TRACK_LENGTH)}m`;
+                    const hudText=`${Math.min(Math.floor(leadPos),TRACK_LENGTH)}m`;
+                    if (hudDistRef.current && hudDistRef.current.textContent!==hudText) hudDistRef.current.textContent=hudText;
                     pipElements.current.forEach((entry,key)=>{if(!wanted.has(key)){entry.el.remove();pipElements.current.delete(key);}});
                     if (!replay && stageRef.current==='LIVE' && !hasFinisher && t1!==p.lastEvtTick && (frame.events||[]).length) {
                         (frame.events||[]).forEach(e=>{if(evtContainerRef.current&&horses[e.hIdx]){
@@ -2369,7 +2442,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                         if (p.currentTick>=plan.finishTick) {p.currentTick=plan.finishTick;setStage('PHOTO');raceAccent('photo');}
                         paint(p.currentTick,dt,true,stageRef.current==='PHOTO');
                     } else if (stage==='PHOTO') {
-                        paint(plan.finishTick,0,true,true);
+                        if (!p.photoPainted) {paint(plan.finishTick,0,true,true);p.photoPainted=true;}
                         if(photoDetailsRef.current)photoDetailsRef.current.hidden=stageElapsed<900;
                         if(stageElapsed>=REPLAY_TIMING.freeze){finish();return;}
                     }
@@ -2380,15 +2453,12 @@ society | 사회 | 정부 | 가족 | 학교`;
                 paint(0,0,false); animId=requestAnimationFrame(step);
                 return () => {
                     disposed=true;cancelAnimationFrame(animId);document.removeEventListener('visibilitychange',visibility);
+                    if(observer)observer.disconnect();else window.removeEventListener('resize',resize);
                     clearLiveEffects();pipElements.current.clear();
                 };
             }, [raceData,isHost,finishPlan,reducedMotion]);
 
             if(!raceData) return <div className="h-full flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-white"></div></div>;
-
-            const pStart = { x: START_OFFSET - 2000, y: TRACK_CY };
-            const pEnd = { x: START_OFFSET + TRACK_LENGTH * VISUAL_SCALE + 3000, y: TRACK_CY };
-            const dPath = `M ${pStart.x} ${pStart.y} L ${pEnd.x} ${pEnd.y}`;
 
             const weatherClass = raceData.weather.id === 'RAIN' ? 'weather-rain' : (raceData.weather.id === 'HEAT' ? 'weather-heat' : (raceData.weather.id === 'WIND' ? 'weather-wind' : ''));
             const trackColorClass = `track-${raceData.weather.id}`;
@@ -2402,7 +2472,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                     <div className="race-distance-hud absolute top-2 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
                         <div className="bg-black/80 px-10 py-3 rounded-2xl border-2 border-yellow-500 shadow-2xl text-center transition-all duration-500">
                             <div className="text-yellow-400 font-bold text-lg tracking-widest mb-[-8px]">🏁 GOAL: {TRACK_LENGTH}m</div>
-                            <div ref={hudDistRef} className="text-white font-black text-6xl font-display drop-shadow-md">0m</div>
+                            <div ref={hudDistRef} className="text-white font-black text-5xl font-display drop-shadow-md">0m</div>
                         </div>
                         {raceData.weather.id !== 'SUNNY' && (
                             <div className="mt-2 bg-slate-800/80 px-4 py-1 rounded-full font-bold text-sm border border-slate-600 backdrop-blur-sm">
@@ -2436,25 +2506,8 @@ society | 사회 | 정부 | 가족 | 학교`;
                     <div id="pip-container" ref={pipRef}></div>
                     {isSpurtCSS && !isDramatic && <div id="slow-mo-overlay"></div>}
 
-                    <div id="track-world" ref={worldRef} className={trackColorClass}>
-                        <svg className="track-path-svg" viewBox="0 0 120000 8000" preserveAspectRatio="none">
-                            {/* 트랙 외곽선: 짙은 잔디색 */}
-                            <path d={dPath} fill="none" stroke="#166534" strokeWidth="1200" strokeLinecap="square" />
-                            {/* 트랙 안쪽: 밝고 선명한 잔디색 */}
-                            <path d={dPath} fill="none" stroke="#22c55e" strokeWidth="1100" strokeLinecap="square" />
-                            
-                            {[-3,-2,-1,0,1,2,3,4].map(i => {
-                                const offset = i * 120 - 60;
-                                const lPath = `M ${pStart.x} ${pStart.y + offset} L ${pEnd.x} ${pEnd.y + offset}`;
-                                return <path key={i} d={lPath} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="12" strokeDasharray="100, 100" />;
-                            })}
-                            
-                            <line x1={START_OFFSET} y1={pStart.y - 550} x2={START_OFFSET} y2={pStart.y + 550} stroke="white" strokeWidth="60" />
-                            <line x1={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y1={pEnd.y - 550} x2={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y2={pEnd.y + 550} stroke="white" strokeWidth="60" />
-                            <line x1={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE + 60} y1={pEnd.y - 550} x2={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE + 60} y2={pEnd.y + 550} stroke="#fbbf24" strokeWidth="60" strokeDasharray="60,60" />
-                            <line className="track-finish-reference" x1={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y1={TRACK_CY - 590} x2={START_OFFSET + TRACK_LENGTH * VISUAL_SCALE} y2={TRACK_CY + 590} stroke="#fbbf24" strokeWidth="5"/>
-                        </svg>
-
+                    <canvas ref={trackCanvasRef} className={`race-track-canvas ${trackColorClass}`} aria-hidden="true" />
+                    <div id="track-world">
                         <div ref={dustLayerRef} className="absolute inset-0 pointer-events-none z-10"></div>
                         
                         {horses.map((h, i) => {
@@ -2468,9 +2521,11 @@ society | 사회 | 정부 | 가족 | 학교`;
                                     )}
                                 </div>
                                 <span className="runner-timing-point" aria-hidden="true"/>
+                                <div className="runner-speed-trail" aria-hidden="true"/>
                                 <div className="runner-icon race-timeline-pose drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] overflow-hidden rounded-full flex items-center justify-center transition-all duration-300">
                                     {h.img ? <img src={h.img} className="w-full h-full object-cover" alt=""/> : <span className={`inline-block ${isFlipped ? '-scale-x-100' : ''}`}>{h.emoji}</span>}
                                 </div>
+                                <span className="runner-cheer-flame" aria-hidden="true">🔥</span>
                             </div>
                             )
                         })}
