@@ -330,43 +330,68 @@
             { id: 'insurance', icon: '📜', name: '보험증', desc: '배팅 실패 시 25% 환급' }
         ];
 
-        // 기본 단어장
-    const DEFAULT_WORDS = [
-        {eng: 'bakery', kor: 'n. 빵집'},
-        {eng: 'code', kor: 'n. 암호'},
-        {eng: 'crime', kor: 'n. 범죄'},
-        {eng: 'criminal', kor: 'n. 범죄자'},
-        {eng: 'damage', kor: 'v. 손상을 입히다'},
-        {eng: 'expensive', kor: 'a. 비싼'},
-        {eng: 'explain', kor: 'v. 설명하다'},
-        {eng: 'eyewitness', kor: 'n. 목격자'},
-        {eng: 'fall off', kor: '떨어지다'},
-        {eng: 'feed', kor: 'v. 먹이를 주다'},
-        {eng: 'flash', kor: 'n. 플래시 (촬영)'},
-        {eng: 'guard', kor: 'n. 경비원'},
-        {eng: 'height', kor: 'n. 키'},
-        {eng: 'janitor', kor: 'n. 청소부, 관리인'},
-        {eng: 'language', kor: 'n. 언어'},
-        {eng: 'owner', kor: 'n. 주인'},
-        {eng: 'pet', kor: 'n. 반려동물'},
-        {eng: 'reason', kor: 'n. 근거'},
-        {eng: 'rule', kor: 'n. 규칙'},
-        {eng: 'run away', kor: '도망치다'},
-        {eng: 'scene', kor: 'n. 현장, 장면'},
-        {eng: 'secret', kor: 'a. 비밀의'},
-        {eng: 'statement', kor: 'n. 진술'},
-        {eng: 'steal', kor: 'v. 훔치다'},
-        {eng: 'sunflower', kor: 'n. 해바라기'},
-        {eng: 'suspect', kor: 'n. 용의자'},
-        {eng: 'wheelchair', kor: 'n. 휠체어'},
-        {eng: 'wig', kor: 'n. 가발'}
-    ];
+        // 기본 단어장과 TXT 업로드는 동일한 5칸 형식을 사용한다.
+        // 단어 | 정답 | 오답1 | 오답2 | 오답3 (쉼표는 뜻의 일부로 보존)
+        const DEFAULT_WORD_TEXT = `rent | 빌리다 | 돌려주다 | 판매하다 | 버리다
+develop | 발전시키다, 성장하다 | 감소시키다 | 멈추다 | 파괴하다
+upload | ~을 전송하다, 업로드하다 | 삭제하다 | 인쇄하다 | 저장하다
+method | 방법, 방식 | 결과 | 목적 | 문제
+purchase | 구매, 구매품 | 판매 | 대여 | 교환
+recommend | 추천하다, 권하다 | 거절하다 | 금지하다 | 비판하다
+trace | 흔적, 자취 | 방향 | 장소 | 모양
+analyze | 분석하다 | 비교하다 | 기록하다 | 암기하다
+predict | 예측하다 | 확인하다 | 설명하다 | 기억하다
+amount | 양, 액수 | 종류 | 크기 | 무게
+communication | 통신, 의사소통 | 경쟁 | 교육 | 이동
+flu | 독감, 유행성 감기 | 두통 | 상처 | 알레르기
+influence | 영향을 주다 | 보호하다 | 피하다 | 무시하다
+avoid | 피하다 | 선택하다 | 받아들이다 | 따르다
+spread | 확산, 전파 | 감소 | 예방 | 치료
+symptom | 증상, 징후 | 원인 | 치료 | 질병
+database | 데이터베이스 | 비밀번호 | 인터넷 | 화면
+improve | 향상하다, 향상시키다 | 악화시키다 | 유지하다 | 중단하다
+include | 포함하다 | 제외하다 | 나누다 | 제거하다
+performance | 경기력, 성과 | 연습 | 계획 | 기회
+focus on | ~에 주력하다 | ~을 포기하다 | ~을 피하다 | ~에 반대하다
+crime | 범죄 | 법률 | 사고 | 규칙
+identify | 확인하다, 알아보다 | 숨기다 | 잊어버리다 | 만들어내다
+industry | 산업, 공업 | 농촌 | 문화 | 교육
+play a role | 역할을 하다 | 실수를 하다 | 휴식을 취하다 | 결정을 내리다
+be likely to | ~할 것 같다 | ~해야 한다 | ~할 수 있다 | ~하고 싶다
+dynasty | 시대, 왕조 | 국가 | 전쟁 | 지도자
+carp | 잉어 | 상어 | 거북이 | 고래
+bamboo | 대나무 | 소나무 | 장미 | 잔디
+lotus flower | 연꽃 | 장미꽃 | 해바라기 | 벚꽃
+object | 물건, 물체 | 생물 | 장소 | 생각
+symbol | 상징, 기호 | 문장 | 숫자 | 그림
+loyalty | 충실, 충성 | 용기 | 지혜 | 자유
+appear | 나타나다, 출현하다 | 사라지다 | 숨다 | 떠나다
+folk painting | 민화 | 유화 | 사진 | 조각
+represent | 나타내다, 상징하다 | 숨기다 | 복사하다 | 설명을 듣다
+disappointed | 실망한 | 만족한 | 신이 난 | 자랑스러운
+frozen | 얼어붙은 | 녹은 | 뜨거운 | 젖은
+ill | 아픈, 병든 | 건강한 | 행복한 | 피곤하지 않은
+respect | 존경, 경의 | 불만 | 두려움 | 슬픔
+once upon a time | 옛날 옛날에 | 바로 지금 | 오래 후에 | 어느 날 아침
+symbolic | 상징적인 | 실용적인 | 일반적인 | 개인적인
+symbolize | 상징하다 | 비교하다 | 숨기다 | 발견하다
+bend | 굽다, 구부러지다 | 펴다 | 자르다 | 던지다
+bloom | 꽃을 피우다, 꽃이 피다 | 시들다 | 자라지 않다 | 열매를 먹다
+for this reason | 이런 이유 때문에 | 그럼에도 불구하고 | 예를 들어 | 반면에
+despite | ~에도 불구하고 | ~때문에 | ~에 따라서 | ~을 위해
+justice | 정의, 공정 | 자유 | 평화 | 성공
+thus | 그러므로, 따라서 | 그러나 | 게다가 | 그렇지 않으면
+attitude | 태도, 자세 | 능력 | 외모 | 습관
+behavior | 행동 | 생각 | 감정 | 계획
+remind ~ of | ~에게 …을 상기시키다 | ~에게 …을 숨기다 | ~에게 …을 빌려주다 | ~에게 …을 설명하다
+in particular | 특히, 특별히 | 일반적으로 | 갑자기 | 마침내
+society | 사회 | 정부 | 가족 | 학교`;
 
         const generateRoomCode = () => Math.floor(1000 + Math.random() * 9000).toString();
         // 안정화 보조 함수: 기존 경기 규칙/보상 수치는 유지한다.
-        const ROOM_SCHEMA = 'edurace-v3';
+        const ROOM_SCHEMA = 'edurace-v4'; // 지정 보기 퀴즈: 이전 버전과 혼용하지 않는다.
         const ROOM_TTL = 6 * 60 * 60 * 1000;
-        const HOST_SESSION_KEY = 'edurace_host_v3:' + location.pathname;
+        const HOST_SESSION_KEY = 'edurace_host_v4:' + location.pathname;
         const newId = () => (window.crypto?.randomUUID?.() || `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`);
         const serverNow = () => Date.now() + (window.eduraceServerOffset || 0);
         const readJSON = (store, key, fallback) => { try { const v = JSON.parse(store.getItem(key)); return v == null ? fallback : v; } catch (_) { return fallback; } };
@@ -386,40 +411,71 @@
             for (const c of String(seed)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
             return () => { h += 0x6D2B79F5; let t = Math.imul(h ^ h >>> 15, 1 | h); t ^= t + Math.imul(t ^ t >>> 7, 61 | t); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
         };
+        // Only explicit pipe-delimited choices are accepted; never invent alternatives.
         const parseWordText = text => {
             const words = [], errors = [], seen = new Set();
-            String(text).replace(/^\uFEFF/, '').split(/\r?\n/).forEach((line, i) => {
+            String(text ?? '').replace(/^\uFEFF/, '').split(/\r\n|\n|\r/).forEach((line, i) => {
                 if (!line.trim()) return;
-                const divider = line.includes('\t') ? '\t' : ',';
-                let fields = [];
-                if (divider === ',' && line.trimStart().startsWith('"')) {
-                    let cell = '', quoted = false;
-                    for (let n = 0; n < line.length; n++) {
-                        const ch = line[n];
-                        if (ch === '"') { if (quoted && line[n + 1] === '"') { cell += '"'; n++; } else quoted = !quoted; }
-                        else if (ch === ',' && !quoted) { fields.push(cell); cell = ''; }
-                        else cell += ch;
-                    }
-                    if (quoted) { errors.push(`${i + 1}행: 따옴표를 닫아 주세요.`); return; }
-                    fields.push(cell);
-                } else {
-                    const at = line.indexOf(divider);
-                    if (at >= 0) fields = [line.slice(0, at), line.slice(at + 1)];
+                const fields = line.split('|').map(cell => cell.trim());
+                if (fields.length !== 5) {
+                    errors.push(`${i + 1}행: '단어 | 정답 | 오답1 | 오답2 | 오답3'의 5칸으로 작성해 주세요.`);
+                    return;
                 }
-                const eng = (fields[0] || '').trim(), kor = fields.slice(1).join(',').trim();
-                if (!eng || !kor) { errors.push(`${i + 1}행: 영단어 또는 뜻이 비어 있습니다.`); return; }
+                if (fields.some(cell => !cell)) {
+                    errors.push(`${i + 1}행: 단어·정답·오답에 빈칸이 있습니다.`);
+                    return;
+                }
+                const [eng, kor, ...wrong] = fields;
                 const key = normalText(eng);
                 if (seen.has(key)) { errors.push(`${i + 1}행: 중복 영단어 '${eng}'`); return; }
-                seen.add(key); words.push({ eng, kor });
+                if (new Set([kor, ...wrong].map(normalText)).size !== 4) {
+                    errors.push(`${i + 1}행: 정답과 오답은 서로 다른 4개 보기여야 합니다.`);
+                    return;
+                }
+                seen.add(key); words.push({ eng, kor, wrong });
             });
-            if (words.length < 4 || new Set(words.map(w => normalText(w.kor))).size < 4) errors.push('서로 다른 영단어와 뜻이 각각 최소 4개 필요합니다.');
+            if (!words.length && !errors.length) errors.push('단어·정답·오답을 작성한 줄이 최소 1개 필요합니다.');
             return { words, errors };
         };
+        const DEFAULT_WORDS = parseWordText(DEFAULT_WORD_TEXT).words;
         const makeQuiz = (words, seed, index) => {
             const rng = seededRandom(`${seed}:${index}`);
-            const candidates = shuffle(words, rng), answer = candidates[0];
-            const alternatives = candidates.filter(w => normalText(w.kor) !== normalText(answer.kor) && normalText(w.eng) !== normalText(answer.eng));
-            return { answer, options: shuffle([answer, ...alternatives.slice(0, 3)], rng), index };
+            const answer = shuffle(words, rng)[0];
+            // Use exactly the four meanings written on this row; only their order changes.
+            const options = shuffle([answer.kor, ...answer.wrong], rng);
+            return { answer, options, index };
+        };
+        const downloadWordTemplate = () => {
+            const blob = new Blob(['\uFEFF', DEFAULT_WORD_TEXT.trim().replace(/\r?\n/g, '\r\n') + '\r\n'], { type: 'text/plain;charset=utf-8' });
+            const href = URL.createObjectURL(blob), link = document.createElement('a');
+            link.href = href; link.download = '경마왕_단어장_54문항.txt';
+            document.body.appendChild(link); link.click(); link.remove();
+            setTimeout(() => URL.revokeObjectURL(href), 1000);
+        };
+        // Room codes in QR links are read once; leaving/changing a room clears the hint.
+        const readRoomInvite = (href = window.location.href) => {
+            try {
+                const values = new URL(href).searchParams.getAll('room');
+                const code = values.length === 1 ? values[0].trim() : '';
+                return /^\d{4}$/.test(code) ? code : '';
+            } catch (_) { return ''; }
+        };
+        const clearRoomInvite = () => {
+            try {
+                const url = new URL(window.location.href);
+                if (!url.searchParams.has('room')) return;
+                url.searchParams.delete('room');
+                window.history.replaceState(window.history.state, '', url.href);
+            } catch (_) { /* Local-file / embedded browsers may restrict History API. */ }
+        };
+        const buildRoomInvite = (code, href = window.location.href) => {
+            if (!/^\d{4}$/.test(String(code))) return '';
+            let url;
+            try { url = new URL(href); } catch (_) {}
+            // Local previews still share the deployed game; online hosts share their exact path.
+            if (!url || !['http:', 'https:'].includes(url.protocol)) url = new URL('https://yeomt.github.io/DSbettingrace/');
+            url.search = ''; url.hash = ''; url.searchParams.set('room', String(code));
+            return url.href;
         };
         const validateBet = (data, player, horses) => {
             const rawBets = data.bets ?? {};
@@ -607,7 +663,8 @@
             const [fbLoaded, setFbLoaded] = useState(false);
             const [engineError, setEngineError] = useState(false);
             const [view, setView] = useState('HOME');
-            const [roomCode, setRoomCode] = useState('');
+            const [invitedRoom, setInvitedRoom] = useState(readRoomInvite);
+            const [roomCode, setRoomCode] = useState(() => invitedRoom);
             const [playerName, setPlayerName] = useState(() => localStorage.getItem('edurace_last_name') || '');
             
             const [myUid] = useState(() => {
@@ -632,13 +689,15 @@
                 return () => clearInterval(checkFb);
             }, []);
 
-            const handleHostBtn = () => { initAudio(); setView('HOST'); };
+            const releaseRoomInvite = () => { setInvitedRoom(''); setRoomCode(''); clearRoomInvite(); };
+            const leaveRoom = () => { releaseRoomInvite(); setView('HOME'); };
+            const handleHostBtn = () => { initAudio(); releaseRoomInvite(); setView('HOST'); };
             const handleJoinBtn = () => { 
                 initAudio();
-                if(roomCode.length === 4 && playerName.trim()) {
+                if(/^\d{4}$/.test(roomCode) && playerName.trim()) {
                     localStorage.setItem('edurace_last_name', playerName.trim());
                     setView('PLAYER');
-                } else alert('방 번호(4자리)와 닉네임을 입력하세요.');
+                } else alert(invitedRoom ? '닉네임을 입력하세요.' : '방 번호(숫자 4자리)와 닉네임을 입력하세요.');
             };
 
             if (engineError) return <div className="h-full flex flex-col items-center justify-center gap-4 text-center p-6"><p>게임 엔진을 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.</p><button className="bg-indigo-600 px-6 py-3 rounded-xl" onClick={()=>location.reload()}>다시 불러오기</button></div>;
@@ -663,26 +722,36 @@
                         </h1>
                         <p className="text-slate-400 mb-8 text-center text-sm md:text-base">콤보를 쌓아 돈을 모으고 전략적으로 배팅하세요!</p>
                         
-                        <div className="bg-glass p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-sm flex flex-col gap-4 border border-slate-600 relative overflow-hidden">
+                        <form onSubmit={e => { e.preventDefault(); handleJoinBtn(); }} className="bg-glass p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-sm flex flex-col gap-4 border border-slate-600 relative overflow-hidden">
                             <div className="text-center mb-2"><span className="inline-block bg-indigo-600 text-white text-xs font-black px-3 py-1 rounded-full">학생 참가용</span></div>
-                            <input type="text" placeholder="방 번호 (4자리)" value={roomCode} onChange={e=>setRoomCode(e.target.value.toUpperCase())} maxLength={4}
-                                className="w-full bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-4 text-center text-2xl font-black focus:border-indigo-500 uppercase outline-none" />
+                            {invitedRoom ? (
+                                <div className="bg-emerald-900/40 border border-emerald-500/50 rounded-xl px-4 py-3 text-center">
+                                    <div className="flex items-center justify-center gap-3">
+                                        <span className="font-black text-emerald-300 text-xl">방 {roomCode}</span>
+                                        <button type="button" onClick={releaseRoomInvite} className="text-xs text-slate-300 underline underline-offset-4 py-2">다른 방으로</button>
+                                    </div>
+                                    <p className="text-xs font-bold text-slate-300 mt-1">닉네임만 입력하고 참가하세요!</p>
+                                </div>
+                            ) : (
+                                <input type="text" inputMode="numeric" pattern="[0-9]{4}" autoComplete="off" aria-label="방 번호" placeholder="방 번호 (4자리)" value={roomCode} onChange={e=>setRoomCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))} maxLength={4}
+                                    className="w-full bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-4 text-center text-2xl font-black focus:border-indigo-500 outline-none" />
+                            )}
                             <div className="flex gap-2">
                                 <div className="shrink-0 cursor-pointer" onClick={()=>setView('GACHA')} title="아바타 변경">
                                     <AvatarDisplay avatarStr={myAvatar} sizeClasses="w-14 h-14 text-2xl" />
                                 </div>
-                                <input type="text" placeholder="내 닉네임" value={playerName} onChange={e=>setPlayerName(e.target.value)} maxLength={10}
+                                <input type="text" placeholder="내 닉네임" aria-label="내 닉네임" value={playerName} onChange={e=>setPlayerName(e.target.value)} maxLength={10} autoFocus={!!invitedRoom} enterKeyHint="go" onKeyDown={e => { if (e.key === 'Enter' && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) e.preventDefault(); }}
                                     className="flex-1 bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-3 text-center text-lg font-bold focus:border-indigo-500 outline-none min-w-0" />
                             </div>
-                            <button onClick={handleJoinBtn} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xl py-4 rounded-xl shadow-lg active:scale-95 transition mt-2">
+                            <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xl py-4 rounded-xl shadow-lg active:scale-95 transition mt-2">
                                 게임 참가하기 <i className="fas fa-sign-in-alt ml-1"></i>
                             </button>
-                        </div>
+                        </form>
                     </div>
                 );
             }
-            if (view === 'HOST') return <HostView onExit={() => setView('HOME')} />;
-            if (view === 'PLAYER') return <PlayerView roomCode={roomCode} playerName={playerName} myUid={myUid} myAvatar={myAvatar} onExit={() => setView('HOME')} />;
+            if (view === 'HOST') return <HostView onExit={leaveRoom} />;
+            if (view === 'PLAYER') return <PlayerView roomCode={roomCode} playerName={playerName} myUid={myUid} myAvatar={myAvatar} onExit={leaveRoom} />;
         }
 
         function GachaView({ onExit }) {
@@ -936,10 +1005,10 @@
                     player.lastQuizSeq = data.seq;
                     if (state.status !== 'QUIZ' || now >= state.quizEndsAt) { acknowledge('quizAck', false, '퀴즈 시간이 종료되어 반영되지 않았습니다.'); return; }
                     if (data.index !== player.quizIndex || now + 80 < player.quizAvailableAt) { acknowledge('quizAck', false, '현재 문제와 맞지 않는 요청입니다. 다시 확인해 주세요.'); return; }
-                    const words = state.customWords.length >= 4 ? state.customWords : DEFAULT_WORDS;
+                    const words = state.customWords.length > 0 ? state.customWords : DEFAULT_WORDS;
                     const question = makeQuiz(words, player.quizSeed, player.quizIndex);
-                    if (!question.options.some(w => w.eng === data.answerEng)) { acknowledge('quizAck', false, '보기의 단어를 선택해 주세요.'); return; }
-                    const correct = question.answer.eng === data.answerEng;
+                    if (!Number.isSafeInteger(data.optionIndex) || data.optionIndex < 0 || data.optionIndex >= question.options.length) { acknowledge('quizAck', false, '화면에 제시된 보기를 선택해 주세요.'); return; }
+                    const correct = question.options[data.optionIndex] === question.answer.kor;
                     player.quizCombo = correct ? player.quizCombo + 1 : 0;
                     if (correct) {
                         player.money += 1000 + player.quizCombo * 200; player.stats.quizCnt++;
@@ -1494,15 +1563,17 @@
                                 
                                 <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch mb-8">
                                     <div className="bg-slate-800 p-6 rounded-2xl border border-slate-600 shadow-xl flex flex-col items-center justify-center shrink-0">
-                                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://yeomt.github.io/DSbettingrace/`} className="rounded-xl shadow-md mb-3 bg-white p-2" alt="QR Code" />
+                                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(buildRoomInvite(roomCode))}`} className="rounded-xl shadow-md mb-3 bg-white p-2" alt="QR Code" />
                                         <div className="text-yellow-400 font-black text-xl mb-1">스마트폰 카메라로 스캔!</div>
-                                        <div className="text-slate-300 font-bold text-sm bg-teal-900 px-3 py-1 rounded-full border border-slate-700">yeomt.github.io/DSbettingrace/</div>
+                                        <div className="text-slate-300 font-bold text-sm bg-teal-900 px-3 py-1 rounded-full border border-slate-700">방 {roomCode} · 닉네임만 입력하면 참가!</div>
                                     </div>
 
                                     <div className="flex-1 flex flex-col gap-4">
                                         <div className="bg-slate-800 p-4 rounded-xl border border-slate-600 text-left shadow-inner flex-1 flex flex-col justify-center">
                                             <h3 className="font-bold text-blue-400 mb-2"><i className="fas fa-file-upload"></i> 커스텀 단어장 업로드 (선택)</h3>
-                                            <p className="text-xs text-slate-400 mb-3">메모장에 <b>'영단어,뜻'</b>(쉼표) 또는 <b>'영단어[탭]뜻'</b> 형식으로 작성한 txt 파일을 올리세요.</p>
+                                            <p className="text-xs text-slate-400 mb-2 leading-relaxed">메모장에 한 줄씩 <b className="text-slate-200">단어 | 정답 | 오답1 | 오답2 | 오답3</b> 형식으로 작성한 TXT 파일을 올리세요. 뜻 안의 쉼표는 그대로 두세요.</p>
+                                            <div className="text-xs text-slate-300 bg-slate-900/70 rounded-lg p-2 mb-2 break-words leading-relaxed">rent | 빌리다 | 돌려주다 | 판매하다 | 버리다</div>
+                                            <button type="button" onClick={downloadWordTemplate} className="self-start text-xs font-bold text-blue-300 underline underline-offset-4 mb-3 py-1">기본 단어장 TXT 받기 (54문항)</button>
                                             <div className="flex items-center gap-4">
                                                 <input type="file" accept=".txt" onChange={handleFileUpload} className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"/>
                                                 <span className="shrink-0 text-sm font-bold text-emerald-400 border border-emerald-500/50 bg-emerald-900/30 px-3 py-1 rounded-full">
@@ -1741,7 +1812,7 @@
             const generateQuiz = () => {
                 const c = client.current;
                 if (c.state?.status !== 'QUIZ' || c.me?.roundId !== c.state.roundId || c.me?.sessionId !== c.sessionId || c.words?.version !== c.state.wordVersion) { setQuizData(null); return; }
-                const words = c.words.items.length >= 4 ? c.words.items : DEFAULT_WORDS;
+                const words = c.words.items.length > 0 ? c.words.items : DEFAULT_WORDS;
                 setQuizData(makeQuiz(words, c.me.quizSeed, c.me.quizIndex || 0));
             };
             const finishQuizFeedback = () => {
@@ -1780,15 +1851,16 @@
                 return () => { active = false; };
             }, [roomState?.status, roomState?.matchId, finalPlayers, myUid, rewardClaimed]);
 
-            const handleQuizAnswer = opt => {
+            const handleQuizAnswer = optionIndex => {
                 const c = client.current;
                 if (!canAct('QUIZ') || c.pendingQuiz || !quizData || serverNow() < (c.me.quizAvailableAt || 0) || serverNow() >= c.state.quizEndsAt) return;
-                const correct = opt.eng === quizData.answer.eng, seq = ++c.seq;
+                if (!Number.isSafeInteger(optionIndex) || optionIndex < 0 || optionIndex >= quizData.options.length) return;
+                const correct = quizData.options[optionIndex] === quizData.answer.kor, seq = ++c.seq;
                 c.pendingQuiz = { seq, showUntil: serverNow() + (correct ? 600 : 1500) };
                 setQuizPopup(correct ? 'correct' : 'wrong'); setQuizNotice(''); setCombo(correct ? (c.me.quizCombo || 0) + 1 : 0);
                 playSound(correct ? 'combo' : 'wrong');
                 c.quizTimer = setTimeout(finishQuizFeedback, correct ? 600 : 1500);
-                pushAction({ type: 'QUIZ_ANSWER', seq, index: quizData.index, answerEng: opt.eng }).then(ok => {
+                pushAction({ type: 'QUIZ_ANSWER', seq, index: quizData.index, optionIndex }).then(ok => {
                     if (!ok && c.pendingQuiz?.seq === seq && !c.disposed) { clearTimeout(c.quizTimer); c.pendingQuiz = null; setQuizPopup(null); setQuizNotice('전송되지 않았습니다. 다시 선택해 주세요.'); generateQuiz(); }
                 });
             };
@@ -1872,7 +1944,7 @@
                         
                         {quizNotice && <div className="text-center text-xs font-bold text-amber-300 mb-2">{quizNotice}</div>}
                         {quizData && (
-                            <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full relative">
+                            <div className="quiz-content flex-1 min-h-0 flex flex-col max-w-sm mx-auto w-full relative overflow-y-auto custom-scrollbar">
                                 {/* 🌟 호스트가 상태를 변경하기 직전 네트워크 딜레이를 가려주는 0초 도달 오버레이 */}
                                 {timeLeft === 0 && (
                                     <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-teal-900/90 backdrop-blur-sm rounded-2xl">
@@ -1882,13 +1954,14 @@
                                     </div>
                                 )}
                                 
-                                <div className="text-center text-3xl sm:text-4xl font-black mb-8 p-6 sm:p-8 bg-slate-800 rounded-2xl border-2 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] break-words w-full">
-                                    {quizData.answer.kor}
+                                <div className="shrink-0 mt-auto text-center text-3xl sm:text-4xl font-black mb-6 p-6 sm:p-8 bg-slate-800 rounded-2xl border-2 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] break-words w-full">
+                                    <div className="text-sm text-slate-400 font-bold mb-2">영단어의 뜻을 고르세요.</div>
+                                    <span data-quiz-word>{quizData.answer.eng}</span>
                                 </div>
-                                <div className="grid grid-cols-1 gap-4 flex-1 content-start relative">
-                                    {quizData.options.map(opt => (
-                                        <button key={opt.eng} onClick={()=>handleQuizAnswer(opt)} className="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-black text-xl sm:text-2xl rounded-2xl py-5 sm:py-6 shadow-lg transition-transform active:scale-95 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 w-full">
-                                            {opt.eng}
+                                <div className="grid grid-cols-1 gap-3 shrink-0 mb-auto content-start relative">
+                                    {quizData.options.map((option, optionIndex) => (
+                                        <button key={optionIndex} data-quiz-option={optionIndex} onClick={()=>handleQuizAnswer(optionIndex)} className="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-black text-lg sm:text-xl rounded-2xl px-3 py-4 sm:py-5 shadow-lg transition-transform active:scale-95 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 w-full whitespace-normal break-keep">
+                                            {option}
                                         </button>
                                     ))}
                                     
