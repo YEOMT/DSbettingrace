@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>이모지무스메 더비 - 영단어 경마왕</title>
-    <!-- Game Feel A/B/D/E · 2026-09-27 · based on racing_fixed.html; existing stability fixes retained. -->
+    <!-- Content expansion retained · 2026-10-01 · RTDB empty/sparse snapshot normalization, phase recovery and screen fallback hotfix. -->
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -225,7 +225,14 @@
     </style>
 </head>
 <body>
-    <div id="root" class="h-[100dvh] w-full"></div>
+    <div id="root" class="h-[100dvh] w-full"><div id="race-startup" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;box-sizing:border-box;text-align:center;background:#134e4a;color:white;font:700 18px sans-serif"><p>경마왕을 불러오는 중...</p><button type="button" onclick="location.reload()" style="padding:12px 24px;background:#4f46e5;color:white;border:0;border-radius:12px">다시 불러오기</button></div></div>
+    <script>
+        // A failed CDN/Babel load must leave a usable message even before React can start.
+        window.__racingBootTimer = setTimeout(function () {
+            var screen = document.getElementById('race-startup');
+            if (screen) screen.querySelector('p').textContent = '게임 파일을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 불러오세요.';
+        }, 15000);
+    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -267,9 +274,11 @@
         };
 
         const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioContext();
+        let audioCtx = null;
+        try { if (AudioContext) audioCtx = new AudioContext(); } catch (_) { /* Gameplay is available without audio. */ }
+        const resumeAudio = () => { if(audioCtx?.state === 'suspended') audioCtx.resume().catch(()=>{}); };
         const play8BitTone = (type, freq, duration, vol = 0.1, slideFreq = null) => {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
+            if(!audioCtx)return; resumeAudio();
             try {
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
@@ -290,7 +299,7 @@
             gacha: () => { play8BitTone('square', 300, 0.1, 0.1, 600); setTimeout(() => play8BitTone('square', 600, 0.1, 0.1, 1200), 100); setTimeout(() => play8BitTone('square', 1200, 0.4, 0.2, 1800), 200); }
         };
         const playSound = (soundKey) => { if (SOUNDS[soundKey]) SOUNDS[soundKey](); };
-        const initAudio = () => { if(audioCtx.state === 'suspended') audioCtx.resume(); };
+        const initAudio = resumeAudio;
 
         const HORSES = [
             { id: 1, emoji: '🐖', name: '꿀꿀이', desc: '무겁지만 한번 가속이 붙으면 모든 걸 씹어먹는 포식자.', stats: { speed: 52, spurt: 94, stability: 70, luck: 75 }, type: 'late' },
@@ -426,7 +435,7 @@
             return '';
         };
         const itemDetail = (id,plan) => {
-            const n=plan.effective[id]||0,w=stackWeight(n),pct=x=>`${Math.round(x*1000)/10}%`;
+            plan=readItemPlan(plan);const n=plan.effective[id]||0,w=stackWeight(n),pct=x=>`${Math.round(x*1000)/10}%`;
             if(id==='whip')return `목표 속도 +${pct(.25*w)} · 안정성 ×${plan.stabilityFactor.toFixed(4)}`;
             if(id==='banana')return `목표 속도 -${pct(.1*w)}`;
             if(id==='curse')return `목표 속도 -${pct(.2*w)}`;
@@ -435,18 +444,18 @@
             if(id==='sedative')return '운형·도주형 안정성을 90으로 설정 후 채찍 적용 · 중복 가산 없음';
             if(id==='shield')return '비난 → 바나나 → 모래 순으로 방해 1개 차단 · 최대 1겹 · 방해가 없어도 소모';
             if(id==='shoes')return '불리한 날씨 손실 50% 완화 · 눈길 사고 속도 25% → 62.5% · 사고 시간은 동일';
-            if(id==='repair')return `${CONDITIONS[plan.originalConditionIdx].label} → ${CONDITIONS[plan.conditionIdx].label}(정비) · 중 이상 상승 없음`;
+            if(id==='repair')return `${CONDITIONS[plan.originalConditionIdx]?.label||'미확인'} → ${CONDITIONS[plan.conditionIdx]?.label||'미확인'}(정비) · 중 이상 상승 없음`;
             return ITEMS.find(v=>v.id===id)?.desc||'';
         };
         function HorseItems({ plan, phase='planned' }) {
-            if(!plan||!Object.values(plan.counts).some(n=>n>0))return null;
+            if(!plan)return null;plan=readItemPlan(plan);if(!Object.values(plan.counts).some(n=>n>0))return null;
             return <div className="horse-items" onClick={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}>
                 <div className="text-xs font-bold text-amber-200">{phase==='confirmed'?'확정 아이템':'적용 예정'}</div>
                 <div className="item-icons">{ITEM_ORDER.filter(id=>plan.counts[id]).map(id=>{const item=ITEMS.find(x=>x.id===id);return <details key={id} className={plan.blocked[id]?'item-blocked':''}>
                     <summary aria-label={`${item?.name} ${plan.counts[id]}개 설명`}>{item?.icon||'💨'}×{plan.counts[id]}{plan.blocked[id]>0&&<span> ⊘{plan.blocked[id]}</span>}</summary>
                     <div className="item-explain"><b>{item?.name} · {plan.counts[id]}개</b><div>{plan.blocked[id]>0?`보호로 ${plan.blocked[id]}개 무효 · 나머지 ${plan.effective[id]}개 적용`:''}</div><div>{itemDetail(id,plan)}</div></div>
                 </details>})}</div>
-                {plan.counts.repair>0&&<div className="text-xs text-emerald-300 mt-1">정비: {CONDITIONS[plan.originalConditionIdx].label} → {CONDITIONS[plan.conditionIdx].label}</div>}
+                {plan.counts.repair>0&&<div className="text-xs text-emerald-300 mt-1">정비: {CONDITIONS[plan.originalConditionIdx]?.label||'미확인'} → {CONDITIONS[plan.conditionIdx]?.label||'미확인'}</div>}
                 <div className="text-[10px] text-slate-400 mt-1">아이템 속도 보정 합계 ×0.60~1.75 · 구간·최고속도에 따라 실제 가속이 달라집니다.</div>
             </div>;
         }
@@ -476,7 +485,7 @@
             </details>;
         }
         function HistoryResult({ history, horses, roundId }) {
-            const rows=horses.map(h=>({h,r:asArray(history?.horses?.[h.id]?.recent).find(r=>r.roundId===roundId)})).filter(x=>x.r);
+            const rows=asArray(horses).map(h=>({h,r:asArray(history?.horses?.[h.id]?.recent).find(r=>r.roundId===roundId)})).filter(x=>x.r);
             const story=rows.find(x=>x.r.snow&&x.r.place<=3)||rows.filter(x=>x.r.midPlace-x.r.place>=2).sort((a,b)=>(b.r.midPlace-b.r.place)-(a.r.midPlace-a.r.place))[0]||rows.find(x=>x.r.place===1);
             return <div className="history-result">{story&&<div className="text-yellow-200 font-bold mb-2">{story.h.emoji} {story.h.name} · {story.r.snow&&story.r.place<=3?`눈길 사고 후 ${story.r.place}위 입상`:`중반 ${story.r.midPlace}위 → 최종 ${story.r.place}위`}</div>}<details><summary>이번 게임 주자 기록</summary><div className="grid grid-cols-2 gap-2 mt-2">{rows.map(({h})=><div key={h.id}><b>{h.emoji} {h.name}</b><HorseHistory history={history} horseId={h.id}/></div>)}</div></details></div>;
         }
@@ -548,7 +557,41 @@ society | 사회 | 정부 | 가족 | 학교`;
         const readJSON = (store, key, fallback) => { try { const v = JSON.parse(store.getItem(key)); return v == null ? fallback : v; } catch (_) { return fallback; } };
         const storeJSON = (store, key, value) => { try { store.setItem(key, JSON.stringify(value)); return true; } catch (_) { return false; } };
         const cloneData = value => JSON.parse(JSON.stringify(value));
-        const asArray = value => Array.isArray(value) ? value : Object.values(value || {});
+        const asRecord = value => value && typeof value==='object' ? Object.fromEntries(Object.entries(value).filter(([,v])=>v!=null)) : {};
+        const asArray = value => (Array.isArray(value) ? value : Object.values(asRecord(value))).filter(v=>v!=null);
+        // RTDB omits empty maps/lists and null fields; normalize only at the network boundary.
+        const readItemPlan = value => {
+            const plan=asRecord(value), counts=asRecord(plan.counts), blocked=asRecord(plan.blocked);
+            const effective={...counts,...asRecord(plan.effective)};
+            Object.keys(blocked).forEach(id=>{if(!Object.hasOwn(asRecord(plan.effective),id))effective[id]=Math.max(0,(Number(counts[id])||0)-(Number(blocked[id])||0));});
+            return {...plan,counts,effective,blocked,stabilityFactor:Number.isFinite(plan.stabilityFactor)?plan.stabilityFactor:1};
+        };
+        const readItemBoard = value => {
+            if(!value||typeof value!=='object')return null;
+            return {...value,horses:Object.fromEntries(Object.entries(asRecord(value.horses)).map(([id,plan])=>[id,readItemPlan(plan)]))};
+        };
+        const readHorseHistory = value => {
+            if(!value||typeof value!=='object')return null;
+            return {...value,rounds:asRecord(value.rounds),horses:Object.fromEntries(Object.entries(asRecord(value.horses)).map(([id,h])=>[id,{...h,weather:asRecord(h.weather),recent:asArray(h.recent)}]))};
+        };
+        const readPlayer = value => value && typeof value==='object' ? {...value,bets:readBets(value.bets),stats:{quizCnt:0,betWin:0,betLoss:0,totalBet:0,...asRecord(value.stats)}} : null;
+        const readRoomState = value => value?.matchId ? {...value,horses:asArray(value.horses).filter(h=>h&&typeof h==='object'),weather:value.weather||WEATHERS[0]} : null;
+        const readRaceData = value => {
+            if(!value||typeof value!=='object')return null;
+            return {...value,timeline:asArray(value.timeline).map(f=>({...f,events:asArray(f.events)})),ranks:asArray(value.ranks),snowEvents:asArray(value.snowEvents),cues:asArray(value.cues),featureWindows:asArray(value.featureWindows),itemBoard:readItemBoard(value.itemBoard),
+                settlement:value.settlement?{...value.settlement,players:asArray(value.settlement.players),horses:asArray(value.settlement.horses)}:null};
+        };
+        const GAME_PHASES = ['LOBBY','QUIZ','BETTING','RACE','RESULT','END_HORSE','END_PLAYER','END_AWARDS'];
+        function ConnectionWait({ title='경기 정보를 연결 중입니다.', detail='잠시 후 자동으로 이어집니다.', onRetry, onExit, busy=false }) {
+            return <div className="h-full min-h-[180px] w-full flex flex-col items-center justify-center text-center text-white gap-4 p-6" role="status" data-testid="connection-wait"><div className="text-4xl">⏳</div><b className="text-xl">{title}</b><p className="text-sm text-slate-300">{detail}</p><div className="flex flex-wrap justify-center gap-3">{onRetry&&<button type="button" disabled={busy} onClick={onRetry} className="bg-indigo-600 rounded-xl px-5 py-3 font-bold">{busy?'확인 중...':'연결 다시 확인'}</button>}{onExit&&<button type="button" onClick={onExit} className="underline px-4 py-3 text-slate-300">처음으로</button>}</div></div>;
+        }
+        class GameScreenBoundary extends React.Component {
+            state={error:null};
+            static getDerivedStateFromError(error){return {error};}
+            componentDidCatch(error,info){console.error('경마왕 화면 복구:',error,info.componentStack);}
+            componentDidUpdate(previous){if(this.state.error&&previous.resetKey!==this.props.resetKey)this.setState({error:null});}
+            render(){return this.state.error?<div className="h-full bg-teal-900 flex flex-col overflow-y-auto" data-testid="screen-recovery"><ConnectionWait title="화면을 다시 연결해 주세요." detail="화면 표시 중 오류가 발생했습니다. 승인된 배팅과 경기 기록은 방에서 다시 불러옵니다." onRetry={()=>this.setState({error:null})} onExit={this.props.onExit}/><button type="button" onClick={()=>location.reload()} className="block mx-auto mb-6 underline text-white">파일 다시 불러오기</button></div>:this.props.children;}
+        }
         // RTDB may return numeric horse-id maps as sparse arrays; keep only actual stakes.
         const readBets = value => Object.fromEntries(Object.entries(value && typeof value === 'object' ? value : {}).filter(([, amount]) => amount != null));
         const normalText = value => String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
@@ -761,7 +804,7 @@ society | 사회 | 정부 | 가족 | 학교`;
         let lastCrowdSound=0;
         const raceAccent = (kind, level=1) => {
             try {
-                if (audioCtx.state !== 'running') return;
+                if (audioCtx?.state !== 'running') return;
                 const now=audioCtx.currentTime;
                 if (kind==='crowd') {
                     if (now-lastCrowdSound<1.8) return; lastCrowdSound=now;
@@ -1178,7 +1221,7 @@ society | 사회 | 정부 | 가족 | 학교`;
             if (engineError) return <div className="h-full flex flex-col items-center justify-center gap-4 text-center p-6"><p>게임 엔진을 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.</p><button className="bg-indigo-600 px-6 py-3 rounded-xl" onClick={()=>location.reload()}>다시 불러오기</button></div>;
             if (!fbLoaded) return <div className="h-screen w-full flex items-center justify-center bg-teal-900 text-white font-bold text-xl">🚀 게임 엔진 로딩 중...</div>;
 
-            if (view === 'GACHA') return <GachaView onExit={() => { setMyAvatar(localStorage.getItem('edurace_avatar') || ''); setView('HOME'); }} />;
+            if (view === 'GACHA') return <GameScreenBoundary resetKey="gacha" onExit={leaveRoom}><GachaView onExit={() => { setMyAvatar(localStorage.getItem('edurace_avatar') || ''); setView('HOME'); }} /></GameScreenBoundary>;
 
             if (view === 'HOME') {
                 return (
@@ -1225,8 +1268,8 @@ society | 사회 | 정부 | 가족 | 학교`;
                     </div>
                 );
             }
-            if (view === 'HOST') return <HostView onExit={leaveRoom} />;
-            if (view === 'PLAYER') return <PlayerView roomCode={roomCode} playerName={playerName} myUid={myUid} myAvatar={myAvatar} onExit={leaveRoom} />;
+            if (view === 'HOST') return <GameScreenBoundary resetKey="host" onExit={leaveRoom}><HostView onExit={leaveRoom} /></GameScreenBoundary>;
+            if (view === 'PLAYER') return <GameScreenBoundary resetKey={roomCode} onExit={leaveRoom}><PlayerView roomCode={roomCode} playerName={playerName} myUid={myUid} myAvatar={myAvatar} onExit={leaveRoom} /></GameScreenBoundary>;
         }
 
         function GachaView({ onExit }) {
@@ -1550,7 +1593,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                         }
                         if (disposed) return;
                         if (root.state?.matchId) {
-                            gameState.current = { ...initialGame(), ...root.state, horses: asArray(root.state.horses), players: asArray(root.players), customWords: asArray(root.words?.items), raceData: root.recovery?.race || null, finalPlayers: asArray(root.standings), cheerBoard: root.cheerBoard || null, itemBoard:root.itemBoard||null, horseHistory:root.horseHistory||null };
+                            gameState.current = { ...initialGame(), ...root.state, horses: asArray(root.state.horses), players: asArray(root.players).map(readPlayer), customWords: asArray(root.words?.items), raceData: readRaceData(root.recovery?.race), finalPlayers: asArray(root.standings).map(readPlayer), cheerBoard: root.cheerBoard || null, itemBoard:readItemBoard(root.itemBoard), horseHistory:readHorseHistory(root.horseHistory) };
                             gameState.current.players.forEach(p => { p.bets = readBets(p.bets); p.lastPing = 0; p.connected = false; });
                             if (gameState.current.status === 'END_HORSE') {
                                 const state = gameState.current;
@@ -1789,6 +1832,7 @@ society | 사회 | 정부 | 가족 | 학교`;
 
                     {netMessage && <div className="bg-amber-900/80 text-yellow-100 text-sm font-bold p-2 rounded-lg mb-2 text-center">{netMessage}{!roomCode && <button onClick={()=>location.reload()} className="ml-3 underline">다시 불러오기</button>}</div>}
                     <div className="race-host-body flex-1 bg-glass rounded-2xl border border-slate-600 flex flex-col overflow-hidden relative">
+                        {!GAME_PHASES.includes(uiState.status)&&<ConnectionWait title="경기 단계를 다시 확인해 주세요." onRetry={()=>location.reload()} onExit={onExit}/>}
                         {uiState.status === 'LOBBY' && (
                             <div className="m-auto text-center w-full max-w-4xl p-6 overflow-y-auto custom-scrollbar max-h-full">
                                 <h2 className="text-3xl font-bold mb-3">학생들의 접속을 대기중입니다...</h2>
@@ -1886,7 +1930,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                                 </div>
                                 <h2 className="text-4xl font-black text-purple-400 mb-5">🏆 {uiState.round}라운드 결과</h2>
                                 <FinishSummary race={uiState.raceData} horses={uiState.horses}/>
-                                <HorsePodium horses={uiState.horses} ranks={uiState.raceData.ranks} /><HistoryResult history={uiState.horseHistory} horses={uiState.horses} roundId={uiState.roundId}/>
+                                <HorsePodium horses={uiState.horses} ranks={uiState.raceData?.ranks||[]} /><HistoryResult history={uiState.horseHistory} horses={uiState.horses} roundId={uiState.roundId}/>
                                 <div className="bg-slate-800 rounded-xl p-4 mb-8 border border-slate-700 shadow-md">
                                     <h3 className="text-xl font-bold mb-4 border-b border-slate-600 pb-2">현재 재산 순위</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-left">
@@ -1897,6 +1941,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                                 </div>
                             </div>
                         )}
+                        {uiState.status === 'END_HORSE'&&<ConnectionWait title="최종 결과를 연결 중입니다." detail="플레이어 최종 순위로 이어집니다." onRetry={()=>changeStatus('END_PLAYER')} onExit={onExit}/>}
                         {uiState.status === 'END_PLAYER' && (
                             <div className="m-auto text-center w-full p-6 max-h-full overflow-y-auto custom-scrollbar relative">
                                 <div className="mb-4 flex justify-center sticky top-0 z-30">
@@ -1942,6 +1987,8 @@ society | 사회 | 정부 | 가족 | 학교`;
             const [cheerCooldown, setCheerCooldown] = useState(false);
             const [rewardClaimed, setRewardClaimed] = useState(false);
             const [rewardDetails, setRewardDetails] = useState(null);
+            const [rewardError,setRewardError]=useState(''),[rewardRetry,setRewardRetry]=useState(0),[resyncing,setResyncing]=useState(false);
+            const resyncBusy=useRef(false);
             const [timeLeft, setTimeLeft] = useState(30);
             const [quizPopup, setQuizPopup] = useState(null);
             const [isItemSelecting, setIsItemSelecting] = useState(false);
@@ -1992,6 +2039,22 @@ society | 사회 | 정부 | 가족 | 학교`;
                     pushAction({ type: 'JOIN', name: playerName, avatar: myAvatar });
                 } else pushAction({ type: 'PING' });
             };
+            const acceptState = value => { const c=client.current;c.state=readRoomState(value);setRoomState(c.state);syncDraft();tryJoin(); };
+            const acceptPlayer = value => { const c=client.current;c.me=readPlayer(value);setMe(c.me);syncDraft(); };
+            const acceptWords = value => { const c=client.current;if(!value)return;c.words={version:value.version,items:asArray(value.items)};setWordBank(c.words); };
+            const resyncStudent = async () => {
+                const c=client.current;if(c.disposed||resyncBusy.current)return;
+                resyncBusy.current=true;setResyncing(true);
+                try {
+                    const base=`rooms/${roomCode}`,paths=['state',`players/${myUid}`,'words','itemBoard','horseHistory','standings'];
+                    const snapshots=await Promise.all(paths.map(path=>window.fbGet(window.fbRef(window.firebaseDb,`${base}/${path}`))));
+                    if(c.disposed)return;
+                    acceptState(snapshots[0].val());acceptPlayer(snapshots[1].val());acceptWords(snapshots[2].val());
+                    setItemBoard(readItemBoard(snapshots[3].val()));setHorseHistory(readHorseHistory(snapshots[4].val()));setFinalPlayers(asArray(snapshots[5].val()).map(readPlayer));
+                    setNetMessage(c.connected&&c.hostOnline?'':'연결이 복구되면 자동으로 이어집니다.');tryJoin();
+                } catch(e){if(!c.disposed)setNetMessage('연결을 다시 확인하지 못했습니다. 인터넷 연결 후 다시 눌러 주세요.');}
+                finally{resyncBusy.current=false;if(!c.disposed)setResyncing(false);}
+            };
             useEffect(() => {
                 const c = client.current, base = `rooms/${roomCode}`; const unsubs = [];
                 const fail = e => { if (!c.disposed) setNetMessage('연결 오류: ' + (e?.message || String(e))); };
@@ -2015,21 +2078,17 @@ society | 사회 | 정부 | 가족 | 학교`;
                 unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/hostPresence`), snap => { c.presences = snap.val() || {}; updatePresence(); }, fail));
                 unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, '.info/connected'), snap => { c.connected = snap.val() === true; updatePresence(); }, fail));
                 unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/state`), snap => {
-                    const state = snap.val();
-                    if (!state?.matchId) return;
-                    c.state = { ...state, horses: asArray(state.horses) }; setRoomState(c.state); syncDraft(); tryJoin();
+                    acceptState(snap.val());
                 }, fail));
                 unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/players/${myUid}`), snap => {
-                    const p = snap.val(); if (!p) return;
-                    c.me = { ...p, bets: readBets(p.bets) }; setMe(c.me); syncDraft();
+                    acceptPlayer(snap.val());
                 }, fail));
                 unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/words`), snap => {
-                    const v = snap.val(); if (!v) return;
-                    c.words = { version: v.version, items: asArray(v.items) }; setWordBank(c.words);
+                    acceptWords(snap.val());
                 }, fail));
-                unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/standings`), snap => setFinalPlayers(asArray(snap.val())), fail));
-                unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/itemBoard`),snap=>setItemBoard(snap.val()),fail));
-                unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/horseHistory`),snap=>setHorseHistory(snap.val()),fail));
+                unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/standings`), snap => setFinalPlayers(asArray(snap.val()).map(readPlayer)), fail));
+                unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/itemBoard`),snap=>setItemBoard(readItemBoard(snap.val())),fail));
+                unsubs.push(window.fbOnValue(window.fbRef(window.firebaseDb, `${base}/horseHistory`),snap=>setHorseHistory(readHorseHistory(snap.val())),fail));
                 const ping = setInterval(updatePresence, 3000);
                 return () => {
                     c.disposed = true; clearInterval(ping); clearTimeout(c.quizTimer); clearTimeout(c.cheerTimer); clearTimeout(c.betTimer); unsubs.forEach(fn => fn());
@@ -2082,13 +2141,13 @@ society | 사회 | 정부 | 가족 | 학교`;
                 const tick = () => setTimeLeft(Math.max(0, Math.ceil(((client.current.state?.quizEndsAt || 0) - serverNow()) / 1000)));
                 tick(); const timer = setInterval(tick, 200); return () => clearInterval(timer);
             }, [roomState?.status, roomState?.roundId, roomState?.quizEndsAt]);
-            useEffect(() => { setRewardClaimed(false); setRewardDetails(null); }, [roomState?.matchId]);
+            useEffect(() => { setRewardClaimed(false); setRewardDetails(null);setRewardError(''); }, [roomState?.matchId]);
             useEffect(() => {
                 if (!['END_PLAYER', 'END_AWARDS'].includes(roomState?.status) || rewardClaimed || !finalPlayers.some(p => p.uid === myUid)) return;
-                let active = true;
-                claimReward(roomState.matchId, myUid, finalPlayers).then(details => { if (active && details) { setRewardDetails(details); setRewardClaimed(true); } }).catch(e => { if (active) setNetMessage(e.message); });
+                let active = true;setRewardError('');
+                claimReward(roomState.matchId, myUid, finalPlayers).then(details => { if (active && details) { setRewardDetails(details); setRewardClaimed(true); } }).catch(e => { if (active) {setRewardError(e.message);setNetMessage(e.message);} });
                 return () => { active = false; };
-            }, [roomState?.status, roomState?.matchId, finalPlayers, myUid, rewardClaimed]);
+            }, [roomState?.status, roomState?.matchId, finalPlayers, myUid, rewardClaimed, rewardRetry]);
 
             const handleQuizAnswer = optionIndex => {
                 const c = client.current;
@@ -2157,7 +2216,11 @@ society | 사회 | 정부 | 가족 | 학교`;
             };
             const connectionBanner = netMessage ? <div className="fixed top-0 left-0 right-0 z-[100] bg-amber-900/95 text-yellow-100 text-xs font-bold p-2 text-center">{netMessage}</div> : null;
 
-            if(!roomState || !me) return <div className="h-full flex flex-col items-center justify-center text-white font-bold text-xl gap-4 p-6">{connectionBanner}호스트와 연결 중...<button className="text-sm underline text-slate-300" onClick={onExit}>처음으로</button></div>;
+            const waitScreen=(title,detail)=><div className="h-full bg-teal-900">{connectionBanner}<ConnectionWait title={title} detail={detail} onRetry={resyncStudent} onExit={onExit} busy={resyncing}/></div>;
+            if(!roomState || !me)return waitScreen('호스트와 연결 중...','방과 내 참가 정보를 받아오면 자동으로 이어집니다.');
+            if(!GAME_PHASES.includes(roomState.status))return waitScreen('경기 단계를 확인 중입니다.','호스트의 현재 경기 정보를 다시 확인해 주세요.');
+            if(me.sessionId!==client.current.sessionId || (roomState.status!=='LOBBY'&&me.roundId!==roomState.roundId))return waitScreen('이번 라운드 참가 정보를 연결 중입니다.','승인된 배팅과 보유 아이템을 복원하고 있습니다.');
+            if(['BETTING','RACE'].includes(roomState.status)&&!roomState.horses.length)return waitScreen('출전 주자를 받아오는 중입니다.','경기 정보를 다시 확인하면 자동으로 이어집니다.');
 
             if (roomState.status === 'LOBBY') {
                 return (
@@ -2188,6 +2251,7 @@ society | 사회 | 정부 | 가족 | 학교`;
                         </div>
                         
                         {quizNotice && <div className="text-center text-xs font-bold text-amber-300 mb-2">{quizNotice}</div>}
+                        {!quizData&&<ConnectionWait title="문제를 받아오는 중입니다." detail="단어장과 이번 문제 정보를 맞추고 있습니다." onRetry={resyncStudent} onExit={onExit} busy={resyncing}/>}
                         {quizData && (
                             <div className="quiz-content flex-1 min-h-0 flex flex-col max-w-sm mx-auto w-full relative overflow-y-auto custom-scrollbar">
                                 {/* 🌟 호스트가 상태를 변경하기 직전 네트워크 딜레이를 가려주는 0초 도달 오버레이 */}
@@ -2365,12 +2429,12 @@ society | 사회 | 정부 | 가족 | 학교`;
 
             if (roomState.status === 'END_PLAYER' || roomState.status === 'END_AWARDS') {
                 return (
-                    <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center bg-teal-900 fade-in">
+                    <div className="h-[100dvh] flex flex-col items-center p-4 text-center bg-teal-900 fade-in overflow-y-auto custom-scrollbar">
                         {connectionBanner}
                         <div className="text-6xl mb-4">🎁</div>
                         <h2 className="text-3xl font-black text-yellow-400 mb-6 font-display tracking-widest">수고하셨습니다!</h2>
                         {rewardDetails ? (
-                            <div className="bg-slate-800 p-6 rounded-3xl border-2 border-slate-600 shadow-2xl w-full max-w-sm relative overflow-hidden">
+                            <div className="bg-slate-800 p-6 rounded-3xl border-2 border-slate-600 shadow-2xl w-full max-w-sm relative overflow-hidden shrink-0">
                                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-blue-500"></div>
                                 <h3 className="text-2xl font-black text-white mb-2">{me.name} 님의 최종 성적</h3>
                                 <div className="text-3xl font-black text-emerald-400 mb-6">{rewardDetails.rank} 위</div>
@@ -2387,13 +2451,13 @@ society | 사회 | 정부 | 가족 | 학교`;
                                 </button>
                             </div>
                         ) : (
-                            finalPlayers.some(p=>p.uid===myUid) ? <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-emerald-400"></div> : <div className="text-slate-300 font-bold">이번 경기는 종료되었습니다.<br/>다음 경기를 기다려 주세요.<button onClick={onExit} className="block mx-auto mt-6 underline">처음으로</button></div>
+                            rewardError ? <div className="text-amber-200 font-bold" role="alert"><p>{rewardError}</p><button onClick={()=>setRewardRetry(n=>n+1)} className="block mx-auto mt-4 px-5 py-3 bg-indigo-600 rounded-xl text-white">보상 다시 확인</button><button onClick={onExit} className="block mx-auto mt-4 underline">처음으로</button></div> : finalPlayers.some(p=>p.uid===myUid) ? <ConnectionWait title="최종 보상을 확인 중입니다." detail="수령 기록을 확인한 뒤 결과를 표시합니다." onRetry={()=>setRewardRetry(n=>n+1)} onExit={onExit}/> : <ConnectionWait title="최종 순위 정보를 확인 중입니다." detail="이번 경기 참가 기록을 확인하고 있습니다. 다음 경기를 기다리거나 연결을 다시 확인해 주세요." onRetry={resyncStudent} onExit={onExit} busy={resyncing}/>
                         )}
                     </div>
                 );
             }
 
-            return null;
+            return waitScreen('경기 정보를 다시 확인해 주세요.','호스트의 최신 단계로 연결합니다.');
         }
 
 
@@ -2830,7 +2894,8 @@ society | 사회 | 정부 | 가족 | 학교`;
         }
 
         function HorsePodium({ horses, ranks }) {
-            const h1=horses[ranks[0]], h2=horses[ranks[1]], h3=horses[ranks[2]];
+            const h1=horses?.[ranks?.[0]], h2=horses?.[ranks?.[1]], h3=horses?.[ranks?.[2]];
+            if(!h1||!h2||!h3)return <p className="text-slate-300 py-6">주자 순위 기록을 확인 중입니다.</p>;
             return (
                 <div className="flex justify-center items-end gap-3 h-56 mb-8 px-4">
                     <div className="w-1/3 flex flex-col items-center animate-rise" style={{animationDelay:'0.3s'}}>
@@ -2891,7 +2956,8 @@ society | 사회 | 정부 | 가족 | 학교`;
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(<GameScreenBoundary resetKey="app"><App /></GameScreenBoundary>);
+        clearTimeout(window.__racingBootTimer);
     </script>
 </body>
 </html>
